@@ -1,5 +1,6 @@
 package com.snowgears.shop;
 
+import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -7,10 +8,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Chest;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 
@@ -47,12 +46,12 @@ public class ShopHandler {
     }
 
     public ShopObject getShopByChest(Block shopChest) {
-        if (shopChest.getType() == Material.CHEST) {
-            Chest chest = (Chest) shopChest.getState().getData();
-            Block signBlock = shopChest.getRelative(chest.getFacing());
+        if (this.isChest(shopChest)) {
+            BlockFace chestFacing = UtilMethods.getDirectionOfChest(shopChest);
+            Block signBlock = shopChest.getRelative(chestFacing);
             if(signBlock.getType() == Material.WALL_SIGN) {
                 Sign sign = (Sign) signBlock.getState().getData();
-                if (chest.getFacing() == sign.getFacing())
+                if (chestFacing == sign.getFacing())
                     return this.getShop(signBlock.getLocation());
             }
             return null;
@@ -63,7 +62,7 @@ public class ShopHandler {
     public ShopObject getShopNearBlock(Block block){
         BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
         for(BlockFace face : faces){
-            if(block.getRelative(face).getType() == Material.CHEST){
+            if(this.isChest(block.getRelative(face))){
                 Block shopChest = block.getRelative(face);
                 for(BlockFace newFace : faces){
                     if(shopChest.getRelative(newFace).getType() == Material.WALL_SIGN){
@@ -208,6 +207,8 @@ public class ShopHandler {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+
+        plugin.getEnderChestHandler().saveEnderChests();
     }
 
     public void loadShops() {

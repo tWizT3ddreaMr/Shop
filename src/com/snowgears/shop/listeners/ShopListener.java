@@ -14,6 +14,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.Iterator;
@@ -30,13 +32,17 @@ public class ShopListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onShopOpen(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getType() == Material.CHEST) {
+            if (plugin.getShopHandler().isChest(event.getClickedBlock())) {
+
                 Player player = event.getPlayer();
                 ShopObject shop = plugin.getShopHandler().getShopByChest(event.getClickedBlock());
                 if (shop == null)
                     return;
 
-                //player is trying to open own shop
+                if(shop.getChestLocation().getBlock().getType() == Material.ENDER_CHEST)
+                    return;
+
+                //non-owner is trying to open shop
                 if (!shop.getOwnerName().equals(player.getName())) {
                     if ((plugin.usePerms() && player.hasPermission("plugin.operator")) || player.isOp()) {
                         if (shop.isAdminShop()) {
@@ -96,7 +102,7 @@ public class ShopListener implements Listener {
             Block block = blockIterator.next();
             if (block.getType() == Material.WALL_SIGN) {
                 shop = plugin.getShopHandler().getShop(block.getLocation());
-            } else if (block.getType() == Material.CHEST) {
+            } else if (plugin.getShopHandler().isChest(block)) {
                 shop = plugin.getShopHandler().getShopByChest(block);
             }
 
@@ -114,6 +120,15 @@ public class ShopListener implements Listener {
             if (shop != null) {
                 event.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onCloseEnderChest(InventoryCloseEvent event){
+        if(event.getPlayer() instanceof Player) {
+            Player player = (Player)event.getPlayer();
+            if (event.getInventory().getType() == InventoryType.ENDER_CHEST)
+                plugin.getEnderChestHandler().updateInventory(player, event.getInventory());
         }
     }
 }

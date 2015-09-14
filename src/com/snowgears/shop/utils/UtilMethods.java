@@ -1,9 +1,9 @@
 package com.snowgears.shop.utils;
 
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -122,5 +122,22 @@ public class UtilMethods {
         nonIntrusiveMaterials.remove(Material.PORTAL);
 
         return (nonIntrusiveMaterials.contains(material));
+    }
+
+    public static BlockFace getDirectionOfChest(Block block){
+        byte rawDirectionData = block.getState().getData().getData();
+
+        switch (rawDirectionData){
+            case 2:
+                return BlockFace.NORTH;
+            case 5:
+                return BlockFace.EAST;
+            case 3:
+                return BlockFace.SOUTH;
+            case 4:
+                return BlockFace.WEST;
+            default:
+                return BlockFace.NORTH;
+        }
     }
 }

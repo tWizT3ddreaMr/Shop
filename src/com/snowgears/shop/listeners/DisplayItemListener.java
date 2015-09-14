@@ -29,9 +29,6 @@ public class DisplayItemListener implements Listener {
 
     public DisplayItemListener(Shop instance) {
         plugin = instance;
-
-        //TODO replace this if Integer.MAX_VALUE still doesnt work
-     //   registerRefreshItemTask();
     }
 
     @EventHandler
@@ -97,18 +94,6 @@ public class DisplayItemListener implements Listener {
         if (displayItems.get(i.getUniqueId()) != null) {
             displayItems.remove(i.getUniqueId());
         }
-    }
-
-    //need to have a 20 minute repeating task as Short.MAX_VALUE expires after 27 minutes
-    private void registerRefreshItemTask() {
-        plugin.getShopHandler().refreshShopItems();
-
-        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-            public void run() {
-                plugin.getShopHandler().refreshShopItems();
-            }
-            //20 minutes
-        }, 15000L, 15000L);
     }
 
     public boolean containsItem(Entity entity) {

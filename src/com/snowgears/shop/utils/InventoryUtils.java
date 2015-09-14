@@ -1,7 +1,10 @@
 package com.snowgears.shop.utils;
 
 
+import com.snowgears.shop.Shop;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,7 +15,7 @@ public class InventoryUtils {
 
     //removes itemstack from inventory
     //returns the amount of items it could not remove
-    public static int removeItem(Inventory inventory, ItemStack itemStack) {
+    public static int removeItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
         if (itemStack.getAmount() <= 0)
             return 0;
         ItemStack[] contents = inventory.getContents();
@@ -37,12 +40,15 @@ public class InventoryUtils {
             }
         }
         inventory.setContents(contents);
+        if(inventory.getType() == InventoryType.ENDER_CHEST){
+            Shop.getPlugin().getEnderChestHandler().updateInventory(inventoryOwner, inventory);
+        }
         return amount;
     }
 
     //takes an ItemStack and splits it up into multiple ItemStacks with correct stack sizes
     //then adds those items to the given inventory
-    public static int addItem(Inventory inventory, ItemStack itemStack) {
+    public static int addItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
         if (itemStack.getAmount() <= 0)
             return 0;
         ArrayList<ItemStack> itemStacksAdding = new ArrayList<ItemStack>();
@@ -65,6 +71,9 @@ public class InventoryUtils {
         for (ItemStack addItem : itemStacksAdding) {
             HashMap<Integer, ItemStack> noAdd = inventory.addItem(addItem);
             amount += noAdd.size();
+        }
+        if(inventory.getType() == InventoryType.ENDER_CHEST){
+            Shop.getPlugin().getEnderChestHandler().updateInventory(inventoryOwner, inventory);
         }
         return amount;
     }

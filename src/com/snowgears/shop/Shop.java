@@ -4,10 +4,8 @@ import com.snowgears.shop.listeners.*;
 import com.snowgears.shop.utils.Metrics;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
-import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,9 +21,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 public class Shop extends JavaPlugin {
@@ -40,6 +35,7 @@ public class Shop extends JavaPlugin {
     private ClearLaggListener clearLaggListener;
     private ShopHandler shopHandler;
     private ShopMessage shopMessage;
+    private EnderChestHandler enderChestHandler;
     private boolean usePerms = false;
     private boolean useVault = false;
     private ItemStack itemCurrency = null;
@@ -64,6 +60,7 @@ public class Shop extends JavaPlugin {
         config = YamlConfiguration.loadConfiguration(configFile);
 
         shopHandler = new ShopHandler(this);
+        enderChestHandler = new EnderChestHandler(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayItemListener(this);
 
@@ -149,14 +146,7 @@ public class Shop extends JavaPlugin {
             }
 //            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
 //                Player player = (Player)sender;
-//                System.out.println("Player UUID: "+player.getUniqueId().toString());
-//                for(Entity entity : player.getNearbyEntities(1,1,1)){
-//                    if(entity.getType() == EntityType.DROPPED_ITEM){
-//                        Item item = (Item)entity;
-//                        System.out.println("Item Type: "+item.getItemStack().getType().toString());
-//                        System.out.println("Item Name: "+item.getItemStack().getItemMeta().getDisplayName());
-//                    }
-//                }
+//                player.setItemInHand(new ItemStack(Material.GOLD_ORE, 3));
 //            }
             //USED FOR TESTING
             //this will create 10 shops in a line from the player
@@ -261,6 +251,10 @@ public class Shop extends JavaPlugin {
 
     public ShopHandler getShopHandler() {
         return shopHandler;
+    }
+
+    public EnderChestHandler getEnderChestHandler(){
+        return enderChestHandler;
     }
 
     public boolean usePerms() {

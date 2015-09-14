@@ -16,7 +16,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.InventoryHolder;
@@ -162,8 +165,9 @@ public class MiscListener implements Listener {
                         isAdmin = true;
 
                 //make sure that the sign is in front of the chest
-                org.bukkit.material.Chest chestMaterial = (org.bukkit.material.Chest) chest.getState().getData();
-                if (chestMaterial.getFacing().equals(sign.getFacing()) && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
+             //   DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
+                BlockFace chestFacing = UtilMethods.getDirectionOfChest(chest);
+                if (chestFacing == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
                     chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
                 } else {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
@@ -324,7 +328,7 @@ public class MiscListener implements Listener {
                 } else
                     event.setCancelled(true);
             }
-        } else if (b.getType() == Material.CHEST) {
+        } else if (plugin.getShopHandler().isChest(b)) {
 
             ShopObject shop = plugin.getShopHandler().getShopByChest(b);
             if (shop != null) {
@@ -342,6 +346,9 @@ public class MiscListener implements Listener {
             }
             //may be a double chest
             else {
+                if(!(b.getState() instanceof org.bukkit.material.Chest))
+                    return;
+
                 Chest chest = (Chest) b.getState();
                 InventoryHolder ih = chest.getInventory().getHolder();
 
@@ -397,7 +404,7 @@ public class MiscListener implements Listener {
         Block b = event.getBlockPlaced();
         Player player = event.getPlayer();
 
-        if (b.getType() == Material.CHEST) {
+        if (plugin.getShopHandler().isChest(b)) {
             ArrayList<BlockFace> doubleChestFaces = new ArrayList<BlockFace>();
             doubleChestFaces.add(BlockFace.NORTH);
             doubleChestFaces.add(BlockFace.EAST);
@@ -406,7 +413,9 @@ public class MiscListener implements Listener {
 
             //find out if the player placed a chest next to an already active shop
             ShopObject shop = plugin.getShopHandler().getShopNearBlock(b);
-            if (shop == null)
+            if (shop == null || (b.getType() != shop.getChestLocation().getBlock().getType()))
+                return;
+            else if(b.getType() == Material.ENDER_CHEST)
                 return;
 
             Block shopChestBlock = shop.getChestLocation().getBlock();
@@ -417,10 +426,11 @@ public class MiscListener implements Listener {
                 return;
             }
 
-            org.bukkit.material.Chest chest = (org.bukkit.material.Chest) b.getState().getData();
+         //   DirectionalContainer chest = (DirectionalContainer) b.getState().getData();
+            BlockFace chestFacing = UtilMethods.getDirectionOfChest(b);
 
             //prevent placing the chest next to the shop but facing the opposite direction (changing its direction)
-            if(chest.getFacing().equals(shop.getFacing().getOppositeFace())){
+            if(chestFacing == shop.getFacing().getOppositeFace()){
                 event.setCancelled(true);
                 return;
             }

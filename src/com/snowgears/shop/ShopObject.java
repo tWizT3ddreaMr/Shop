@@ -65,6 +65,9 @@ public class ShopObject {
     }
 
     public Inventory getInventory() {
+        if(chestLocation.getBlock().getType() == Material.ENDER_CHEST) {
+            return Shop.getPlugin().getEnderChestHandler().getInventory(this.getOwnerPlayer());
+        }
         return ((Chest) chestLocation.getBlock().getState()).getInventory();
     }
 
@@ -166,7 +169,7 @@ public class ShopObject {
 
                 signBlock.update(true);
             }
-        }, 4L);
+        }, 2L);
     }
 
     public void delete() {
