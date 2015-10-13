@@ -16,6 +16,8 @@ public class InventoryUtils {
     //removes itemstack from inventory
     //returns the amount of items it could not remove
     public static int removeItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
+        if(inventory == null)
+            return itemStack.getAmount();
         if (itemStack.getAmount() <= 0)
             return 0;
         ItemStack[] contents = inventory.getContents();
@@ -49,6 +51,8 @@ public class InventoryUtils {
     //takes an ItemStack and splits it up into multiple ItemStacks with correct stack sizes
     //then adds those items to the given inventory
     public static int addItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
+        if(inventory == null)
+            return itemStack.getAmount();
         if (itemStack.getAmount() <= 0)
             return 0;
         ArrayList<ItemStack> itemStacksAdding = new ArrayList<ItemStack>();

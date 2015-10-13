@@ -17,6 +17,8 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.inventory.Inventory;
 
 import java.util.Iterator;
 
@@ -123,12 +125,31 @@ public class ShopListener implements Listener {
         }
     }
 
+    //===================================================================================//
+    //              ENDER CHEST HANDLING EVENTS
+    //===================================================================================//
+
     @EventHandler
     public void onCloseEnderChest(InventoryCloseEvent event){
         if(event.getPlayer() instanceof Player) {
             Player player = (Player)event.getPlayer();
-            if (event.getInventory().getType() == InventoryType.ENDER_CHEST)
+            if (event.getInventory().getType() == InventoryType.ENDER_CHEST) {
                 plugin.getEnderChestHandler().updateInventory(player, event.getInventory());
+            }
         }
+    }
+
+    @EventHandler
+    public void onLogin(PlayerLoginEvent event){
+        final Player player = event.getPlayer();
+        final Inventory inv = plugin.getEnderChestHandler().getInventory(player);
+
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            public void run() {
+                if(inv != null){
+                    plugin.getEnderChestHandler().updateInventory(player, inv);
+                }
+            }
+        }, 2L);
     }
 }

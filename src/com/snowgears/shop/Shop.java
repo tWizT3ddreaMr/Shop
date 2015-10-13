@@ -49,6 +49,7 @@ public class Shop extends JavaPlugin {
         return plugin;
     }
 
+    @Override
     public void onEnable() {
         plugin = this;
 
@@ -126,6 +127,11 @@ public class Shop extends JavaPlugin {
             } else
                 log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
+    }
+
+    @Override
+    public void onDisable(){
+        enderChestHandler.saveEnderChests();
     }
 
     @Override

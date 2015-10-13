@@ -59,11 +59,20 @@ public class DisplayItemListener implements Listener {
             event.setCancelled(true);
     }
 
-    @EventHandler
+
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void onPickup(PlayerPickupItemEvent event) {
+        boolean goneWrong = false;
         if (displayItems.get(event.getItem().getUniqueId()) != null) {
             event.setCancelled(true);
+            goneWrong = true;
+        }
+        else if(UtilMethods.stringStartsWithUUID(event.getItem().getItemStack().getItemMeta().getDisplayName())) {
+            event.setCancelled(true);
+            goneWrong = true;
+        }
 
+        if(goneWrong){
             //do a hard reset on all shop items
             for (World world : plugin.getServer().getWorlds()) {
                 for (Entity entity : world.getEntities()) {

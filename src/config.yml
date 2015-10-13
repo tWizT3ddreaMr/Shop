@@ -124,15 +124,15 @@ transactionMessages:
 
 transactionIssueMessages:
    SELL:
-      shopNoStock: '&cThis shop is out of funds.'
-      shopNoSpace: '&cThis shop does not have enough space in its inventory for your items.'
-      playerNoStock: '&cYou do not have enough items to sell to this shop.'
-      playerNoSpace: '&cYou do not have enough space in your inventory to accept the payment from this shop.'
-   BUY:
       shopNoStock: '&cThis shop is out of stock.'
       shopNoSpace: '&cThis shop does not have enough space in its inventory to accept your payment.'
       playerNoStock: '&cYou do not have sufficient funds to buy from this shop.'
       playerNoSpace: '&cYou do not have enough space in your inventory to buy from this shop.'
+   BUY:
+      shopNoStock: '&cThis shop is out of funds.'
+      shopNoSpace: '&cThis shop does not have enough space in its inventory for your items.'
+      playerNoStock: '&cYou do not have enough items to sell to this shop.'
+      playerNoSpace: '&cYou do not have enough space in your inventory to accept the payment from this shop.'
    BARTER:
       shopNoStock: '&cThis shop is out of stock.'
       shopNoSpace: '&cThis shop does not have enough space in its inventory to barter with you.'

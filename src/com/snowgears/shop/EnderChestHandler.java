@@ -27,11 +27,14 @@ public class EnderChestHandler {
     public Inventory getInventory(OfflinePlayer player){
         if(enderChestInventories.get(player.getUniqueId()) != null)
             return enderChestInventories.get(player.getUniqueId());
-        return Bukkit.createInventory(null, InventoryType.ENDER_CHEST);
+        return null;
     }
 
     public void updateInventory(OfflinePlayer player, Inventory inv){
         enderChestInventories.put(player.getUniqueId(), inv);
+        if(player.getPlayer() != null) {
+            player.getPlayer().getEnderChest().setContents(inv.getContents());
+        }
     }
 
     public void saveEnderChests() {
@@ -79,25 +82,31 @@ public class EnderChestHandler {
             return;
 
         YamlConfiguration config = YamlConfiguration.loadConfiguration(chestFile);
-        loadShopsFromConfig(config);
+        loadEnderChestsFromConfig(config);
     }
 
-    private void loadShopsFromConfig(YamlConfiguration config) {
+    private void loadEnderChestsFromConfig(YamlConfiguration config) {
 
         if (config.getConfigurationSection("enderchests") == null)
             return;
         Set<String> allChestUUIDs = config.getConfigurationSection("enderchests").getKeys(false);
 
         for (String chestUUID : allChestUUIDs) {
-            ArrayList<ItemStack> contents = new ArrayList<ItemStack>();
-            List<String> contentsList = config.getStringList("enderchests."+chestUUID);
-            for(String itemstackString : contentsList){
-                ItemStack itemStack = config.getItemStack(itemstackString);
-                contents.add(itemStack);
-            }
+            ItemStack[] contents = ((List<ItemStack>) config.get("enderchests."+chestUUID)).toArray(new ItemStack[0]);
             Inventory inv = Bukkit.createInventory(null, InventoryType.ENDER_CHEST);
-            inv.setContents(contents.toArray(new ItemStack[contents.size()]));
+            inv.setContents(contents);
             enderChestInventories.put(UUID.fromString(chestUUID), inv);
         }
     }
+
+//    private void printInventory(Inventory inv){
+//        if(inv == null)
+//            return;
+//        for(ItemStack is : inv.getContents()){
+//            if(is != null){
+//                System.out.println(" - "+is.getType().toString()+", "+is.getAmount());
+//            }
+//        }
+//        System.out.println();
+//    }
 }
