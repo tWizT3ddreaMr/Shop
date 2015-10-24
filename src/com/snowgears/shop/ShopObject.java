@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
 
@@ -128,7 +129,7 @@ public class ShopObject {
     public String getPriceString() {
         if (Shop.getPlugin().useVault())
             //$12.00
-            return Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("#.00").format(price).toString();
+            return Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("0.00").format(price).toString();
         else
             //12 Emerald(s)
             return (int) price + " " + Shop.getPlugin().getItemCurrencyName();
@@ -258,6 +259,11 @@ public class ShopObject {
             for (String s : itemMeta.getLore()) {
                 player.sendMessage(s);
             }
+        }
+
+        if(itemMeta instanceof LeatherArmorMeta) {
+            Color leatherColor = ((LeatherArmorMeta)itemMeta).getColor();
+            player.sendMessage(ChatColor.GRAY+"Color: "+DyeColor.getByColor(leatherColor).name());
         }
 
         Map<Enchantment, Integer> itemEnchantments = item.getEnchantments();

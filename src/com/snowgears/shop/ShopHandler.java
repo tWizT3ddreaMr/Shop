@@ -1,6 +1,7 @@
 package com.snowgears.shop;
 
 import com.snowgears.shop.utils.UtilMethods;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -10,6 +11,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 
@@ -170,6 +172,9 @@ public class ShopHandler {
                 else
                     config.set("shops." + owner + "." + shopNumber + ".item.name", "");
                 config.set("shops." + owner + "." + shopNumber + ".item.data", dataToString(itemStack.getData()));
+                if(itemMeta instanceof LeatherArmorMeta){
+                    config.set("shops." + owner + "." + shopNumber + ".item.color", ((LeatherArmorMeta)itemMeta).getColor().asRGB());
+                }
                 config.set("shops." + owner + "." + shopNumber + ".item.durability", itemStack.getDurability());
                 config.set("shops." + owner + "." + shopNumber + ".item.enchantments", enchantmentsToString(itemStack.getEnchantments()));
                 if (itemMeta.getLore() != null)
@@ -185,6 +190,9 @@ public class ShopHandler {
                     else
                         config.set("shops." + owner + "." + shopNumber + ".itemBarter.name", "");
                     config.set("shops." + owner + "." + shopNumber + ".itemBarter.data", dataToString(barterItemStack.getData()));
+                    if(itemMeta instanceof LeatherArmorMeta){
+                        config.set("shops." + owner + "." + shopNumber + ".item.color", ((LeatherArmorMeta)itemMeta).getColor().asRGB());
+                    }
                     config.set("shops." + owner + "." + shopNumber + ".itemBarter.durability", barterItemStack.getDurability());
                     config.set("shops." + owner + "." + shopNumber + ".itemBarter.enchantments", enchantmentsToString(barterItemStack.getEnchantments()));
                     if (barterItemMeta.getLore() != null)
@@ -252,6 +260,10 @@ public class ShopHandler {
                     short itemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".item.durability"));
                     itemStack.setDurability(itemDurability);
                     ItemMeta itemMeta = itemStack.getItemMeta();
+                    if(itemMeta instanceof LeatherArmorMeta){
+                        if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
+                            ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
+                    }
                     String itemName = config.getString("shops." + shopOwner + "." + shopNumber + ".item.name");
                     if (!itemName.isEmpty())
                         itemMeta.setDisplayName(config.getString("shops." + shopOwner + "." + shopNumber + ".item.name"));
@@ -269,6 +281,10 @@ public class ShopHandler {
                         short barterItemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".itemBarter.durability"));
                         barterItemStack.setDurability(barterItemDurability);
                         ItemMeta barterItemMeta = barterItemStack.getItemMeta();
+                        if(itemMeta instanceof LeatherArmorMeta){
+                            if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
+                                ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
+                        }
                         String barterItemName = config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.name");
                         if (!barterItemName.isEmpty())
                             barterItemMeta.setDisplayName(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.name"));

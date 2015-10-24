@@ -16,6 +16,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -152,7 +153,9 @@ public class Shop extends JavaPlugin {
             }
 //            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
 //                Player player = (Player)sender;
-//                player.setItemInHand(new ItemStack(Material.GOLD_ORE, 3));
+//                if(player.getItemInHand().getItemMeta() instanceof LeatherArmorMeta){
+//                    player.sendMessage(""+((LeatherArmorMeta)player.getItemInHand().getItemMeta()).getColor().asRGB());
+//                }
 //            }
             //USED FOR TESTING
             //this will create 10 shops in a line from the player

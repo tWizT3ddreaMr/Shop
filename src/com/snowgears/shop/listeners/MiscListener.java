@@ -102,26 +102,40 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if (UtilMethods.isNumber(event.getLine(1))) {
+                try {
                     amount = Integer.parseInt(event.getLine(1));
                     if (amount < 1) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line2", null, player));
                         return;
                     }
-                } else {
+                } catch (NumberFormatException e) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "line2", null, player));
                     return;
                 }
 
-                if (UtilMethods.isNumber(event.getLine(2))) {
-                    price = Double.parseDouble(event.getLine(2));
-                    if (price < 1) {
+                if(plugin.useVault()){
+                    try {
+                        price = Double.parseDouble(event.getLine(2));
+                        if (price <= 0) {
+                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
+                            return;
+                        }
+                    } catch (NumberFormatException e){
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                         return;
                     }
-                } else {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
-                    return;
+                }
+                else{
+                    try {
+                        price = Integer.parseInt(event.getLine(2));
+                        if (price < 1) {
+                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
+                            return;
+                        }
+                    } catch (NumberFormatException e){
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
+                        return;
+                    }
                 }
 
                 if (event.getLine(3).toLowerCase().contains("buy"))

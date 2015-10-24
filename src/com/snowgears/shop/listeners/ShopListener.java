@@ -41,8 +41,13 @@ public class ShopListener implements Listener {
                 if (shop == null)
                     return;
 
-                if(shop.getChestLocation().getBlock().getType() == Material.ENDER_CHEST)
+                if(shop.getChestLocation().getBlock().getType() == Material.ENDER_CHEST) {
+                    if(player.isSneaking()){
+                        shop.printItemStats(player);
+                        event.setCancelled(true);
+                    }
                     return;
+                }
 
                 //non-owner is trying to open shop
                 if (!shop.getOwnerName().equals(player.getName())) {
@@ -56,8 +61,14 @@ public class ShopListener implements Listener {
                         //player.sendMessage(ChatColor.RED + "You do not have access to open this shop.");
                     }
                     shop.printItemStats(player);
-                } else if (shop.isAdminShop()) {
+                } else if (shop.isAdminShop() && !player.isSneaking()) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "adminOpen", shop, player));
+                    shop.printItemStats(player);
+                    event.setCancelled(true);
+                }
+                //player is sneaking and clicks own shop
+                else if(player.isSneaking()){
+                    shop.printItemStats(player);
                     event.setCancelled(true);
                 }
             }
