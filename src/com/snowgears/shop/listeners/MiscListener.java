@@ -1,5 +1,6 @@
 package com.snowgears.shop.listeners;
 
+import com.javafx.tools.doclets.internal.toolkit.util.Util;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
@@ -90,7 +91,7 @@ public class MiscListener implements Listener {
                 String buildPermissionNumber;
 
                 if (!player.isOp() && plugin.usePerms() && !player.hasPermission("shop.operator")) {
-                    for (int shops = 0; shops <= numberOfShops; shops++) {
+                    for (int shops = 100; shops >= numberOfShops; shops--) {
                         buildPermissionNumber = (new StringBuilder("shop.buildlimit.")).append(shops).toString();
 
                         if (player.hasPermission(buildPermissionNumber)) {
@@ -103,7 +104,8 @@ public class MiscListener implements Listener {
                 }
 
                 try {
-                    amount = Integer.parseInt(event.getLine(1));
+                    String line2 = UtilMethods.cleanNumberText(event.getLine(1));
+                    amount = Integer.parseInt(line2);
                     if (amount < 1) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line2", null, player));
                         return;
@@ -115,7 +117,8 @@ public class MiscListener implements Listener {
 
                 if(plugin.useVault()){
                     try {
-                        price = Double.parseDouble(event.getLine(2));
+                        String line3 = UtilMethods.cleanNumberText(event.getLine(2));
+                        price = Double.parseDouble(line3);
                         if (price <= 0) {
                             player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                             return;
@@ -127,7 +130,8 @@ public class MiscListener implements Listener {
                 }
                 else{
                     try {
-                        price = Integer.parseInt(event.getLine(2));
+                        String line3 = UtilMethods.cleanNumberText(event.getLine(2));
+                        price = Integer.parseInt(line3);
                         if (price < 1) {
                             player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                             return;

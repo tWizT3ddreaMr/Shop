@@ -140,4 +140,15 @@ public class UtilMethods {
                 return BlockFace.NORTH;
         }
     }
+
+    public static String cleanNumberText(String text){
+        String cleaned = "";
+        for(int i=0; i<text.length(); i++) {
+            if(Character.isDigit(text.charAt(i)))
+                cleaned += text.charAt(i);
+            else if(text.charAt(i) == '.')
+                cleaned += text.charAt(i);
+        }
+        return cleaned;
+    }
 }
