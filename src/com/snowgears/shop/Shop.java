@@ -61,6 +61,18 @@ public class Shop extends JavaPlugin {
         }
         config = YamlConfiguration.loadConfiguration(configFile);
 
+        File chatConfigFile = new File(getDataFolder(), "chatConfig.yml");
+        if (!chatConfigFile.exists()) {
+            chatConfigFile.getParentFile().mkdirs();
+            copy(getResource("chatConfig.yml"), chatConfigFile);
+        }
+
+        File signConfigFile = new File(getDataFolder(), "signConfig.yml");
+        if (!signConfigFile.exists()) {
+            signConfigFile.getParentFile().mkdirs();
+            copy(getResource("signConfig.yml"), signConfigFile);
+        }
+
         shopHandler = new ShopHandler(this);
         enderChestHandler = new EnderChestHandler(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
@@ -138,14 +150,16 @@ public class Shop extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-            if (cmd.getName().equalsIgnoreCase("shop")) {
+            if (cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")) {
                 sender.sendMessage("[Shop] Available Commands:");
-                sender.sendMessage("   /shop list");
-                sender.sendMessage("   /shop item refresh");
-                sender.sendMessage("   /shop item hardreset");
+                sender.sendMessage("   /(shop / chestshop) list");
+                sender.sendMessage("   /(shop / chestshop) item refresh");
+                sender.sendMessage("   /(shop / chestshop) item hardreset");
             }
         } else if (args.length == 1) {
-            if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("list")) {
+            if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
+                return true;
+            if (args[0].equalsIgnoreCase("list")) {
                 if (sender instanceof Player)
                     sender.sendMessage("There are " + ChatColor.GOLD + shopHandler.getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
                 else
@@ -187,7 +201,9 @@ public class Shop extends JavaPlugin {
 //				plugin.getShopHandler().saveShops();
 //			}
         } else if (args.length == 2) {
-            if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
+            if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
+                return true;
+            if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
@@ -200,7 +216,7 @@ public class Shop extends JavaPlugin {
                     shopHandler.refreshShopItems();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }
-            } else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("hardreset")) {
+            } else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("hardreset")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
@@ -248,6 +264,10 @@ public class Shop extends JavaPlugin {
         }
         econ = rsp.getProvider();
         return econ != null;
+    }
+
+    public ShopListener getShopListener() {
+        return shopListener;
     }
 
     public DisplayItemListener getDisplayListener() {

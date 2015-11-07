@@ -17,19 +17,44 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.inventory.Inventory;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 
 public class ShopListener implements Listener {
 
     private Shop plugin = Shop.getPlugin();
+    private HashMap<String, Integer> shopBuildLimits = new HashMap<String, Integer>();
 
     public ShopListener(Shop instance) {
         plugin = instance;
     }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event){
+        if(plugin.usePerms()){
+            Player player = event.getPlayer();
+            int buildPermissionNumber = 0;
+            for (int i = 500; i > 0; i--) {
+                if (player.hasPermission("shop.buildlimit." + i)) {
+                    buildPermissionNumber = i;
+                    break;
+                }
+            }
+            shopBuildLimits.put(player.getName(), buildPermissionNumber);
+        }
+    }
+
+    public int getBuildLimit(Player player){
+        if(shopBuildLimits.get(player.getName()) != null)
+            return shopBuildLimits.get(player.getName());
+        return 0;
+    }
+
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onShopOpen(PlayerInteractEvent event) {

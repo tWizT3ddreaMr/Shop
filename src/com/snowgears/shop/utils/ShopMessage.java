@@ -17,15 +17,24 @@ public class ShopMessage {
 
     private static HashMap<String, String> messageMap = new HashMap<String, String>();
     private static HashMap<String, String[]> shopSignTextMap = new HashMap<String, String[]>();
-    private static YamlConfiguration config;
+    private static HashMap<String, String> creationWords = new HashMap<String, String>();
+    private static YamlConfiguration chatConfig;
+    private static YamlConfiguration signConfig;
 
     public ShopMessage(Shop plugin) {
 
-        File configFile = new File(plugin.getDataFolder(), "config.yml");
-        config = YamlConfiguration.loadConfiguration(configFile);
+        File chatConfigFile = new File(plugin.getDataFolder(), "chatConfig.yml");
+        chatConfig = YamlConfiguration.loadConfiguration(chatConfigFile);
+        File signConfigFile = new File(plugin.getDataFolder(), "signConfig.yml");
+        signConfig = YamlConfiguration.loadConfiguration(signConfigFile);
 
         loadMessagesFromConfig();
         loadSignTextFromConfig();
+        loadCreationWords();
+    }
+
+    public static String getCreationWord(String type){
+        return creationWords.get(type);
     }
 
     public static String getMessage(String key, String subKey, ShopObject shop, Player player) {
@@ -62,10 +71,12 @@ public class ShopMessage {
         if(shop != null) {
             unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
-            unformattedMessage = unformattedMessage.replace("[shop type]", "" + shop.getType().toString());
+            unformattedMessage = unformattedMessage.replace("[shop type]", "" + ShopMessage.getCreationWord(shop.getType().toString().toUpperCase())); //sub in user's word for SELL,BUY,BARTER
         }
-        if(player != null)
+        if(player != null) {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
+            unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
+        }
         unformattedMessage = unformattedMessage.replace("[server name]", "" + Bukkit.getServer().getServerName());
 
         unformattedMessage = ChatColor.translateAlternateColorCodes('&', unformattedMessage);
@@ -121,50 +132,50 @@ public class ShopMessage {
     private static void loadMessagesFromConfig() {
 
         for (ShopType type : ShopType.values()) {
-            messageMap.put(type.toString() + "_user", config.getString("transactionMessages." + type.toString().toUpperCase() + ".user"));
-            messageMap.put(type.toString() + "_owner", config.getString("transactionMessages." + type.toString().toUpperCase() + ".owner"));
+            messageMap.put(type.toString() + "_user", chatConfig.getString("transaction." + type.toString().toUpperCase() + ".user"));
+            messageMap.put(type.toString() + "_owner", chatConfig.getString("transaction." + type.toString().toUpperCase() + ".owner"));
 
-            messageMap.put(type.toString() + "_create", config.getString("interactionMessages." + type.toString().toUpperCase() + ".create"));
-            messageMap.put(type.toString() + "_destroy", config.getString("interactionMessages." + type.toString().toUpperCase() + ".destroy"));
-            messageMap.put(type.toString() + "_opDestroy", config.getString("interactionMessages." + type.toString().toUpperCase() + ".opDestroy"));
-            messageMap.put(type.toString() + "_opOpen", config.getString("interactionMessages." + type.toString().toUpperCase() + ".opOpen"));
+            messageMap.put(type.toString() + "_create", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".create"));
+            messageMap.put(type.toString() + "_destroy", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".destroy"));
+            messageMap.put(type.toString() + "_opDestroy", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".opDestroy"));
+            messageMap.put(type.toString() + "_opOpen", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".opOpen"));
 
-            messageMap.put(type.toString() + "_shopNoStock", config.getString("transactionIssueMessages." + type.toString().toUpperCase() + ".shopNoStock"));
-            messageMap.put(type.toString() + "_shopNoSpace", config.getString("transactionIssueMessages." + type.toString().toUpperCase() + ".shopNoSpace"));
-            messageMap.put(type.toString() + "_playerNoStock", config.getString("transactionIssueMessages." + type.toString().toUpperCase() + ".playerNoStock"));
-            messageMap.put(type.toString() + "_playerNoSpace", config.getString("transactionIssueMessages." + type.toString().toUpperCase() + ".playerNoSpace"));
+            messageMap.put(type.toString() + "_shopNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".shopNoStock"));
+            messageMap.put(type.toString() + "_shopNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".shopNoSpace"));
+            messageMap.put(type.toString() + "_playerNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoStock"));
+            messageMap.put(type.toString() + "_playerNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoSpace"));
         }
 
-        messageMap.put("permission_use", config.getString("permissionMessages.use"));
-        messageMap.put("permission_create", config.getString("permissionMessages.create"));
-        messageMap.put("permission_destroy", config.getString("permissionMessages.destroy"));
-        messageMap.put("permission_buildLimit", config.getString("permissionMessages.buildLimit"));
+        messageMap.put("permission_use", chatConfig.getString("permission.use"));
+        messageMap.put("permission_create", chatConfig.getString("permission.create"));
+        messageMap.put("permission_destroy", chatConfig.getString("permission.destroy"));
+        messageMap.put("permission_buildLimit", chatConfig.getString("permission.buildLimit"));
 
-        messageMap.put("interactionIssue_line2", config.getString("interactionIssueMessages.createLine2"));
-        messageMap.put("interactionIssue_line3", config.getString("interactionIssueMessages.createLine3"));
-        messageMap.put("interactionIssue_noItem", config.getString("interactionIssueMessages.createNoItem"));
-        messageMap.put("interactionIssue_direction", config.getString("interactionIssueMessages.createDirection"));
-        messageMap.put("interactionIssue_sameItem", config.getString("interactionIssueMessages.createSameItem"));
-        messageMap.put("interactionIssue_displayRoom", config.getString("interactionIssueMessages.createDisplayRoom"));
-        messageMap.put("interactionIssue_initialize", config.getString("interactionIssueMessages.initializeOtherShop"));
-        messageMap.put("interactionIssue_destroyChest", config.getString("interactionIssueMessages.destroyChest"));
-        messageMap.put("interactionIssue_useOwnShop", config.getString("interactionIssueMessages.useOwnShop"));
-        messageMap.put("interactionIssue_adminOpen", config.getString("interactionIssueMessages.adminOpen"));
+        messageMap.put("interactionIssue_line2", chatConfig.getString("interaction_issue.createLine2"));
+        messageMap.put("interactionIssue_line3", chatConfig.getString("interaction_issue.createLine3"));
+        messageMap.put("interactionIssue_noItem", chatConfig.getString("interaction_issue.createNoItem"));
+        messageMap.put("interactionIssue_direction", chatConfig.getString("interaction_issue.createDirection"));
+        messageMap.put("interactionIssue_sameItem", chatConfig.getString("interaction_issue.createSameItem"));
+        messageMap.put("interactionIssue_displayRoom", chatConfig.getString("interaction_issue.createDisplayRoom"));
+        messageMap.put("interactionIssue_initialize", chatConfig.getString("interaction_issue.initializeOtherShop"));
+        messageMap.put("interactionIssue_destroyChest", chatConfig.getString("interaction_issue.destroyChest"));
+        messageMap.put("interactionIssue_useOwnShop", chatConfig.getString("interaction_issue.useOwnShop"));
+        messageMap.put("interactionIssue_adminOpen", chatConfig.getString("interaction_issue.adminOpen"));
 
 
     }
 
     private void loadSignTextFromConfig() {
-        Set<String> allTypes = config.getConfigurationSection("signs").getKeys(false);
+        Set<String> allTypes = signConfig.getConfigurationSection("sign_text").getKeys(false);
         for (String typeString : allTypes) {
             ShopType type = ShopType.valueOf(typeString);
 
             String[] normalLines = new String[4];
-            Set<String> normalLineNumbers = config.getConfigurationSection("signs."+typeString+".normal").getKeys(false);
+            Set<String> normalLineNumbers = signConfig.getConfigurationSection("sign_text."+typeString+".normal").getKeys(false);
 
             int i = 0;
             for(String number : normalLineNumbers){
-                String message = config.getString("signs." + typeString + ".normal." + number);
+                String message = signConfig.getString("sign_text." + typeString + ".normal." + number);
                 if(message == null)
                     normalLines[i] = "";
                 else
@@ -175,11 +186,11 @@ public class ShopMessage {
             this.shopSignTextMap.put(type.toString()+"_normal", normalLines);
 
             String[] adminLines = new String[4];
-            Set<String> adminLineNumbers = config.getConfigurationSection("signs."+typeString+".admin").getKeys(false);
+            Set<String> adminLineNumbers = signConfig.getConfigurationSection("sign_text."+typeString+".admin").getKeys(false);
 
             i = 0;
             for(String number : adminLineNumbers){
-                String message = config.getString("signs."+typeString+".admin."+number);
+                String message = signConfig.getString("sign_text."+typeString+".admin."+number);
                 if(message == null)
                     adminLines[i] = "";
                 else
@@ -189,5 +200,37 @@ public class ShopMessage {
 
             this.shopSignTextMap.put(type.toString()+"_admin", adminLines);
         }
+    }
+
+    private void loadCreationWords(){
+        String shopString = signConfig.getString("sign_creation.SHOP");
+        if(shopString != null)
+            creationWords.put("SHOP", shopString.toLowerCase());
+        else
+            creationWords.put("SHOP", "[shop]");
+
+        String sellString = signConfig.getString("sign_creation.SELL");
+        if(sellString != null)
+            creationWords.put("SELL", sellString.toLowerCase());
+        else
+            creationWords.put("SELL", "sell");
+
+        String buyString = signConfig.getString("sign_creation.BUY");
+        if(buyString != null)
+            creationWords.put("BUY", buyString.toLowerCase());
+        else
+            creationWords.put("BUY", "buy");
+
+        String barterString = signConfig.getString("sign_creation.BARTER");
+        if(barterString != null)
+            creationWords.put("BARTER", barterString.toLowerCase());
+        else
+            creationWords.put("BARTER", "barter");
+
+        String adminString = signConfig.getString("sign_creation.ADMIN");
+        if(adminString != null)
+            creationWords.put("ADMIN", adminString.toLowerCase());
+        else
+            creationWords.put("ADMIN", "admin");
     }
 }

@@ -1,0 +1,73 @@
+# THIS FILE IS USED TO CONFIGURE SHOP SIGNS #
+# ================================================================== #
+# &b : AQUA
+# &0 : BLACK
+# &9 : BLUE
+# &l : BOLD
+# &3 : DARK_AQUA
+# &1 : DARK_BLUE
+# &8 : DARK_GRAY
+# &2 : DARK_GREEN
+# &5 : DARK_PURPLE
+# &4 : DARK_RED
+# &6 : GOLD
+# &7 : GRAY
+# &a : GREEN
+# &o : ITALIC
+# &d : LIGHT_PURPLE
+# &k : MAGIC
+# &c : RED
+# &r : RESET
+# &m : STRIKETHROUGH
+# &n : UNDERLINE
+# &f : WHITE
+# &e : YELLOW
+
+# [amount] : The amount of items the shop is selling/buying/bartering #
+# [price] : The price of the items the shop is selling (adjusted to match virtual or physical currency) #
+# [owner] : The name of the shop owner #
+# [server name] : The name of the server #
+
+
+sign_creation:
+   SHOP: 'shop'
+   SELL: 'sell'
+   BUY: 'buy'
+   BARTER: 'barter'
+   ADMIN: 'admin'
+
+
+sign_text:
+   SELL:
+      normal:
+         1: '&l[shop]'
+         2: 'Selling; &l[amount]'
+         3: '&a[price]'
+         4: '[owner]'
+      admin:
+         1: '&l[shop]'
+         2: 'Selling; &l[amount]'
+         3: '&a[price]'
+         4: '&d[server name]'
+   BUY:
+      normal:
+         1: '&l[shop]'
+         2: 'Buying; &l[amount]'
+         3: '&a[price]'
+         4: '[owner]'
+      admin:
+         1: '&l[shop]'
+         2: 'Selling; &l[amount]'
+         3: '&a[price]'
+         4: '&d[server name]'
+   BARTER:
+      normal:
+         1: '&l[shop]'
+         2: 'Bartering;'
+         3: '&a[price]   for   [amount]'
+         4: '[owner]'
+      admin:
+         1: '&l[shop]'
+         2: 'Selling; &l[amount]'
+         3: '&a[price]'
+         4: '&d[server name]'

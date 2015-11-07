@@ -25,8 +25,11 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 
 public class MiscListener implements Listener {
@@ -82,24 +85,21 @@ public class MiscListener implements Listener {
 
         double price;
         int amount;
-        ShopType type = ShopType.SELL;
+        ShopType type;
         if (plugin.getShopHandler().isChest(chest)) {
             final Sign signBlock = (Sign) b.getState();
-            if (event.getLine(0).equalsIgnoreCase("[shop]")) {
+            if (event.getLine(0).contains(ShopMessage.getCreationWord("SHOP"))) {
 
                 int numberOfShops = plugin.getShopHandler().getNumberOfShops(player);
-                String buildPermissionNumber;
+                int buildPermissionNumber = plugin.getShopListener().getBuildLimit(player);
 
                 if (!player.isOp() && plugin.usePerms() && !player.hasPermission("shop.operator")) {
-                    for (int shops = 100; shops >= numberOfShops; shops--) {
-                        buildPermissionNumber = (new StringBuilder("shop.buildlimit.")).append(shops).toString();
-
-                        if (player.hasPermission(buildPermissionNumber)) {
-                            event.setCancelled(true);
-                            ShopObject tempShop = new ShopObject(null, player.getUniqueId(), 0, 0, false, type);
-                            player.sendMessage(ShopMessage.getMessage("permission", "buildLimit", tempShop, player));
-                            return;
-                        }
+                    if (numberOfShops >= buildPermissionNumber) {
+                        event.setCancelled(true);
+                        ShopObject tempShop = new ShopObject(null, player.getUniqueId(), 0, 0, false, ShopType.SELL);
+                        player.sendMessage(ShopMessage.getMessage("permission", "buildLimit", tempShop, player));
+                        tempShop = null;
+                        return;
                     }
                 }
 
@@ -142,10 +142,12 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if (event.getLine(3).toLowerCase().contains("buy"))
+                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BUY")))
                     type = ShopType.BUY;
-                else if (event.getLine(3).toLowerCase().contains("bar"))
+                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BARTER")))
                     type = ShopType.BARTER;
+                else
+                    type = ShopType.SELL;
 
                 String playerMessage = null;
                 ShopObject tempShop = new ShopObject(null, player.getUniqueId(), 0, 0, false, type);
@@ -178,9 +180,10 @@ public class MiscListener implements Listener {
 
 
                 boolean isAdmin = false;
-                if (event.getLine(3).toLowerCase().contains("admin"))
+                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("ADMIN"))) {
                     if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))
                         isAdmin = true;
+                }
 
                 //make sure that the sign is in front of the chest
              //   DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
