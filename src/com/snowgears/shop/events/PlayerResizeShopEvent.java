@@ -2,7 +2,6 @@ package com.snowgears.shop.events;
 
 import com.snowgears.shop.ShopObject;
 import org.bukkit.Location;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

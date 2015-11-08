@@ -1,6 +1,5 @@
 package com.snowgears.shop.listeners;
 
-import com.javafx.tools.doclets.internal.toolkit.util.Util;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
@@ -25,11 +24,8 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
 
 
 public class MiscListener implements Listener {

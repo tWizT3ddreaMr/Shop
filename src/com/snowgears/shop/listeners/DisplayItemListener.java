@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -85,6 +86,14 @@ public class DisplayItemListener implements Listener {
                 }
             }
             plugin.getShopHandler().refreshShopItems();
+        }
+    }
+
+    //prevent hoppers from grabbing display items
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onInventoryMoveItem(InventoryPickupItemEvent event) {
+        if(UtilMethods.stringStartsWithUUID(event.getItem().getItemStack().getItemMeta().getDisplayName())){
+            event.setCancelled(true);
         }
     }
 
