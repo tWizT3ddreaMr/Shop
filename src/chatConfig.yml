@@ -77,6 +77,8 @@ interaction:
       destroy: '&7You have destroyed your bartering shop.'
       opDestroy: '&7You have destroyed a bartering shop owned by [owner].'
       opOpen: '&7You are opening a bartering shop owned by [owner].'
+   item_info:
+      1:
 
 interaction_issue:
    createLine2: '&cThe amount (line 2) needs to be a positive number.'

@@ -10,11 +10,14 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -166,9 +169,12 @@ public class Shop extends JavaPlugin {
             }
 //            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
 //                Player player = (Player)sender;
-//                if(player.getItemInHand().getItemMeta() instanceof LeatherArmorMeta){
-//                    player.sendMessage(""+((LeatherArmorMeta)player.getItemInHand().getItemMeta()).getColor().asRGB());
+//                ItemMeta itemMeta = player.getItemInHand().getItemMeta();
+//                EnchantmentStorageMeta meta = (EnchantmentStorageMeta)itemMeta;
+//                for(Enchantment e : meta.getStoredEnchants().keySet()){
+//                    player.sendMessage(e.toString());
 //                }
+//
 //            }
             //USED FOR TESTING
             //this will create 10 shops in a line from the player

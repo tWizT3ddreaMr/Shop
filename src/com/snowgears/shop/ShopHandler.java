@@ -166,39 +166,13 @@ public class ShopHandler {
                 config.set("shops." + owner + "." + shopNumber + ".type", type);
 
                 ItemStack itemStack = s.getItemStack();
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                if (itemMeta.getDisplayName() != null)
-                    config.set("shops." + owner + "." + shopNumber + ".item.name", itemMeta.getDisplayName());
-                else
-                    config.set("shops." + owner + "." + shopNumber + ".item.name", "");
-                config.set("shops." + owner + "." + shopNumber + ".item.data", dataToString(itemStack.getData()));
-                if(itemMeta instanceof LeatherArmorMeta){
-                    config.set("shops." + owner + "." + shopNumber + ".item.color", ((LeatherArmorMeta)itemMeta).getColor().asRGB());
-                }
-                config.set("shops." + owner + "." + shopNumber + ".item.durability", itemStack.getDurability());
-                config.set("shops." + owner + "." + shopNumber + ".item.enchantments", enchantmentsToString(itemStack.getEnchantments()));
-                if (itemMeta.getLore() != null)
-                    config.set("shops." + owner + "." + shopNumber + ".item.lore", itemMeta.getLore().toString());
-                else
-                    config.set("shops." + owner + "." + shopNumber + ".item.lore", "[]");
+                itemStack.setAmount(1);
+                config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
 
                 if (s.getType() == ShopType.BARTER) {
                     ItemStack barterItemStack = s.getBarterItemStack();
-                    ItemMeta barterItemMeta = barterItemStack.getItemMeta();
-                    if (barterItemMeta.getDisplayName() != null)
-                        config.set("shops." + owner + "." + shopNumber + ".itemBarter.name", barterItemMeta.getDisplayName());
-                    else
-                        config.set("shops." + owner + "." + shopNumber + ".itemBarter.name", "");
-                    config.set("shops." + owner + "." + shopNumber + ".itemBarter.data", dataToString(barterItemStack.getData()));
-                    if(itemMeta instanceof LeatherArmorMeta){
-                        config.set("shops." + owner + "." + shopNumber + ".item.color", ((LeatherArmorMeta)itemMeta).getColor().asRGB());
-                    }
-                    config.set("shops." + owner + "." + shopNumber + ".itemBarter.durability", barterItemStack.getDurability());
-                    config.set("shops." + owner + "." + shopNumber + ".itemBarter.enchantments", enchantmentsToString(barterItemStack.getEnchantments()));
-                    if (barterItemMeta.getLore() != null)
-                        config.set("shops." + owner + "." + shopNumber + ".itemBarter.lore", barterItemMeta.getLore().toString());
-                    else
-                        config.set("shops." + owner + "." + shopNumber + ".itemBarter.lore", "[]");
+                    barterItemStack.setAmount(1);
+                    config.set("shops." + owner + "." + shopNumber + ".itemBarter", barterItemStack);
                 }
 
                 shopNumber++;
@@ -244,7 +218,7 @@ public class ShopHandler {
                 Block b = signLoc.getBlock();
                 if (b.getType() == Material.WALL_SIGN) {
                     org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                    Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                    //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
                     UUID owner = uidFromString(shopOwner);
                     double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
                     int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
@@ -254,51 +228,13 @@ public class ShopHandler {
                         isAdmin = true;
                     ShopType shopType = typeFromString(type);
 
-                    MaterialData itemData = dataFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.data"));
-                    ItemStack itemStack = new ItemStack(itemData.getItemType());
-                    itemStack.setData(itemData);
-                    short itemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".item.durability"));
-                    itemStack.setDurability(itemDurability);
-                    ItemMeta itemMeta = itemStack.getItemMeta();
-                    if(itemMeta instanceof LeatherArmorMeta){
-                        if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
-                            ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
-                    }
-                    String itemName = config.getString("shops." + shopOwner + "." + shopNumber + ".item.name");
-                    if (!itemName.isEmpty())
-                        itemMeta.setDisplayName(config.getString("shops." + shopOwner + "." + shopNumber + ".item.name"));
-                    List<String> itemLore = loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.lore"));
-                    if (itemLore.size() > 1)
-                        itemMeta.setLore(loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.lore")));
-                    itemStack.setItemMeta(itemMeta);
-                    itemStack.addUnsafeEnchantments(enchantmentsFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.enchantments")));
-
-                    ItemStack barterItemStack = null;
-                    if (shopType == ShopType.BARTER) {
-                        MaterialData barterItemData = dataFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.data"));
-                        barterItemStack = new ItemStack(barterItemData.getItemType());
-                        barterItemStack.setData(barterItemData);
-                        short barterItemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".itemBarter.durability"));
-                        barterItemStack.setDurability(barterItemDurability);
-                        ItemMeta barterItemMeta = barterItemStack.getItemMeta();
-                        if(itemMeta instanceof LeatherArmorMeta){
-                            if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
-                                ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
-                        }
-                        String barterItemName = config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.name");
-                        if (!barterItemName.isEmpty())
-                            barterItemMeta.setDisplayName(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.name"));
-                        List<String> barterItemLore = loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.lore"));
-                        if (barterItemLore.size() > 1)
-                            barterItemMeta.setLore(loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.lore")));
-                        barterItemStack.setItemMeta(barterItemMeta);
-                        barterItemStack.addUnsafeEnchantments(enchantmentsFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.enchantments")));
-                    }
-
+                    ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
                     ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
                     shop.setItemStack(itemStack);
-                    if (shop.getType() == ShopType.BARTER)
+                    if (shop.getType() == ShopType.BARTER) {
+                        ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
                         shop.setBarterItemStack(barterItemStack);
+                    }
                     shop.updateSign();
                     this.addShop(shop);
                 }
@@ -313,48 +249,6 @@ public class ShopHandler {
     private Location locationFromString(String locString) {
         String[] parts = locString.split(",");
         return new Location(plugin.getServer().getWorld(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
-    }
-
-    private List<String> loreFromString(String loreString) {
-        loreString = loreString.substring(1, loreString.length() - 1); //get rid of []
-        String[] loreParts = loreString.split(", ");
-        return Arrays.asList(loreParts);
-    }
-
-    private String enchantmentsToString(Map<Enchantment, Integer> enchantments) {
-        HashMap<String, Integer> futureString = new HashMap<String, Integer>();
-        for (Entry<Enchantment, Integer> s : enchantments.entrySet()) {
-            futureString.put(s.getKey().getName(), s.getValue());
-        }
-        return futureString.toString();
-    }
-
-    private HashMap<Enchantment, Integer> enchantmentsFromString(String enchantments) {
-        HashMap<Enchantment, Integer> enchants = new HashMap<Enchantment, Integer>();
-        enchantments = enchantments.substring(1, enchantments.length() - 1); //get rid of {}
-        if (enchantments.isEmpty())
-            return enchants;
-        String[] enchantParts = enchantments.split(", ");
-        for (String whole : enchantParts) {
-            String[] pair = whole.split("=");
-            enchants.put(Enchantment.getByName(pair[0]), Integer.parseInt(pair[1]));
-        }
-        return enchants;
-    }
-
-    private String dataToString(MaterialData md) {
-        return md.getItemType().name() + "(" + md.getData() + ")";
-    }
-
-    private MaterialData dataFromString(String dataString) {
-        int index = dataString.indexOf("(");
-//		System.out.println(dataString.substring(0, index));
-//		System.out.println(dataString.substring(index+1, dataString.length()-1));
-        String materialString = dataString.substring(0, index);
-        Material m = Material.getMaterial(materialString);
-        int data = Integer.parseInt(dataString.substring(index + 1, dataString.length() - 1));
-
-        return new MaterialData(m, (byte) data);
     }
 
     private UUID uidFromString(String ownerString) {
