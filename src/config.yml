@@ -22,7 +22,7 @@ vaultCurrencySymbol: $
 # THIS SECTION IS ONLY USED IF VAULT IS NOT BEING USED ON THE SERVER #
 # ================================================================== #
 
-# For item IDs, use this website '' http://minecraft-ids.grahamedgecombe.com '' #
+# For item IDs, use this website:  http://minecraft-ids.grahamedgecombe.com  #
 # For example, if you wanted to use Lapis Lazuli as your currency, put 351;4    #
 # Default is set to Emerald (388;0) #
 itemCurrencyID: 388;0

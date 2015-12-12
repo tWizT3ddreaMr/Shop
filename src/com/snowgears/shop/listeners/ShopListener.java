@@ -39,20 +39,23 @@ public class ShopListener implements Listener {
         if(plugin.usePerms()){
             Player player = event.getPlayer();
             int buildPermissionNumber = 0;
+            boolean foundPerm = false;
             for (int i = 500; i > 0; i--) {
                 if (player.hasPermission("shop.buildlimit." + i)) {
                     buildPermissionNumber = i;
+                    foundPerm = true;
                     break;
                 }
             }
-            shopBuildLimits.put(player.getName(), buildPermissionNumber);
+            if(foundPerm)
+                shopBuildLimits.put(player.getName(), buildPermissionNumber);
         }
     }
 
     public int getBuildLimit(Player player){
         if(shopBuildLimits.get(player.getName()) != null)
             return shopBuildLimits.get(player.getName());
-        return 0;
+        return Integer.MAX_VALUE;
     }
 
 

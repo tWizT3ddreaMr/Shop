@@ -89,7 +89,7 @@ public class MiscListener implements Listener {
                 int numberOfShops = plugin.getShopHandler().getNumberOfShops(player);
                 int buildPermissionNumber = plugin.getShopListener().getBuildLimit(player);
 
-                if (!player.isOp() && plugin.usePerms() && !player.hasPermission("shop.operator")) {
+                if (plugin.usePerms() && !player.isOp() && !player.hasPermission("shop.operator")) {
                     if (numberOfShops >= buildPermissionNumber) {
                         event.setCancelled(true);
                         ShopObject tempShop = new ShopObject(null, player.getUniqueId(), 0, 0, false, ShopType.SELL);

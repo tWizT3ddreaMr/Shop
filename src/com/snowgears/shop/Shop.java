@@ -6,6 +6,7 @@ import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -167,15 +168,13 @@ public class Shop extends JavaPlugin {
                 else
                     sender.sendMessage("[Shop] There are " + shopHandler.getNumberOfShops() + " shops registered on the server.");
             }
-//            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
-//                Player player = (Player)sender;
-//                ItemMeta itemMeta = player.getItemInHand().getItemMeta();
-//                EnchantmentStorageMeta meta = (EnchantmentStorageMeta)itemMeta;
-//                for(Enchantment e : meta.getStoredEnchants().keySet()){
-//                    player.sendMessage(e.toString());
-//                }
-//
-//            }
+            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
+                for(Material mat : Material.values()){
+                    if(!mat.isSolid() && mat.isBlock())
+                        System.out.println("Material."+mat.toString());
+                }
+
+            }
             //USED FOR TESTING
             //this will create 10 shops in a line from the player
 //			else if(args[0].equalsIgnoreCase("create")){
