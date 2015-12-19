@@ -267,16 +267,16 @@ public class ShopObject {
             player.sendMessage("");
         }
 
-        if(!this.isAdminShop) {
-            int stock = this.getStock();
-            String stacks = ""+stock;
-            ChatColor cc = ChatColor.GREEN;
-            if (stock <= 0)
-                cc = ChatColor.RED;
-            if(stock == Integer.MAX_VALUE)
-                stacks = "unlimited";
-            player.sendMessage(ChatColor.GRAY + "There are currently " + cc + stacks + ChatColor.GRAY + " stacks in stock.");
+        int stock = this.getStock();
+        String stacks = ""+stock;
+        ChatColor cc = ChatColor.GREEN;
+        if (stock <= 0)
+            cc = ChatColor.RED;
+        if(stock == Integer.MAX_VALUE || isAdminShop()) {
+            stacks = "unlimited";
+            cc = ChatColor.GREEN;
         }
+        player.sendMessage(ChatColor.GRAY + "There are currently " + cc + stacks + ChatColor.GRAY + " stacks in stock.");
 
         return;
     }
