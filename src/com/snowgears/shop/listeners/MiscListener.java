@@ -99,6 +99,14 @@ public class MiscListener implements Listener {
                     }
                 }
 
+                if(plugin.getWorldBlacklist().contains(b.getLocation().getWorld().getName())){
+                    if (!(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))) {
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "worldBlacklist", null, player));
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
                 try {
                     String line2 = UtilMethods.cleanNumberText(event.getLine(1));
                     amount = Integer.parseInt(line2);

@@ -91,6 +91,7 @@ interaction_issue:
    destroyChest: '&cYou must remove the sign from this shop to break it.'
    useOwnShop: '&7You cannot use your own shop.'
    adminOpen: '&7Admin shops are not able to be opened.'
+   worldBlacklist: '&cShops are not allowed to be created in this world.'
 
 permission:
    use: '&cYou are not authorized to use [shop type]ing shops.'

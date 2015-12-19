@@ -8,11 +8,6 @@ usePermissions: false
 useVault: false
 
 
-# These allow you to charge money to players for creating/destroying their shops #
-creationCost: 0
-destructionCost: 0
-
-
 # THIS SECTION IS ONLY USED IF VAULT IS BEING USED ON THE SERVER #
 # ================================================================== #
 
@@ -35,3 +30,16 @@ itemCurrencyID: 388;0
 # This should match the name of the item you are using for the section above #
 itemCurrencyName: Emerald(s)
 # ================================================================== #
+
+
+
+
+# These allow you to charge money to players for creating/destroying their shops #
+creationCost: 0
+destructionCost: 0
+
+
+# Add the names of worlds that you do not want shops to be able to be created in here #
+worldBlacklist:
+   example_world: true
+   example2_world: true

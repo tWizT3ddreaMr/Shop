@@ -170,7 +170,7 @@ public class ShopMessage {
         messageMap.put("interactionIssue_destroyChest", chatConfig.getString("interaction_issue.destroyChest"));
         messageMap.put("interactionIssue_useOwnShop", chatConfig.getString("interaction_issue.useOwnShop"));
         messageMap.put("interactionIssue_adminOpen", chatConfig.getString("interaction_issue.adminOpen"));
-
+        messageMap.put("interactionIssue_worldBlacklist", chatConfig.getString("interaction_issue.worldBlacklist"));
 
     }
 

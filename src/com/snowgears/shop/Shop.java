@@ -10,21 +10,22 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Shop extends JavaPlugin {
@@ -51,6 +52,7 @@ public class Shop extends JavaPlugin {
     private Economy econ = null;
     private double creationCost;
     private double destructionCost;
+    private ArrayList<String> worldBlackList;
 
     private YamlConfiguration config;
 
@@ -135,6 +137,11 @@ public class Shop extends JavaPlugin {
 
         creationCost = config.getDouble("creationCost");
         destructionCost = config.getDouble("destructionCost");
+
+        worldBlackList = new ArrayList<String>();
+        for(String world : config.getConfigurationSection("worldBlacklist").getKeys(true)){
+            worldBlackList.add(world);
+        }
 
         if (useVault) {
             if (!setupEconomy()) {
@@ -329,6 +336,10 @@ public class Shop extends JavaPlugin {
 
     public double getDestructionCost(){
         return destructionCost;
+    }
+
+    public ArrayList<String> getWorldBlacklist(){
+        return worldBlackList;
     }
 
     private void copy(InputStream in, File file) {
