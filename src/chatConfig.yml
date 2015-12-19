@@ -41,8 +41,8 @@ transaction:
       user: '&7You sold &f[item amount] [item](s) &7to [owner] for &a[price]&7.'
       owner: '&7[user] sold &f[item amount] [item](s) &7to you for &a[price]&7.'
    BARTER:
-      user: '&7You bartered &f[item amount] &7of your &f[item](s) &7for &f[barter item amount] &7of [owner]s &f[barter item](s)&7.'
-      owner: '&7[user] bartered &f[barter item amount] &7of their &f[barter item](s) &7for &f[item amount] &7of your &f[item](s)&7.'
+      user: '&7You bartered &f[barter item amount] &7of your &f[barter item](s) &7for &f[item amount] &7of [owner]s &f[item](s)&7.'
+      owner: '&7[user] bartered &f[item amount] &7of their &f[item](s) &7for &f[barter item amount] &7of your &f[barter item](s)&7.'
 
 transaction_issue:
    SELL:

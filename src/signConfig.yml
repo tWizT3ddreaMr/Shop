@@ -64,10 +64,10 @@ sign_text:
       normal:
          1: '&l[shop]'
          2: 'Bartering;'
-         3: '&a[price]   for   [amount]'
+         3: '&a[amount]   for   [price]'
          4: '[owner]'
       admin:
          1: '&l[shop]'
          2: 'Bartering;'
-         3: '&a[price]   for   [amount]'
+         3: '&a[amount]   for   [price]'
          4: '&d[server name]'

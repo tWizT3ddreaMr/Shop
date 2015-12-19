@@ -84,7 +84,7 @@ public class MiscListener implements Listener {
         ShopType type;
         if (plugin.getShopHandler().isChest(chest)) {
             final Sign signBlock = (Sign) b.getState();
-            if (event.getLine(0).contains(ShopMessage.getCreationWord("SHOP"))) {
+            if (event.getLine(0).toLowerCase().contains(ShopMessage.getCreationWord("SHOP").toLowerCase())) {
 
                 int numberOfShops = plugin.getShopHandler().getNumberOfShops(player);
                 int buildPermissionNumber = plugin.getShopListener().getBuildLimit(player);

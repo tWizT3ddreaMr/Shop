@@ -8,6 +8,7 @@ import com.snowgears.shop.utils.ShopMessage;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -376,7 +377,7 @@ public class ExchangeListener implements Listener {
         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "user", shop, player));
 
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
-        if (owner != null && !shop.isAdminShop())
+        if ((owner != null) && (!shop.isAdminShop()))
             owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "owner", shop, player));
     }
 }
