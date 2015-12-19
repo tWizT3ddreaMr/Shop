@@ -17,6 +17,7 @@ public class ShopMessage {
 
     private static HashMap<String, String> messageMap = new HashMap<String, String>();
     private static HashMap<String, String[]> shopSignTextMap = new HashMap<String, String[]>();
+    private static String freePriceWord;
     private static HashMap<String, String> creationWords = new HashMap<String, String>();
     private static YamlConfiguration chatConfig;
     private static YamlConfiguration signConfig;
@@ -31,10 +32,16 @@ public class ShopMessage {
         loadMessagesFromConfig();
         loadSignTextFromConfig();
         loadCreationWords();
+
+        freePriceWord = signConfig.getString("sign_text.zeroPrice");
     }
 
     public static String getCreationWord(String type){
         return creationWords.get(type);
+    }
+
+    public static String getFreePriceWord(){
+        return freePriceWord;
     }
 
     public static String getMessage(String key, String subKey, ShopObject shop, Player player) {
@@ -170,37 +177,42 @@ public class ShopMessage {
     private void loadSignTextFromConfig() {
         Set<String> allTypes = signConfig.getConfigurationSection("sign_text").getKeys(false);
         for (String typeString : allTypes) {
-            ShopType type = ShopType.valueOf(typeString);
 
-            String[] normalLines = new String[4];
-            Set<String> normalLineNumbers = signConfig.getConfigurationSection("sign_text."+typeString+".normal").getKeys(false);
+            ShopType type = null;
+            try { type = ShopType.valueOf(typeString);}
+            catch (IllegalArgumentException e){}
 
-            int i = 0;
-            for(String number : normalLineNumbers){
-                String message = signConfig.getString("sign_text." + typeString + ".normal." + number);
-                if(message == null)
-                    normalLines[i] = "";
-                else
-                    normalLines[i] = message;
-                i++;
+            if (type != null) {
+                String[] normalLines = new String[4];
+                Set<String> normalLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".normal").getKeys(false);
+
+                int i = 0;
+                for (String number : normalLineNumbers) {
+                    String message = signConfig.getString("sign_text." + typeString + ".normal." + number);
+                    if (message == null)
+                        normalLines[i] = "";
+                    else
+                        normalLines[i] = message;
+                    i++;
+                }
+
+                this.shopSignTextMap.put(type.toString() + "_normal", normalLines);
+
+                String[] adminLines = new String[4];
+                Set<String> adminLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".admin").getKeys(false);
+
+                i = 0;
+                for (String number : adminLineNumbers) {
+                    String message = signConfig.getString("sign_text." + typeString + ".admin." + number);
+                    if (message == null)
+                        adminLines[i] = "";
+                    else
+                        adminLines[i] = message;
+                    i++;
+                }
+
+                this.shopSignTextMap.put(type.toString() + "_admin", adminLines);
             }
-
-            this.shopSignTextMap.put(type.toString()+"_normal", normalLines);
-
-            String[] adminLines = new String[4];
-            Set<String> adminLineNumbers = signConfig.getConfigurationSection("sign_text."+typeString+".admin").getKeys(false);
-
-            i = 0;
-            for(String number : adminLineNumbers){
-                String message = signConfig.getString("sign_text."+typeString+".admin."+number);
-                if(message == null)
-                    adminLines[i] = "";
-                else
-                    adminLines[i] = message;
-                i++;
-            }
-
-            this.shopSignTextMap.put(type.toString()+"_admin", adminLines);
         }
     }
 

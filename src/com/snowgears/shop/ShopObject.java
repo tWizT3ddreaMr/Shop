@@ -1,5 +1,6 @@
 package com.snowgears.shop;
 
+import com.snowgears.shop.utils.EconomyUtils;
 import com.snowgears.shop.utils.InventoryUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
@@ -119,6 +120,21 @@ public class ShopObject {
         this.display.spawn();
     }
 
+    public int getStock(){
+        switch (type){
+            case SELL:
+                return InventoryUtils.getAmount(this.getInventory(), this.getItemStack());
+            case BUY:
+                double funds = EconomyUtils.getFunds(this.getOwnerPlayer(), this.getInventory());
+                if(this.getPrice() == 0)
+                    return Integer.MAX_VALUE;
+                return (int)(funds / this.getPrice());
+            case BARTER:
+                return InventoryUtils.getAmount(this.getInventory(), this.getItemStack());
+        }
+        return 0;
+    }
+
     public Display getDisplay() {
         return display;
     }
@@ -128,6 +144,9 @@ public class ShopObject {
     }
 
     public String getPriceString() {
+        if(price == 0){
+            return ShopMessage.getFreePriceWord();
+        }
         if (Shop.getPlugin().useVault())
             //$12.00
             return Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("0.00").format(price).toString();
@@ -225,33 +244,39 @@ public class ShopObject {
         player.sendMessage("");
 
 
-        double pricePer = this.getPrice() / this.getAmount();
-        String pricePerString;
-        if (Shop.getPlugin().useVault())
-            pricePerString = Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("#.00").format(pricePer).toString();
-        else
-            pricePerString = new DecimalFormat("#.##").format(pricePer).toString() + " " + Shop.getPlugin().getItemCurrencyName();
+        if(price != 0) {
+            double pricePer = this.getPrice() / this.getAmount();
+            String pricePerString;
+            if (Shop.getPlugin().useVault())
+                pricePerString = Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("#.00").format(pricePer).toString();
+            else
+                pricePerString = new DecimalFormat("#.##").format(pricePer).toString() + " " + Shop.getPlugin().getItemCurrencyName();
 
-        if (this.getType() == ShopType.SELL) {
-            player.sendMessage(ChatColor.GREEN + "You can buy " + ChatColor.WHITE + this.getAmount() + ChatColor.GREEN + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s) from this shop for " + ChatColor.WHITE + this.getPriceString() + ".");
-            player.sendMessage(ChatColor.GRAY + "That is " + pricePerString + " per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
-        } else if (this.getType() == ShopType.BUY) {
-            player.sendMessage(ChatColor.GREEN + "You can sell " + ChatColor.WHITE + this.getAmount() + ChatColor.GREEN + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s) to this shop for " + ChatColor.WHITE + this.getPriceString() + ".");
-            player.sendMessage(ChatColor.GRAY + "That is " + pricePerString + " per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
-        } else {
-            String amountPerString = new DecimalFormat("#.##").format(pricePer).toString();
-            player.sendMessage(ChatColor.GREEN + "You can barter " + ChatColor.WHITE + (int) this.getPrice() + ChatColor.GREEN + " of your " + ChatColor.WHITE + "" + barterItem.getType().name().replace("_", " ").toLowerCase() + "(s)"
-                    + ChatColor.GREEN + " to this shop for " + ChatColor.WHITE + this.getAmount() + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s)" + ChatColor.WHITE + ".");
-            player.sendMessage(ChatColor.GRAY + "That is " + amountPerString + " " + barterItem.getType().name().replace("_", " ").toLowerCase() + "(s) per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
+            if (this.getType() == ShopType.SELL) {
+                player.sendMessage(ChatColor.GREEN + "You can buy " + ChatColor.WHITE + this.getAmount() + ChatColor.GREEN + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s) from this shop for " + ChatColor.WHITE + this.getPriceString() + ".");
+                player.sendMessage(ChatColor.GRAY + "That is " + pricePerString + " per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
+            } else if (this.getType() == ShopType.BUY) {
+                player.sendMessage(ChatColor.GREEN + "You can sell " + ChatColor.WHITE + this.getAmount() + ChatColor.GREEN + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s) to this shop for " + ChatColor.WHITE + this.getPriceString() + ".");
+                player.sendMessage(ChatColor.GRAY + "That is " + pricePerString + " per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
+            } else {
+                String amountPerString = new DecimalFormat("#.##").format(pricePer).toString();
+                player.sendMessage(ChatColor.GREEN + "You can barter " + ChatColor.WHITE + (int) this.getPrice() + ChatColor.GREEN + " of your " + ChatColor.WHITE + "" + barterItem.getType().name().replace("_", " ").toLowerCase() + "(s)"
+                        + ChatColor.GREEN + " to this shop for " + ChatColor.WHITE + this.getAmount() + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s)" + ChatColor.WHITE + ".");
+                player.sendMessage(ChatColor.GRAY + "That is " + amountPerString + " " + barterItem.getType().name().replace("_", " ").toLowerCase() + "(s) per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
+            }
+            player.sendMessage("");
         }
-        player.sendMessage("");
 
-        int stock = InventoryUtils.getAmount(this.getInventory(), this.getItemStack());
-        int stacks = stock / this.getAmount();
-        ChatColor cc = ChatColor.GREEN;
-        if(stacks <= 0)
-            cc = ChatColor.RED;
-        player.sendMessage(ChatColor.GRAY+"There are currently "+cc+ stacks +ChatColor.GRAY+" stacks in stock.");
+        if(!this.isAdminShop) {
+            int stock = this.getStock();
+            String stacks = ""+stock;
+            ChatColor cc = ChatColor.GREEN;
+            if (stock <= 0)
+                cc = ChatColor.RED;
+            if(stock == Integer.MAX_VALUE)
+                stacks = "unlimited";
+            player.sendMessage(ChatColor.GRAY + "There are currently " + cc + stacks + ChatColor.GRAY + " stacks in stock.");
+        }
 
         return;
     }

@@ -71,3 +71,4 @@ sign_text:
          2: 'Bartering;'
          3: '&a[amount]   for   [price]'
          4: '&d[server name]'
+   zeroPrice: 'FREE'

@@ -23,6 +23,20 @@ public class EconomyUtils {
         }
     }
 
+    //gets the current funds of the player
+    public static double getFunds(OfflinePlayer player, Inventory inventory){
+        if(Shop.getPlugin().useVault()){
+            double balance = Shop.getPlugin().getEconomy().getBalance(player);
+            return balance;
+        }
+        else{
+            ItemStack currency = Shop.getPlugin().getItemCurrency();
+            currency.setAmount(1);
+            int balance = InventoryUtils.getAmount(inventory, currency);
+            return balance;
+        }
+    }
+
     //removes [amount] of funds from the player
     //return false if the player did not have sufficient funds or if something went wrong
     public static boolean removeFunds(OfflinePlayer player, Inventory inventory, double amount){

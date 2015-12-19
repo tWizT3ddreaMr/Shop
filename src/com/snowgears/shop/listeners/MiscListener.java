@@ -111,14 +111,17 @@ public class MiscListener implements Listener {
                     return;
                 }
 
+                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BUY")))
+                    type = ShopType.BUY;
+                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BARTER")))
+                    type = ShopType.BARTER;
+                else
+                    type = ShopType.SELL;
+
                 if(plugin.useVault()){
                     try {
                         String line3 = UtilMethods.cleanNumberText(event.getLine(2));
                         price = Double.parseDouble(line3);
-                        if (price <= 0) {
-                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
-                            return;
-                        }
                     } catch (NumberFormatException e){
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                         return;
@@ -128,22 +131,17 @@ public class MiscListener implements Listener {
                     try {
                         String line3 = UtilMethods.cleanNumberText(event.getLine(2));
                         price = Integer.parseInt(line3);
-                        if (price < 1) {
-                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
-                            return;
-                        }
                     } catch (NumberFormatException e){
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                         return;
                     }
                 }
-
-                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BUY")))
-                    type = ShopType.BUY;
-                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BARTER")))
-                    type = ShopType.BARTER;
-                else
-                    type = ShopType.SELL;
+                //only allow price to be zero if the type is selling
+                //if (price < 0 || (price == 0 && !(type == ShopType.SELL))) {
+                if (price < 0 || (price == 0 && type == ShopType.BARTER)) {
+                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
+                    return;
+                }
 
                 String playerMessage = null;
                 ShopObject tempShop = new ShopObject(null, player.getUniqueId(), 0, 0, false, type);
