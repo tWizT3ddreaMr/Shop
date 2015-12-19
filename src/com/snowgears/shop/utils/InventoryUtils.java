@@ -81,4 +81,21 @@ public class InventoryUtils {
         }
         return amount;
     }
+
+    //gets the amount of items in inventory
+    public static int getAmount(Inventory inventory, ItemStack itemStack){
+        if(inventory == null)
+            return 0;
+        ItemStack[] contents = inventory.getContents();
+        int amount = 0;
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack is = contents[i];
+            if (is != null) {
+                if (is.isSimilar(itemStack)) {
+                    amount += is.getAmount();
+                }
+            }
+        }
+        return (amount / itemStack.getAmount());
+    }
 }

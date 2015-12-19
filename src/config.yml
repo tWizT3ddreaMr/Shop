@@ -8,6 +8,10 @@ usePermissions: false
 useVault: false
 
 
+# These allow you to charge money to players for creating/destroying their shops #
+creationCost: 0
+destructionCost: 0
+
 
 # THIS SECTION IS ONLY USED IF VAULT IS BEING USED ON THE SERVER #
 # ================================================================== #
@@ -15,7 +19,7 @@ useVault: false
 # This will be the symbol in front of your currency on shop signs #
 # For example, if your server is using 'cents' you would use the cents symbol #
 vaultCurrencySymbol: $
-
+# ================================================================== #
 
 
 
@@ -30,3 +34,4 @@ itemCurrencyID: 388;0
 # This is what your currency will be called on shop signs #
 # This should match the name of the item you are using for the section above #
 itemCurrencyName: Emerald(s)
+# ================================================================== #

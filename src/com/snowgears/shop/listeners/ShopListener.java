@@ -4,6 +4,7 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.events.PlayerCreateShopEvent;
 import com.snowgears.shop.events.PlayerDestroyShopEvent;
+import com.snowgears.shop.utils.EconomyUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -71,7 +72,7 @@ public class ShopListener implements Listener {
 
                 if(shop.getChestLocation().getBlock().getType() == Material.ENDER_CHEST) {
                     if(player.isSneaking()){
-                        shop.printItemStats(player);
+                        shop.printSalesInfo(player);
                         event.setCancelled(true);
                     }
                     return;
@@ -88,15 +89,15 @@ public class ShopListener implements Listener {
                         event.setCancelled(true);
                         //player.sendMessage(ChatColor.RED + "You do not have access to open this shop.");
                     }
-                    shop.printItemStats(player);
+                    shop.printSalesInfo(player);
                 } else if (shop.isAdminShop() && !player.isSneaking()) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "adminOpen", shop, player));
-                    shop.printItemStats(player);
+                    shop.printSalesInfo(player);
                     event.setCancelled(true);
                 }
                 //player is sneaking and clicks own shop
                 else if(player.isSneaking()){
-                    shop.printItemStats(player);
+                    shop.printSalesInfo(player);
                     event.setCancelled(true);
                 }
             }
@@ -119,10 +120,21 @@ public class ShopListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onShopDestroy(PlayerDestroyShopEvent event) {
+        Player player = event.getPlayer();
+
+        //if players must pay to create shops, remove money first
+        double cost = plugin.getDestructionCost();
+        if(cost > 0){
+            boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
+            if(!removed){
+                player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyInsufficientFunds", event.getShop(), player));
+                event.setCancelled(true);
+            }
+        }
+
         if (event.isCancelled()) {
             return;
         }
-        Player player = event.getPlayer();
 
         if (event.getShop().getOwnerName().equals(player.getName())) {
             player.sendMessage(ShopMessage.getMessage(event.getShop().getType().toString(), "destroy", event.getShop(), player));

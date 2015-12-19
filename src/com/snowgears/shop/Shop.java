@@ -31,21 +31,26 @@ public class Shop extends JavaPlugin {
 
     private static final Logger log = Logger.getLogger("Minecraft");
     private static Shop plugin;
+
     private ShopListener shopListener = new ShopListener(this);
     private DisplayItemListener displayListener;
     private ExchangeListener exchangeListener = new ExchangeListener(this);
     private MiscListener miscListener = new MiscListener(this);
     private CreativeSelectionListener creativeSelectionListener;
     private ClearLaggListener clearLaggListener;
+
     private ShopHandler shopHandler;
-    private ShopMessage shopMessage;
     private EnderChestHandler enderChestHandler;
+    private ShopMessage shopMessage;
+
     private boolean usePerms = false;
     private boolean useVault = false;
     private ItemStack itemCurrency = null;
     private String itemCurrencyName = "";
     private String vaultCurrencySymbol = "";
     private Economy econ = null;
+    private double creationCost;
+    private double destructionCost;
 
     private YamlConfiguration config;
 
@@ -54,6 +59,7 @@ public class Shop extends JavaPlugin {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onEnable() {
         plugin = this;
 
@@ -126,6 +132,9 @@ public class Shop extends JavaPlugin {
         itemCurrency.setData(new MaterialData(itemCurrencyId, (byte) itemCurrencyData));
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencySymbol");
+
+        creationCost = config.getDouble("creationCost");
+        destructionCost = config.getDouble("destructionCost");
 
         if (useVault) {
             if (!setupEconomy()) {
@@ -312,6 +321,14 @@ public class Shop extends JavaPlugin {
 
     public Economy getEconomy() {
         return econ;
+    }
+
+    public double getCreationCost(){
+        return creationCost;
+    }
+
+    public double getDestructionCost(){
+        return destructionCost;
     }
 
     private void copy(InputStream in, File file) {

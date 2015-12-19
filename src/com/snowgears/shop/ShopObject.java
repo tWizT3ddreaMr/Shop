@@ -1,5 +1,6 @@
 package com.snowgears.shop;
 
+import com.snowgears.shop.utils.InventoryUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.*;
@@ -205,7 +206,7 @@ public class ShopObject {
             return (item != null);
     }
 
-    public void printItemStats(Player player) {
+    public void printSalesInfo(Player player) {
         player.sendMessage("");
         if (this.getType() == ShopType.SELL) {
             player.sendMessage(ChatColor.GOLD + "Item(s) this shop sells to you:");
@@ -244,6 +245,14 @@ public class ShopObject {
             player.sendMessage(ChatColor.GRAY + "That is " + amountPerString + " " + barterItem.getType().name().replace("_", " ").toLowerCase() + "(s) per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
         }
         player.sendMessage("");
+
+        int stock = InventoryUtils.getAmount(this.getInventory(), this.getItemStack());
+        int stacks = stock / this.getAmount();
+        ChatColor cc = ChatColor.GREEN;
+        if(stacks <= 0)
+            cc = ChatColor.RED;
+        player.sendMessage(ChatColor.GRAY+"There are currently "+cc+ stacks +ChatColor.GRAY+" stacks in stock.");
+
         return;
     }
 

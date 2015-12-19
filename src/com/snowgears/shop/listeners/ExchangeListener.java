@@ -1,3 +1,4 @@
+
 package com.snowgears.shop.listeners;
 
 import com.snowgears.shop.Shop;
@@ -74,11 +75,9 @@ public class ExchangeListener implements Listener {
         }
     }
 
+    //TODO TRY TO REWRITE THIS USING THE EconomyUtils METHODS LATER ON TO CLEAN THIS UP
+
     public boolean playerBuyFromShop(Player player, ShopObject shop) {
-//        if(shop.getInventory() == null){
-//            player.sendMessage(ChatColor.RED+"This shop is currently out of order because the player is offline.");
-//            return;
-//        }
 
         //Server is using a virtual economy
         if (plugin.useVault()) {
@@ -228,7 +227,6 @@ public class ExchangeListener implements Listener {
                     revert.setAmount(revert.getAmount() - shopOverflow);
                     InventoryUtils.removeItem(shop.getInventory(), revert, shop.getOwnerPlayer()); //remove underflow items from shop inventory
                     plugin.getEconomy().depositPlayer(shop.getOwnerPlayer(), shop.getPrice()); //return money to shop owner
-                    //TODO the line underneath this one may need to be commented out. TESTING REQUIRED
                     InventoryUtils.addItem(player.getInventory(), shop.getItemStack(), player); //return items back to seller
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoSpace", shop, player));
                     player.updateInventory();

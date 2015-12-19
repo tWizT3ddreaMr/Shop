@@ -6,6 +6,7 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.events.PlayerCreateShopEvent;
 import com.snowgears.shop.events.PlayerDestroyShopEvent;
 import com.snowgears.shop.events.PlayerResizeShopEvent;
+import com.snowgears.shop.utils.EconomyUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.Bukkit;
@@ -94,7 +95,6 @@ public class MiscListener implements Listener {
                         event.setCancelled(true);
                         ShopObject tempShop = new ShopObject(null, player.getUniqueId(), 0, 0, false, ShopType.SELL);
                         player.sendMessage(ShopMessage.getMessage("permission", "buildLimit", tempShop, player));
-                        tempShop = null;
                         return;
                     }
                 }
@@ -161,6 +161,14 @@ public class MiscListener implements Listener {
                     if (plugin.usePerms()) {
                         if (!(player.hasPermission("shop.create.barter") || player.hasPermission("shop.create")))
                             playerMessage = ShopMessage.getMessage("permission", "create", tempShop, player);
+                    }
+                }
+
+                //if players must pay to create shops, check that they have enough money first
+                double cost = plugin.getCreationCost();
+                if(cost > 0){
+                    if(!EconomyUtils.hasSufficientFunds(player, player.getInventory(), cost)){
+                        playerMessage = ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", tempShop, player);
                     }
                 }
 
@@ -290,6 +298,17 @@ public class MiscListener implements Listener {
                         shop.setBarterItemStack(shopItem);
                     } else {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "sameItem", null, player));
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
+                //if players must pay to create shops, remove money first
+                double cost = plugin.getCreationCost();
+                if(cost > 0){
+                    boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
+                    if(!removed){
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", shop, player));
                         event.setCancelled(true);
                         return;
                     }

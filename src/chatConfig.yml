@@ -77,8 +77,6 @@ interaction:
       destroy: '&7You have destroyed your bartering shop.'
       opDestroy: '&7You have destroyed a bartering shop owned by [owner].'
       opOpen: '&7You are opening a bartering shop owned by [owner].'
-   item_info:
-      1:
 
 interaction_issue:
    createLine2: '&cThe amount (line 2) needs to be a positive number.'
@@ -87,6 +85,8 @@ interaction_issue:
    createDirection: '&cThe sign must be in front of the chest in order to create a shop.'
    createSameItem: '&cYou cannot create a barter shop where both items are the same.'
    createDisplayRoom: '&cThis shop could not created because there is no room for a display item.'
+   createInsufficientFunds: '&cYou do not have the funds required to create this shop.'
+   destroyInsufficientFunds: '&cYou do not have the funds required to destroy this shop.'
    initializeOtherShop: '&cYou may not initialize another players shop with an item.'
    destroyChest: '&cYou must remove the sign from this shop to break it.'
    useOwnShop: '&7You cannot use your own shop.'
