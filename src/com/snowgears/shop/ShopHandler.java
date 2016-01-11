@@ -6,9 +6,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -53,8 +56,11 @@ public class ShopHandler {
             Block signBlock = shopChest.getRelative(chestFacing);
             if(signBlock.getType() == Material.WALL_SIGN) {
                 Sign sign = (Sign) signBlock.getState().getData();
-                if (chestFacing == sign.getFacing())
-                    return this.getShop(signBlock.getLocation());
+                if (chestFacing == sign.getFacing()) {
+                    ShopObject shop = this.getShop(signBlock.getLocation());
+                    if(shop != null)
+                        return shop;
+                }
             }
             return null;
         }
