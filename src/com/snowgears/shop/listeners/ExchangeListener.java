@@ -37,7 +37,7 @@ public class ExchangeListener implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (event.getClickedBlock().getType() == Material.WALL_SIGN) {
                 ShopObject shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
-                if (shop == null)
+                if (shop == null || !shop.isInitialized())
                     return;
 
                 //player did not click their own shop
