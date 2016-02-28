@@ -206,12 +206,13 @@ public class ExchangeListener implements Listener {
 
             //remove items from player
             int playerItemOverflow = InventoryUtils.removeItem(player.getInventory(), shop.getItemStack(), player);
-            //revert back if player does not have enough money items in inventory
+            //revert back if player does not have enough items in inventory
             if (playerItemOverflow > 0) {
                 ItemStack revert = shop.getItemStack().clone();
                 revert.setAmount(revert.getAmount() - playerItemOverflow);
                 InventoryUtils.addItem(player.getInventory(), revert, player); //return underflow items back to players inventory
-                plugin.getEconomy().depositPlayer(shop.getOwnerPlayer(), shop.getPrice()); //return money to shop owner
+                if (!shop.isAdminShop())
+                    plugin.getEconomy().depositPlayer(shop.getOwnerPlayer(), shop.getPrice()); //return money to shop owner
 
                 player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoStock", shop, player));
                 player.updateInventory();

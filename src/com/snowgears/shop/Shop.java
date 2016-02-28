@@ -184,13 +184,13 @@ public class Shop extends JavaPlugin {
                 else
                     sender.sendMessage("[Shop] There are " + shopHandler.getNumberOfShops() + " shops registered on the server.");
             }
-            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
-                for(Material mat : Material.values()){
-                    if(!mat.isSolid() && mat.isBlock())
-                        System.out.println("Material."+mat.toString());
-                }
-
-            }
+//            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
+//                for(Material mat : Material.values()){
+//                    if(!mat.isSolid() && mat.isBlock())
+//                        System.out.println("Material."+mat.toString());
+//                }
+//
+//            }
             //USED FOR TESTING
             //this will create 10 shops in a line from the player
 //			else if(args[0].equalsIgnoreCase("create")){
