@@ -1,6 +1,7 @@
 package com.snowgears.shop;
 
 import com.snowgears.shop.listeners.*;
+import com.snowgears.shop.utils.ItemNameUtil;
 import com.snowgears.shop.utils.Metrics;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
@@ -43,6 +44,7 @@ public class Shop extends JavaPlugin {
     private ShopHandler shopHandler;
     private EnderChestHandler enderChestHandler;
     private ShopMessage shopMessage;
+    private ItemNameUtil itemNameUtil = new ItemNameUtil();
 
     private boolean usePerms = false;
     private boolean useVault = false;
@@ -159,6 +161,8 @@ public class Shop extends JavaPlugin {
             } else
                 log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
+
+        shopHandler.refreshShopItems();
     }
 
     @Override
@@ -184,13 +188,11 @@ public class Shop extends JavaPlugin {
                 else
                     sender.sendMessage("[Shop] There are " + shopHandler.getNumberOfShops() + " shops registered on the server.");
             }
-//            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
-//                for(Material mat : Material.values()){
-//                    if(!mat.isSolid() && mat.isBlock())
-//                        System.out.println("Material."+mat.toString());
-//                }
-//
-//            }
+            //TODO delete this
+            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
+                sender.sendMessage( itemNameUtil.getName(((Player)sender).getItemInHand()));
+
+            }
             //USED FOR TESTING
             //this will create 10 shops in a line from the player
 //			else if(args[0].equalsIgnoreCase("create")){
@@ -336,6 +338,10 @@ public class Shop extends JavaPlugin {
 
     public double getDestructionCost(){
         return destructionCost;
+    }
+
+    public ItemNameUtil getItemNameUtil(){
+        return itemNameUtil;
     }
 
     public ArrayList<String> getWorldBlacklist(){

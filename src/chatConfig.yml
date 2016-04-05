@@ -28,6 +28,8 @@
 # [barter item] : The name of the barter item in the transaction #
 # [barter item amount] : The amount of the barter item #
 # [price] : The price of the items (adjusted to match virtual or physical currency) #
+# [price per item] : The price of 1 individual item (calculated from total price and adjusted to match virtual or physical currency) #
+# [stock] : The number of stacks of items that a shop/shop owner is able to provide to other players (calculated)#
 # [user] : The name of the player who used the shop #
 # [owner] : The name of the shop owner #
 # [server name] : The name of the server #
@@ -92,6 +94,23 @@ interaction_issue:
    useOwnShop: '&7You cannot use your own shop.'
    adminOpen: '&7Admin shops are not able to be opened.'
    worldBlacklist: '&cShops are not allowed to be created in this world.'
+
+description:
+   SELL:
+      item: '&7Item(s) this shop sells to you: &b{[item]}'
+      price: '&aYou can buy &f[item amount] &a[item](s) from this shop for &f[price].'
+      pricePerItem: '&7That is [price per item] per [item].'
+   BUY:
+      item: '&7Item(s) this shop buys from you: &b{[item]}'
+      price: '&aYou can sell &f[item amount] &a[item](s) to this shop for &f[price].'
+      pricePerItem: '&7That is [price per item] per [item].'
+   BARTER:
+      item: '&7Item(s) this shop trades to you: &a{[item]}'
+      barterItem: '&7Item(s) you trade to the shop: &a{[barter item]}'
+      price: '&aYou can barter &f[price] &aof your &f[barter item](s) &ato this shop for &f[item amount] [item](s)&f.'
+      pricePerItem: '&7That is [price per item] [barter item](s) per [item].'
+   stock: '&7This shop is currently able to provide [stock] more transactions.'
+   stockAdmin: '&7This shop can never run out of stock.'
 
 permission:
    use: '&cYou are not authorized to use [shop type]ing shops.'

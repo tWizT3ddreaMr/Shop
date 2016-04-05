@@ -294,10 +294,12 @@ public class ShopObject {
                 player.sendMessage(s);
             }
         }
-
+        //TODO also get durability of stained_glass, stained_glass_pane, stained_clay,... etc
+        //TODO then print that color as well
         if(itemMeta instanceof LeatherArmorMeta) {
             Color leatherColor = ((LeatherArmorMeta)itemMeta).getColor();
-            player.sendMessage(ChatColor.GRAY+"Color: "+DyeColor.getByColor(leatherColor).name());
+            if(leatherColor != null)
+                player.sendMessage(ChatColor.GRAY+"Color: "+DyeColor.getByColor(leatherColor).name());
         }
 
         Map<Enchantment, Integer> itemEnchantments = item.getEnchantments();
