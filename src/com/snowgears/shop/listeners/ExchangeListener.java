@@ -9,7 +9,6 @@ import com.snowgears.shop.utils.ShopMessage;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -98,6 +97,9 @@ public class ExchangeListener implements Listener {
             EconomyResponse response = plugin.getEconomy().withdrawPlayer(player, shop.getPrice());
             if (!response.transactionSuccess()) {
                 player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoStock", shop, player));
+                if (!shop.isAdminShop()) {
+                    InventoryUtils.addItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
+                }
                 return false;
             }
 
