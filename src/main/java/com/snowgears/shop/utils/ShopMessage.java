@@ -76,7 +76,10 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[barter item]", "" + UtilMethods.getItemName(shop.getBarterItemStack()));
         }
         if(shop != null) {
-            unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
+            if(shop.isAdminShop())
+                unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getServer().getName());
+            else
+                unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
             unformattedMessage = unformattedMessage.replace("[shop type]", "" + ShopMessage.getCreationWord(shop.getType().toString().toUpperCase())); //sub in user's word for SELL,BUY,BARTER
         }
@@ -151,7 +154,15 @@ public class ShopMessage {
             messageMap.put(type.toString() + "_shopNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".shopNoSpace"));
             messageMap.put(type.toString() + "_playerNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoStock"));
             messageMap.put(type.toString() + "_playerNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoSpace"));
+
+            messageMap.put(type.toString() + "_descriptionItem", chatConfig.getString("description."+type.toString().toUpperCase()+".item"));
+            if(type == ShopType.BARTER)
+                messageMap.put(type.toString() + "_descriptionBarterItem", chatConfig.getString("description."+type.toString().toUpperCase()+".barterItem"));
+            messageMap.put(type.toString() + "_descriptionPrice", chatConfig.getString("description."+type.toString().toUpperCase()+".price"));
+            messageMap.put(type.toString() + "_descriptionPricePerItem", chatConfig.getString("description."+type.toString().toUpperCase()+".pricePerItem"));
         }
+        messageMap.put("description_stock", chatConfig.getString("description.stock"));
+        messageMap.put("description_stockAdmin", chatConfig.getString("description.stockAdmin"));
 
         messageMap.put("permission_use", chatConfig.getString("permission.use"));
         messageMap.put("permission_create", chatConfig.getString("permission.create"));

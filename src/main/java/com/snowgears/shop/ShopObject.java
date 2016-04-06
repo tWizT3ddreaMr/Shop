@@ -4,7 +4,9 @@ import com.snowgears.shop.utils.EconomyUtils;
 import com.snowgears.shop.utils.InventoryUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
+import mkremins.fanciful.FancyMessage;
 import org.bukkit.*;
+import org.bukkit.Color;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -227,13 +229,21 @@ public class ShopObject {
 
     public void printSalesInfo(Player player) {
         player.sendMessage("");
-        if (this.getType() == ShopType.SELL) {
-            player.sendMessage(ChatColor.GOLD + "Item(s) this shop sells to you:");
-        } else if (this.getType() == ShopType.BUY) {
-            player.sendMessage(ChatColor.GOLD + "Item(s) this shop buys from you:");
-        } else {
-            player.sendMessage(ChatColor.GOLD + "Item(s) this shop trades to you:");
-        }
+
+        String message = ShopMessage.getMessage(this.getType().toString(), "descriptionItem", this, player);
+
+        String[] parts = message.split("[\\[\\]]");
+
+        String toSend = new FancyMessage(parts[0])
+                .then(parts[1])
+                    .itemTooltip(this.getItemStack())
+                .then(parts[2])
+                .toJSONString();
+
+        player.sendRawMessage(toSend);
+
+
+        //TODO instead of this make a clickable chat string in the in-game text
         printItemStackToPlayer(item, this.getAmount(), player);
 
         if (this.getType() == ShopType.BARTER) {

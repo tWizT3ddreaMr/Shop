@@ -3,10 +3,7 @@ package com.snowgears.shop.utils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +14,7 @@ public class ItemNameUtil {
     public ItemNameUtil() {
 
         try {
-            InputStream stream = getClass().getResourceAsStream("/com/snowgears/shop/utils/items.tsv");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/items.tsv")));
 
             String row;
                 while ((row = reader.readLine()) != null) {
