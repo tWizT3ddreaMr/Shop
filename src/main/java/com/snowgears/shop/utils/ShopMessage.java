@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -51,7 +52,16 @@ public class ShopMessage {
         else
             message = messageMap.get(key);
 
-        message = formatChatMessage(message, shop, player);
+        message = formatMessage(message, shop, player);
+        return message;
+    }
+
+    public static String getUnformattedMessage(String key, String subKey) {
+        String message;
+        if (subKey != null)
+            message = messageMap.get(key + "_" + subKey);
+        else
+            message = messageMap.get(key);
         return message;
     }
 
@@ -62,18 +72,18 @@ public class ShopMessage {
     //      # [user] : The name of the player who used the shop #
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
-    private static String formatChatMessage(String unformattedMessage, ShopObject shop, Player player){
+    public static String formatMessage(String unformattedMessage, ShopObject shop, Player player){
         if(unformattedMessage == null) {
             loadMessagesFromConfig();
             return "";
         }
         if(shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
-            unformattedMessage = unformattedMessage.replace("[item]", "" + UtilMethods.getItemName(shop.getItemStack()));
+            unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
         }
         if(shop != null && shop.getBarterItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getBarterItemStack().getAmount());
-            unformattedMessage = unformattedMessage.replace("[barter item]", "" + UtilMethods.getItemName(shop.getBarterItemStack()));
+            unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
         }
         if(shop != null) {
             if(shop.isAdminShop())
@@ -81,7 +91,15 @@ public class ShopMessage {
             else
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
+            if(shop.getType() == ShopType.BARTER){
+                String amountPerString = new DecimalFormat("#.##").format(shop.getPrice() / shop.getAmount()).toString();
+                amountPerString = amountPerString + " " + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack());
+                unformattedMessage = unformattedMessage.replace("[price per item]", "" + amountPerString);
+            }
+            else
+                unformattedMessage = unformattedMessage.replace("[price per item]", "" + shop.getPricePerItemString());
             unformattedMessage = unformattedMessage.replace("[shop type]", "" + ShopMessage.getCreationWord(shop.getType().toString().toUpperCase())); //sub in user's word for SELL,BUY,BARTER
+            unformattedMessage = unformattedMessage.replace("[stock]", "" + shop.getStock());
         }
         if(player != null) {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());

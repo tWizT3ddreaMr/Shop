@@ -6,7 +6,6 @@ import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
 import mkremins.fanciful.FancyMessage;
 import org.bukkit.*;
-import org.bukkit.Color;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -157,6 +156,19 @@ public class ShopObject {
             return (int) price + " " + Shop.getPlugin().getItemCurrencyName();
     }
 
+    public String getPricePerItemString() {
+        double pricePer = this.getPrice() / this.getAmount();
+        if(price == 0){
+            return ShopMessage.getFreePriceWord();
+        }
+        if (Shop.getPlugin().useVault())
+            //$12.00
+            return Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("#.00").format(pricePer).toString();
+        else
+            //1.50 Dirt(s)
+            return new DecimalFormat("#.##").format(pricePer).toString() + " " + Shop.getPlugin().getItemCurrencyName();
+    }
+
     public int getAmount() {
         return amount;
     }
@@ -230,105 +242,63 @@ public class ShopObject {
     public void printSalesInfo(Player player) {
         player.sendMessage("");
 
-        String message = ShopMessage.getMessage(this.getType().toString(), "descriptionItem", this, player);
-
-        String[] parts = message.split("[\\[\\]]");
-
-        String toSend = new FancyMessage(parts[0])
-                .then(parts[1])
-                    .itemTooltip(this.getItemStack())
-                .then(parts[2])
-                .toJSONString();
-
-        player.sendRawMessage(toSend);
-
-
-        //TODO instead of this make a clickable chat string in the in-game text
-        printItemStackToPlayer(item, this.getAmount(), player);
+        String message = ShopMessage.getUnformattedMessage(this.getType().toString(), "descriptionItem");
+        formatAndSendFancyMessage(message, player);
 
         if (this.getType() == ShopType.BARTER) {
-            player.sendMessage("");
-            player.sendMessage(ChatColor.GOLD + "Item(s) you trade to this shop:");
-            printItemStackToPlayer(barterItem, (int) this.getPrice(), player);
+            message = ShopMessage.getUnformattedMessage(this.getType().toString(), "descriptionBarterItem");
+            formatAndSendFancyMessage(message, player);
         }
         player.sendMessage("");
 
 
         if(price != 0) {
-            double pricePer = this.getPrice() / this.getAmount();
-            String pricePerString;
-            if (Shop.getPlugin().useVault())
-                pricePerString = Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("#.00").format(pricePer).toString();
-            else
-                pricePerString = new DecimalFormat("#.##").format(pricePer).toString() + " " + Shop.getPlugin().getItemCurrencyName();
+            message = ShopMessage.getMessage(this.getType().toString(), "descriptionPrice", this, player);
+            player.sendMessage(message);
 
-            if (this.getType() == ShopType.SELL) {
-                player.sendMessage(ChatColor.GREEN + "You can buy " + ChatColor.WHITE + this.getAmount() + ChatColor.GREEN + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s) from this shop for " + ChatColor.WHITE + this.getPriceString() + ".");
-                player.sendMessage(ChatColor.GRAY + "That is " + pricePerString + " per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
-            } else if (this.getType() == ShopType.BUY) {
-                player.sendMessage(ChatColor.GREEN + "You can sell " + ChatColor.WHITE + this.getAmount() + ChatColor.GREEN + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s) to this shop for " + ChatColor.WHITE + this.getPriceString() + ".");
-                player.sendMessage(ChatColor.GRAY + "That is " + pricePerString + " per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
-            } else {
-                String amountPerString = new DecimalFormat("#.##").format(pricePer).toString();
-                player.sendMessage(ChatColor.GREEN + "You can barter " + ChatColor.WHITE + (int) this.getPrice() + ChatColor.GREEN + " of your " + ChatColor.WHITE + "" + barterItem.getType().name().replace("_", " ").toLowerCase() + "(s)"
-                        + ChatColor.GREEN + " to this shop for " + ChatColor.WHITE + this.getAmount() + " " + item.getType().name().replace("_", " ").toLowerCase() + "(s)" + ChatColor.WHITE + ".");
-                player.sendMessage(ChatColor.GRAY + "That is " + amountPerString + " " + barterItem.getType().name().replace("_", " ").toLowerCase() + "(s) per " + item.getType().name().replace("_", " ").toLowerCase() + ".");
-            }
+            message = ShopMessage.getMessage(this.getType().toString(), "descriptionPricePerItem", this, player);
+            player.sendMessage(message);
             player.sendMessage("");
         }
 
-        int stock = this.getStock();
-        String stacks = ""+stock;
-        ChatColor cc = ChatColor.GREEN;
-        if (stock <= 0)
-            cc = ChatColor.RED;
-        if(stock == Integer.MAX_VALUE || isAdminShop()) {
-            stacks = "unlimited";
-            cc = ChatColor.GREEN;
+        if(this.isAdminShop()){
+            message = ShopMessage.getMessage("description", "stockAdmin", this, player);
+            player.sendMessage(message);
         }
-        player.sendMessage(ChatColor.GRAY + "There are currently " + cc + stacks + ChatColor.GRAY + " stacks in stock.");
+        else {
+            message = ShopMessage.getMessage("description", "stock", this, player);
+            player.sendMessage(message);
+        }
 
         return;
     }
 
-    private void printItemStackToPlayer(ItemStack item, int amount, Player player) {
-        ItemMeta itemMeta = item.getItemMeta();
+    private void formatAndSendFancyMessage(String message, Player player){
+        String[] parts = message.split("(?=&[0-9A-FK-ORa-fk-or])");
+        FancyMessage fancyMessage = new FancyMessage("");
 
-        if (itemMeta.getDisplayName() != null)
-            player.sendMessage(ChatColor.WHITE + itemMeta.getDisplayName() + " (" + amount + ")");
-        else
-            player.sendMessage(ChatColor.WHITE + UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase()) + " (" + amount + ")");
+        for(String part : parts){
+            ChatColor color = UtilMethods.getChatColor(part);
+            if(color != null)
+                part = part.substring(2, part.length());
+            boolean barterItem = false;
+            if(part.contains("[barter item]"))
+                barterItem = true;
+            part = ShopMessage.formatMessage(part, this, player);
+            part = ChatColor.stripColor(part);
+            fancyMessage.then(part);
+            if(color != null)
+                fancyMessage.color(color);
 
-        if (itemMeta.getLore() != null) {
-            for (String s : itemMeta.getLore()) {
-                player.sendMessage(s);
+            if(part.startsWith("[")) {
+                if (barterItem) {
+                    fancyMessage.itemTooltip(this.getBarterItemStack());
+                } else {
+                    fancyMessage.itemTooltip(this.getItemStack());
+                }
             }
         }
-        //TODO also get durability of stained_glass, stained_glass_pane, stained_clay,... etc
-        //TODO then print that color as well
-        if(itemMeta instanceof LeatherArmorMeta) {
-            Color leatherColor = ((LeatherArmorMeta)itemMeta).getColor();
-            if(leatherColor != null)
-                player.sendMessage(ChatColor.GRAY+"Color: "+DyeColor.getByColor(leatherColor).name());
-        }
-
-        Map<Enchantment, Integer> itemEnchantments = item.getEnchantments();
-
-        if (!itemEnchantments.isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "Enchantments:");
-            for (Map.Entry<Enchantment, Integer> s : itemEnchantments.entrySet()) {
-                player.sendMessage(ChatColor.YELLOW + UtilMethods.capitalize(s.getKey().getName().replace("_", " ").toLowerCase()) + ChatColor.WHITE + " level: " + s.getValue());
-            }
-            player.sendMessage("");
-        }
-        if (item.getType() == Material.POTION) {
-            Potion potion = Potion.fromItemStack(item);
-            player.sendMessage(ChatColor.AQUA + "Potion Type: " + ChatColor.WHITE + UtilMethods.capitalize(potion.getType().name().replace("_", " ").toLowerCase()) + ChatColor.GRAY + ", Level " + potion.getLevel());
-            player.sendMessage(ChatColor.AQUA + "Potion Effects: ");
-            for (PotionEffect effect : potion.getEffects()) {
-                player.sendMessage(ChatColor.WHITE + "   - " + ChatColor.LIGHT_PURPLE + UtilMethods.capitalize(effect.getType().getName().replace("_", " ").toLowerCase()) + effect.getAmplifier() + ChatColor.GRAY + " (" + UtilMethods.convertDurationToString(effect.getDuration()) + ")");
-            }
-        }
+        fancyMessage.send(player);
     }
 
     @Override
