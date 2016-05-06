@@ -115,7 +115,7 @@ public class ShopListener implements Listener {
         plugin.getCreativeSelectionListener().returnPlayerData(player);
 
         player.sendMessage(ShopMessage.getMessage(event.getShop().getType().toString(), "create", event.getShop(), player));
-        plugin.getShopHandler().saveShops();
+        //plugin.getShopHandler().saveShops();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -142,7 +142,7 @@ public class ShopListener implements Listener {
             player.sendMessage(ShopMessage.getMessage(event.getShop().getType().toString(), "opDestroy", event.getShop(), player));
         }
         event.getShop().delete();
-        plugin.getShopHandler().saveShops();
+        //plugin.getShopHandler().saveShops();
     }
 
     @EventHandler

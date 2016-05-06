@@ -63,6 +63,9 @@ public class DisplayItemListener implements Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onPickup(PlayerPickupItemEvent event) {
+        if(event.isCancelled())
+            return;
+
         boolean goneWrong = false;
         if (displayItems.get(event.getItem().getUniqueId()) != null) {
             event.setCancelled(true);

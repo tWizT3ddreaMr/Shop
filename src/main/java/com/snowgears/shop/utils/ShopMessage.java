@@ -87,7 +87,7 @@ public class ShopMessage {
         }
         if(shop != null) {
             if(shop.isAdminShop())
-                unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getServer().getName());
+                unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getServer().getServerName());
             else
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
@@ -115,6 +115,8 @@ public class ShopMessage {
     //      # [price] : The price of the items the shop is selling (adjusted to match virtual or physical currency) #
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
+    //TODO instead of having two translations just call formatMessage() in for loop
+    //TODO will also have to rearrange a few things in the chatConfig file to correspond (i.e. [price] != shop.getPrice())
     public static String[] getSignLines(ShopObject shop){
         String[] lines;
         if(shop.isAdminShop())

@@ -6,6 +6,7 @@ import com.snowgears.shop.utils.Metrics;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -15,6 +16,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
@@ -40,7 +42,7 @@ public class Shop extends JavaPlugin {
     private ShopHandler shopHandler;
     private EnderChestHandler enderChestHandler;
     private ShopMessage shopMessage;
-    private ItemNameUtil itemNameUtil = new ItemNameUtil();
+    private ItemNameUtil itemNameUtil;
 
     private boolean usePerms = false;
     private boolean useVault = false;
@@ -82,6 +84,12 @@ public class Shop extends JavaPlugin {
             copy(getResource("signConfig.yml"), signConfigFile);
         }
 
+        File itemNameFile = new File(getDataFolder(), "items.tsv");
+        if (!itemNameFile.exists()) {
+            itemNameFile.getParentFile().mkdirs();
+            copy(getResource("items.tsv"), itemNameFile);
+        }
+
         shopHandler = new ShopHandler(this);
         enderChestHandler = new EnderChestHandler(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
@@ -106,6 +114,7 @@ public class Shop extends JavaPlugin {
         }
 
         shopMessage = new ShopMessage(this);
+        itemNameUtil = new ItemNameUtil();
 
         File fileDirectory = new File(this.getDataFolder(), "Data");
         if (!fileDirectory.exists()) {
@@ -158,14 +167,16 @@ public class Shop extends JavaPlugin {
                 log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
 
-        shopHandler.refreshShopItems();
+     //   shopHandler.refreshShopItems(); //REFRESH WILL NO LONGER BE USED
     }
 
     @Override
     public void onDisable(){
         enderChestHandler.saveEnderChests();
+        shopHandler.saveShops();
     }
 
+    //TODO replace all of these messages
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
@@ -184,43 +195,37 @@ public class Shop extends JavaPlugin {
                 else
                     sender.sendMessage("[Shop] There are " + shopHandler.getNumberOfShops() + " shops registered on the server.");
             }
-            //TODO delete this
-            else if (cmd.getName().equalsIgnoreCase("shop") && args[0].equalsIgnoreCase("test")) {
-                sender.sendMessage( itemNameUtil.getName(((Player)sender).getItemInHand()));
-
+            else if (args[0].equalsIgnoreCase("save")) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
+                        player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
+                        return true;
+                    }
+                    shopHandler.saveShops();
+                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file.");
+                } else {
+                    shopHandler.saveShops();
+                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file.");
+                }
             }
-            //USED FOR TESTING
-            //this will create 10 shops in a line from the player
-//			else if(args[0].equalsIgnoreCase("create")){
-//				final Player player = (Player)sender;
-//
-//				final BlockFace facing = UtilMethods.yawToFace(player.getLocation().getYaw());
-//
-//				for(int x=0;x<10;x++) {
-//					Block chest = player.getLocation().clone().add(x, 0, -x).getBlock();
-//					chest.setType(Material.CHEST);
-//					Chest chestMat = (Chest) chest.getState().getData();
-//					chestMat.setFacingDirection(facing.getOppositeFace());
-//
-//					org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(Material.WALL_SIGN);
-//					matSign.setFacingDirection(facing);
-//
-//					chest.getRelative(facing).setType(Material.WALL_SIGN);
-//
-//					final Sign newSign = (Sign) chest.getRelative(facing).getState();
-//					newSign.setData(matSign);
-//					newSign.update();
-//
-//					ShopObject shop = new ShopObject(newSign.getLocation(), player.getUniqueId(), 2, 5, false, ShopType.SELLING);
-//					shop.setItemStack(new ItemStack(Material.CAKE));
-//					shop.updateSign();
-//					plugin.getShopHandler().addShop(shop);
-//				}
-//				plugin.getShopHandler().saveShops();
-//			}
         } else if (args.length == 2) {
             if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
                 return true;
+//            if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
+//                if (sender instanceof Player) {
+//                    Player player = (Player) sender;
+//                    if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
+//                        player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
+//                        return true;
+//                    }
+//                    shopHandler.refreshShopItems();
+//                    sender.sendMessage(ChatColor.GRAY + "The display items on all of the shops have been refreshed.");
+//                } else {
+//                    shopHandler.refreshShopItems();
+//                    sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
+//                }
+            //REPLACE REFRESH WITH HARDRESET
             if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
@@ -228,31 +233,18 @@ public class Shop extends JavaPlugin {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }
-                    shopHandler.refreshShopItems();
-                    sender.sendMessage(ChatColor.GRAY + "The display items on all of the shops have been refreshed.");
-                } else {
+                    for (World world : plugin.getServer().getWorlds()) {
+                        for (Entity entity : world.getEntities()) {
+                            if (entity.getType() == EntityType.DROPPED_ITEM) {
+                                ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
+                                if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+                                    entity.remove();
+                                }
+                            }
+                        }
+                    }
                     shopHandler.refreshShopItems();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
-                }
-            } else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("hardreset")) {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
-                        player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
-                        return true;
-                    }
-                    for (World world : plugin.getServer().getWorlds()) {
-                        for (Entity entity : world.getEntities()) {
-                            if (entity.getType() == EntityType.DROPPED_ITEM) {
-                                ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-                                if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
-                                    entity.remove();
-                                }
-                            }
-                        }
-                    }
-                    shopHandler.refreshShopItems();
-                    sender.sendMessage(ChatColor.GRAY + "All items in every world have been inspected and the display items on all of the shops have been refreshed.");
                 } else {
                     for (World world : plugin.getServer().getWorlds()) {
                         for (Entity entity : world.getEntities()) {
@@ -265,7 +257,7 @@ public class Shop extends JavaPlugin {
                         }
                     }
                     shopHandler.refreshShopItems();
-                    sender.sendMessage("[Shop] All items in every world have been inspected and the display items on all of the shops have been refreshed.");
+                    sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }
             }
         }

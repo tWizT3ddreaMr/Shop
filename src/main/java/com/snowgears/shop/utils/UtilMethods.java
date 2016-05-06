@@ -97,8 +97,12 @@ public class UtilMethods {
 
     public static boolean stringStartsWithUUID(String name){
         if (name != null && name.length() > 36){
-            if(UUID.fromString(name.substring(0, 36)) != null)
-                return true;
+            try {
+                if (UUID.fromString(name.substring(0, 36)) != null)
+                    return true;
+            } catch (Exception ex) {
+                return false;
+            }
         }
         return false;
     }

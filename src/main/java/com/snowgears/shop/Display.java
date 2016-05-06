@@ -11,6 +11,7 @@ import org.bukkit.material.Sign;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 public class Display {
@@ -20,11 +21,12 @@ public class Display {
 
     public Display(ShopObject shop) {
         this.shop = shop;
-        items = new ArrayList<Item>();
+        items = new ArrayList<>();
     }
 
     public void spawn() {
-        deleteCurrentItems();
+        remove();
+
         Random random = new Random();
 
         //two items on the chest
@@ -74,35 +76,51 @@ public class Display {
             Shop.getPlugin().getDisplayListener().addDisplayItem(i); //stop item from despawning
         }
         shop.updateSign();
+
+        removeOldItems();
     }
 
     public void remove() {
-        for (Item item : items) {
+        Iterator<Item> itemIterator = items.iterator();
+        while(itemIterator.hasNext()) {
+            Item item = itemIterator.next();
             Shop.getPlugin().getDisplayListener().removeDisplayItem(item);
             item.remove();
         }
+        items.clear();
     }
 
-    public Location getLocation() {
-        Location location = shop.getChestLocation().clone();
-        location.add(0.5, 0.8, 0.5);
-        return location;
-    }
+//    public Location getLocation() {
+//        Location location = shop.getChestLocation().clone();
+//        location.add(0.5, 0.8, 0.5);
+//        return location;
+//    }
 
-    private void deleteCurrentItems() {
-        for (Entity e : shop.getChestLocation().getChunk().getEntities()) {
-            if (e.getType() == EntityType.DROPPED_ITEM) {
-                if (UtilMethods.basicLocationMatch(e.getLocation(), shop.getChestLocation())){
-                    ItemMeta meta = ((Item) e).getItemStack().getItemMeta();
-                    if(meta.getDisplayName() != null) {
-                        if (meta.getDisplayName().contains(shop.getOwnerUUID().toString())) {
-                            Shop.getPlugin().getDisplayListener().removeDisplayItem((Item) e);
-                            e.remove();
-                        }
+    private void removeOldItems() {
+        for(Entity e : items){
+            for(Entity oldItem : e.getNearbyEntities(0.1, 0.1, 0.1)) {
+                if (oldItem.getType() == EntityType.DROPPED_ITEM) {
+                    ItemMeta itemMeta = ((Item) oldItem).getItemStack().getItemMeta();
+                    if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+                        if ((!items.contains(oldItem)))
+                            oldItem.remove();
                     }
                 }
             }
         }
+//        for (Entity e : shop.getChestLocation().getChunk().getEntities()) {
+//            if (e.getType() == EntityType.DROPPED_ITEM) {
+//                if (UtilMethods.basicLocationMatch(e.getLocation(), shop.getChestLocation())){
+//                    ItemMeta meta = ((Item) e).getItemStack().getItemMeta();
+//                    if(meta.getDisplayName() != null) {
+//                        if (meta.getDisplayName().contains(shop.getOwnerUUID().toString())) {
+//                            Shop.getPlugin().getDisplayListener().removeDisplayItem((Item) e);
+//                            e.remove();
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     private Location getDropLocation(boolean isBarterItem) {
