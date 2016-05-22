@@ -8,6 +8,7 @@ import com.snowgears.shop.utils.EconomyUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,6 +17,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -172,6 +174,19 @@ public class ShopListener implements Listener {
             ShopObject shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop != null) {
                 event.setCancelled(true);
+            }
+        }
+    }
+
+    //prevent hoppers from stealing inventory from shops
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+        if(event.getSource().getHolder() instanceof Chest){
+            Chest chest = (Chest)event.getSource().getHolder();
+            ShopObject shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
+            if(shop != null){
+                if(event.getDestination().getType() != InventoryType.PLAYER)
+                    event.setCancelled(true);
             }
         }
     }

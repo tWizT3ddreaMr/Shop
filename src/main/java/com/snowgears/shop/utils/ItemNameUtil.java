@@ -4,7 +4,10 @@ import com.snowgears.shop.Shop;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
