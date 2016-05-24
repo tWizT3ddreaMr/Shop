@@ -200,13 +200,17 @@ public class ShopListener implements Listener {
         if(event.getPlayer() instanceof Player) {
             Player player = (Player)event.getPlayer();
             if (event.getInventory().getType() == InventoryType.ENDER_CHEST) {
-                plugin.getEnderChestHandler().updateInventory(player, event.getInventory());
+                if(plugin.useEnderChests())
+                    plugin.getEnderChestHandler().updateInventory(player, event.getInventory());
             }
         }
     }
 
     @EventHandler
     public void onLogin(PlayerLoginEvent event){
+        if(!plugin.useEnderChests())
+            return;
+
         final Player player = event.getPlayer();
         final Inventory inv = plugin.getEnderChestHandler().getInventory(player);
 

@@ -39,6 +39,12 @@ public class ExchangeListener implements Listener {
                 if (shop == null || !shop.isInitialized())
                     return;
 
+                //delete shop if it does not have a chest attached to it
+                if(!(plugin.getShopHandler().isChest(shop.getChestLocation().getBlock()))){
+                    shop.delete();
+                    return;
+                }
+
                 //player did not click their own shop
                 if ((!shop.getOwnerName().equals(player.getName())) || shop.isAdminShop()) {
                     if (shop.getType() == ShopType.BUY) {

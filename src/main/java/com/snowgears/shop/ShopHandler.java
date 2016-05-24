@@ -4,10 +4,14 @@ import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -39,7 +43,8 @@ public class ShopHandler {
 
         shopMaterials.add(Material.CHEST);
         shopMaterials.add(Material.TRAPPED_CHEST);
-        shopMaterials.add(Material.ENDER_CHEST);
+        if(plugin.useEnderChests())
+            shopMaterials.add(Material.ENDER_CHEST);
     }
 
     public ShopObject getShop(Location loc) {
@@ -57,6 +62,12 @@ public class ShopHandler {
                     if(shop != null)
                         return shop;
                 }
+            }
+            else{
+                ShopObject shop = this.getShop(signBlock.getLocation());
+                //delete the shop if it doesn't have a sign
+                if(shop != null)
+                    shop.delete();
             }
             return null;
         }
@@ -120,6 +131,16 @@ public class ShopHandler {
     }
 
     public void refreshShopItems() {
+        for (World world : plugin.getServer().getWorlds()) {
+            for (Entity entity : world.getEntities()) {
+                if (entity.getType() == EntityType.DROPPED_ITEM) {
+                    ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
+                    if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+                        entity.remove();
+                    }
+                }
+            }
+        }
         for (ShopObject shop : allShops.values()) {
             shop.getDisplay().spawn();
         }
@@ -237,8 +258,11 @@ public class ShopHandler {
                         ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
                         shop.setBarterItemStack(barterItemStack);
                     }
-                    shop.updateSign();
-                    this.addShop(shop);
+
+                    if(this.isChest(shop.getChestLocation().getBlock())) {
+                        shop.updateSign();
+                        this.addShop(shop);
+                    }
                 }
             }
         }

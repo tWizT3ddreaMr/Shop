@@ -32,7 +32,8 @@ itemCurrencyName: Emerald(s)
 # ================================================================== #
 
 
-
+# This controls whether or not ender chests are able to be used as shops on the server #
+enableEnderChests: true
 
 # These allow you to charge money to players for creating/destroying their shops #
 creationCost: 0

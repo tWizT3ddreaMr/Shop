@@ -4,19 +4,13 @@ import com.snowgears.shop.listeners.*;
 import com.snowgears.shop.utils.ItemNameUtil;
 import com.snowgears.shop.utils.Metrics;
 import com.snowgears.shop.utils.ShopMessage;
-import com.snowgears.shop.utils.UtilMethods;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -48,6 +42,7 @@ public class Shop extends JavaPlugin {
     private String itemCurrencyName = "";
     private String vaultCurrencySymbol = "";
     private Economy econ = null;
+    private boolean useEnderchests;
     private double creationCost;
     private double destructionCost;
     private ArrayList<String> worldBlackList;
@@ -88,8 +83,6 @@ public class Shop extends JavaPlugin {
             copy(getResource("items.tsv"), itemNameFile);
         }
 
-        shopHandler = new ShopHandler(this);
-        enderChestHandler = new EnderChestHandler(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayItemListener(this);
 
@@ -140,6 +133,8 @@ public class Shop extends JavaPlugin {
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencySymbol");
 
+        useEnderchests = config.getBoolean("enableEnderChests");
+
         creationCost = config.getDouble("creationCost");
         destructionCost = config.getDouble("destructionCost");
 
@@ -165,7 +160,14 @@ public class Shop extends JavaPlugin {
                 log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
 
-     //   shopHandler.refreshShopItems(); //REFRESH WILL NO LONGER BE USED
+        shopHandler = new ShopHandler(this);
+        enderChestHandler = new EnderChestHandler(this);
+
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            public void run() {
+                shopHandler.refreshShopItems();
+            }
+        }, 60L);
     }
 
     @Override
@@ -210,20 +212,6 @@ public class Shop extends JavaPlugin {
         } else if (args.length == 2) {
             if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
                 return true;
-//            if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
-//                if (sender instanceof Player) {
-//                    Player player = (Player) sender;
-//                    if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
-//                        player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
-//                        return true;
-//                    }
-//                    shopHandler.refreshShopItems();
-//                    sender.sendMessage(ChatColor.GRAY + "The display items on all of the shops have been refreshed.");
-//                } else {
-//                    shopHandler.refreshShopItems();
-//                    sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
-//                }
-            //REPLACE REFRESH WITH HARDRESET
             if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
@@ -231,29 +219,9 @@ public class Shop extends JavaPlugin {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }
-                    for (World world : plugin.getServer().getWorlds()) {
-                        for (Entity entity : world.getEntities()) {
-                            if (entity.getType() == EntityType.DROPPED_ITEM) {
-                                ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-                                if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
-                                    entity.remove();
-                                }
-                            }
-                        }
-                    }
                     shopHandler.refreshShopItems();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 } else {
-                    for (World world : plugin.getServer().getWorlds()) {
-                        for (Entity entity : world.getEntities()) {
-                            if (entity.getType() == EntityType.DROPPED_ITEM) {
-                                ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-                                if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
-                                    entity.remove();
-                                }
-                            }
-                        }
-                    }
                     shopHandler.refreshShopItems();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }
@@ -316,6 +284,10 @@ public class Shop extends JavaPlugin {
 
     public Economy getEconomy() {
         return econ;
+    }
+
+    public boolean useEnderChests(){
+        return useEnderchests;
     }
 
     public double getCreationCost(){
