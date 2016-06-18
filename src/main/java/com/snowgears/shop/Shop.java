@@ -36,8 +36,12 @@ public class Shop extends JavaPlugin {
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
 
-    private boolean usePerms = false;
-    private boolean useVault = false;
+    private boolean usePerms;
+    private boolean useVault;
+    private DisplayType displayType;
+    private boolean checkItemDurability;
+    private boolean playSounds;
+    private boolean playEffects;
     private ItemStack itemCurrency = null;
     private String itemCurrencyName = "";
     private String vaultCurrencySymbol = "";
@@ -117,6 +121,10 @@ public class Shop extends JavaPlugin {
         }
 
         usePerms = config.getBoolean("usePermissions");
+        displayType = DisplayType.valueOf(config.getString("displayType"));
+        checkItemDurability = config.getBoolean("checkItemDurability");
+        playSounds = config.getBoolean("playSounds");
+        playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
         String itemCurrencyIDString = config.getString("itemCurrencyID");
         int itemCurrencyId;
@@ -165,7 +173,7 @@ public class Shop extends JavaPlugin {
 
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             public void run() {
-                shopHandler.refreshShopItems();
+                shopHandler.refreshShopDisplays();
             }
         }, 60L);
     }
@@ -190,8 +198,13 @@ public class Shop extends JavaPlugin {
             if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
                 return true;
             if (args[0].equalsIgnoreCase("list")) {
-                if (sender instanceof Player)
+                if (sender instanceof Player) {
                     sender.sendMessage("There are " + ChatColor.GOLD + shopHandler.getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
+                    if(usePerms())
+                        sender.sendMessage(ChatColor.GRAY+"You have built "+shopHandler.getNumberOfShops((Player)sender) + " out of your "+ shopListener.getBuildLimit((Player)sender) +" allotted shops.");
+                    else
+                        sender.sendMessage(ChatColor.GRAY+"You own "+shopHandler.getNumberOfShops((Player)sender) + " of these shops.");
+                }
                 else
                     sender.sendMessage("[Shop] There are " + shopHandler.getNumberOfShops() + " shops registered on the server.");
             }
@@ -219,10 +232,10 @@ public class Shop extends JavaPlugin {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }
-                    shopHandler.refreshShopItems();
+                    shopHandler.refreshShopDisplays();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 } else {
-                    shopHandler.refreshShopItems();
+                    shopHandler.refreshShopDisplays();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }
             }
@@ -254,6 +267,10 @@ public class Shop extends JavaPlugin {
         return creativeSelectionListener;
     }
 
+    public ExchangeListener getExchangeListener() {
+        return exchangeListener;
+    }
+
     public ShopHandler getShopHandler() {
         return shopHandler;
     }
@@ -268,6 +285,22 @@ public class Shop extends JavaPlugin {
 
     public boolean useVault() {
         return useVault;
+    }
+
+    public DisplayType getDisplayType(){
+        return displayType;
+    }
+
+    public boolean checkItemDurability(){
+        return checkItemDurability;
+    }
+
+    public boolean playSounds(){
+        return playSounds;
+    }
+
+    public boolean playEffects(){
+        return playEffects;
     }
 
     public ItemStack getItemCurrency() {

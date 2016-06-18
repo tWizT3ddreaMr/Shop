@@ -30,6 +30,7 @@ public class DisplayUtil {
             case HEAD:
                 stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
                 stand.setHelmet(itemStack);
+                stand.setSmall(true);
                 break;
             case BODY:
                 stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
@@ -89,7 +90,7 @@ public class DisplayUtil {
         Location standLocation = null;
         switch (itemType) {
             case HEAD:
-                standLocation = blockLocation.clone().add(0.5, -1.4, 0.5);
+                standLocation = blockLocation.clone().add(0.5, -.7, 0.5);
                 break;
             case BODY:
                 standLocation = blockLocation.clone().add(0.5, -0.3, 0.5);

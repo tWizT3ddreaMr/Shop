@@ -94,8 +94,10 @@ public class ShopObject {
 
     public void setItemStack(ItemStack is) {
         this.item = is.clone();
-        if (item.getType().getMaxDurability() > 0)
-            item.setDurability((short) 0); //set item to full durability
+        if(!Shop.getPlugin().checkItemDurability()) {
+            if (item.getType().getMaxDurability() > 0)
+                item.setDurability((short) 0); //set item to full durability
+        }
         this.display.spawn();
     }
 
@@ -110,8 +112,10 @@ public class ShopObject {
 
     public void setBarterItemStack(ItemStack is) {
         this.barterItem = is.clone();
-        if (barterItem.getType().getMaxDurability() > 0)
-            barterItem.setDurability((short) 0); //set item to full durability
+        if(!Shop.getPlugin().checkItemDurability()) {
+            if (barterItem.getType().getMaxDurability() > 0)
+                barterItem.setDurability((short) 0); //set item to full durability
+        }
         this.display.spawn();
     }
 
@@ -161,6 +165,18 @@ public class ShopObject {
         else
             //1.50 Dirt(s)
             return new DecimalFormat("#.##").format(pricePer).toString() + " " + Shop.getPlugin().getItemCurrencyName();
+    }
+
+    public int getItemDurabilityPercent(boolean barterItem){
+        ItemStack item = this.getItemStack().clone();
+        if(barterItem)
+            item = this.getBarterItemStack().clone();
+
+        if (item.getType().getMaxDurability() > 0) {
+            double dur = ((double)(item.getType().getMaxDurability() - item.getDurability()) / (double)item.getType().getMaxDurability());
+            return (int)(dur * 100);
+        }
+        return 100;
     }
 
     public int getAmount() {

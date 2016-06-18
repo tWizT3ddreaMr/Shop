@@ -8,12 +8,15 @@ import com.snowgears.shop.utils.InventoryUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 
@@ -31,6 +34,9 @@ public class ExchangeListener implements Listener {
 
     @EventHandler
     public void onShopSignClick(PlayerInteractEvent event) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            return; // off hand packet, ignore.
+        }
         Player player = event.getPlayer();
         //player clicked the sign of a shop
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -54,7 +60,8 @@ public class ExchangeListener implements Listener {
                                 return;
                             }
                         }
-                        playerSellToShop(player, shop);
+                        boolean success = playerSellToShop(player, shop);
+                        sendEffects(success, player, shop);
                     } else if (shop.getType() == ShopType.SELL) {
                         if (plugin.usePerms() && !(player.hasPermission("shop.use.selling") || player.hasPermission("shop.use"))) {
                             if (!player.hasPermission("shop.operator")) {
@@ -62,7 +69,8 @@ public class ExchangeListener implements Listener {
                                 return;
                             }
                         }
-                        playerBuyFromShop(player, shop);
+                        boolean success = playerBuyFromShop(player, shop);
+                        sendEffects(success, player, shop);
                     } else {
                         if (plugin.usePerms() && !(player.hasPermission("shop.use.barter") || player.hasPermission("shop.use"))) {
                             if (!player.hasPermission("shop.operator")) {
@@ -70,10 +78,12 @@ public class ExchangeListener implements Listener {
                                 return;
                             }
                         }
-                        playerBarterWithShop(player, shop);
+                        boolean success = playerBarterWithShop(player, shop);
+                        sendEffects(success, player, shop);
                     }
                 } else {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "useOwnShop", shop, player));
+                    sendEffects(false, player, shop);
                 }
                 event.setCancelled(true);
             }
@@ -386,5 +396,20 @@ public class ExchangeListener implements Listener {
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
         if ((owner != null) && (!shop.isAdminShop()))
             owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "owner", shop, player));
+    }
+
+    public void sendEffects(boolean success, Player player, ShopObject shop){
+        if(success){
+            if(plugin.playSounds())
+                player.playSound(shop.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_TOUCH, 1.0F, 1.0F);
+            if(plugin.playEffects())
+                player.playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK.getId());
+        }
+        else{
+            if(plugin.playSounds())
+                player.playSound(shop.getSignLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0F, 1.0F);
+            if(plugin.playEffects())
+                player.playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK.getId());
+        }
     }
 }

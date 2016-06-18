@@ -1,7 +1,10 @@
 package com.snowgears.shop;
 
+import com.snowgears.shop.utils.DisplayUtil;
 import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -17,63 +20,84 @@ import java.util.Random;
 public class Display {
 
     private ShopObject shop;
-    private ArrayList<Item> items;
+    private ArrayList<Entity> entities;
 
     public Display(ShopObject shop) {
         this.shop = shop;
-        items = new ArrayList<>();
+        entities = new ArrayList<>();
     }
 
     public void spawn() {
         remove();
-
         Random random = new Random();
 
-        //two items on the chest
+        if (shop.getItemStack() == null)
+            return;
+
+        //define the initial display item
+        ItemStack item = shop.getItemStack().clone();
+        item.setAmount(1);
+        ItemMeta sellMeta = item.getItemMeta();
+        sellMeta.setDisplayName(shop.getOwnerUUID().toString()+random.nextInt()); // stop item stacking and aid in searching
+        item.setItemMeta(sellMeta);
+
+        //two display entities on the chest
         if (shop.getType() == ShopType.BARTER) {
-            if (shop.getItemStack() == null || shop.getBarterItemStack() == null)
+            if (shop.getBarterItemStack() == null)
                 return;
-            //Drop first display item (the 'SELL' item)
-            ItemStack sellDisplay = shop.getItemStack().clone();
-            sellDisplay.setAmount(1);
-            ItemMeta sellMeta = sellDisplay.getItemMeta();
-            sellMeta.setDisplayName(shop.getOwnerUUID().toString()+random.nextInt()); // stop item stacking and aid in searching
-            sellDisplay.setItemMeta(sellMeta);
 
-            Item i1 = shop.getChestLocation().getWorld().dropItem(this.getDropLocation(false), sellDisplay);
-            i1.setVelocity(new Vector(0, 0.1, 0));
-            i1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-            items.add(i1);
-            Shop.getPlugin().getDisplayListener().addDisplayItem(i1); //stop item from despawning
-
-            //Drop second display item (the 'BUY' item)
-            ItemStack buyDisplay = shop.getBarterItemStack().clone();
-            buyDisplay.setAmount(1);
-            ItemMeta buyMeta = buyDisplay.getItemMeta();
+            //define the barter display item
+            ItemStack barterItem = shop.getBarterItemStack().clone();
+            barterItem.setAmount(1);
+            ItemMeta buyMeta = barterItem.getItemMeta();
             buyMeta.setDisplayName(shop.getOwnerUUID().toString()+random.nextInt()); // stop item stacking and aid in searching
-            buyDisplay.setItemMeta(buyMeta);
+            barterItem.setItemMeta(buyMeta);
 
-            Item i2 = shop.getChestLocation().getWorld().dropItem(this.getDropLocation(true), buyDisplay);
-            i2.setVelocity(new Vector(0, 0.1, 0));
-            i2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-            items.add(i2);
-            Shop.getPlugin().getDisplayListener().addDisplayItem(i2); //stop item from despawning
+            switch (Shop.getPlugin().getDisplayType()){
+                case NONE:
+                    //TODO (get from signConfig somehow)
+                    break;
+                case ITEM:
+                    //Drop initial display item
+                    Item i1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
+                    i1.setVelocity(new Vector(0, 0.1, 0));
+                    i1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(i1);
+                    Shop.getPlugin().getDisplayListener().addDisplay(i1); //stop item from despawning
+
+                    //Drop the barter display item
+                    Item i2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
+                    i2.setVelocity(new Vector(0, 0.1, 0));
+                    i2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(i2);
+                    Shop.getPlugin().getDisplayListener().addDisplay(i2); //stop item from despawning
+                    break;
+                case LARGE_ITEM:
+                    //TODO (make getLargeItemLocation method for spacing out the two large items on one chest)
+                    break;
+            }
         }
-        //one item on the chest
+        //one display entity on the chest
         else {
-            if (shop.getItemStack() == null)
-                return;
-            ItemStack display = shop.getItemStack().clone();
-            display.setAmount(1);
-            ItemMeta meta = display.getItemMeta();
-            meta.setDisplayName(shop.getOwnerUUID().toString()+random.nextInt()); // stop item stacking and aid in searching
-            display.setItemMeta(meta);
-
-            Item i = shop.getChestLocation().getWorld().dropItem(this.getDropLocation(false), display);
-            i.setVelocity(new Vector(0, 0.1, 0));
-            i.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-            items.add(i);
-            Shop.getPlugin().getDisplayListener().addDisplayItem(i); //stop item from despawning
+            switch (Shop.getPlugin().getDisplayType()){
+                case NONE:
+                    //TODO (get from signConfig somehow)
+                    break;
+                case ITEM:
+                    Item i = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
+                    i.setVelocity(new Vector(0, 0.1, 0));
+                    i.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(i);
+                    Shop.getPlugin().getDisplayListener().addDisplay(i); //stop item from despawning
+                    break;
+                case LARGE_ITEM:
+                    ArmorStand stand = DisplayUtil.createDisplay(item, shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation(), shop.getFacing());
+                    stand.setCustomName(shop.getOwnerUUID().toString());
+                    stand.setCustomNameVisible(false);
+                    entities.add(stand);
+                    Shop.getPlugin().getDisplayListener().addDisplay(stand); //stop item from despawning
+                    break;
+            }
         }
         shop.updateSign();
 
@@ -81,13 +105,13 @@ public class Display {
     }
 
     public void remove() {
-        Iterator<Item> itemIterator = items.iterator();
-        while(itemIterator.hasNext()) {
-            Item item = itemIterator.next();
-            Shop.getPlugin().getDisplayListener().removeDisplayItem(item);
+        Iterator<Entity> displayIterator = entities.iterator();
+        while(displayIterator.hasNext()) {
+            Entity item = displayIterator.next();
+            Shop.getPlugin().getDisplayListener().removeDisplay(item);
             item.remove();
         }
-        items.clear();
+        entities.clear();
     }
 
 //    public Location getLocation() {
@@ -97,12 +121,12 @@ public class Display {
 //    }
 
     private void removeOldItems() {
-        for(Entity e : items){
+        for(Entity e : entities){
             for(Entity oldItem : e.getNearbyEntities(0.1, 0.1, 0.1)) {
                 if (oldItem.getType() == EntityType.DROPPED_ITEM) {
                     ItemMeta itemMeta = ((Item) oldItem).getItemStack().getItemMeta();
                     if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
-                        if ((!items.contains(oldItem)))
+                        if ((!entities.contains(oldItem)))
                             oldItem.remove();
                     }
                 }
@@ -123,7 +147,7 @@ public class Display {
 //        }
     }
 
-    private Location getDropLocation(boolean isBarterItem) {
+    private Location getItemDropLocation(boolean isBarterItem) {
         //calculate which x,z to drop items at depending on direction of the shop sign
         double dropY = 1.2;
         double dropX = 0.5;

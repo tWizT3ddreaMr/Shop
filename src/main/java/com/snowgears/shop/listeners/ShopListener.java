@@ -22,7 +22,9 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -42,16 +44,16 @@ public class ShopListener implements Listener {
         if(plugin.usePerms()){
             Player player = event.getPlayer();
             int buildPermissionNumber = 0;
-            boolean foundPerm = false;
-            for (int i = 500; i > 0; i--) {
-                if (player.hasPermission("shop.buildlimit." + i)) {
-                    buildPermissionNumber = i;
-                    foundPerm = true;
-                    break;
+            for(PermissionAttachmentInfo permInfo : player.getEffectivePermissions()){
+                if(permInfo.getPermission().contains("shop.buildlimit.")){
+                    try {
+                        int tempNum = Integer.parseInt(permInfo.getPermission().substring(permInfo.getPermission().lastIndexOf(".") + 1));
+                        if(tempNum > buildPermissionNumber)
+                            buildPermissionNumber = tempNum;
+                    } catch (Exception e) {}
                 }
             }
-            if(foundPerm)
-                shopBuildLimits.put(player.getName(), buildPermissionNumber);
+            shopBuildLimits.put(player.getName(), buildPermissionNumber);
         }
     }
 
@@ -66,6 +68,9 @@ public class ShopListener implements Listener {
     public void onShopOpen(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (plugin.getShopHandler().isChest(event.getClickedBlock())) {
+                if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                    return; // off hand packet, ignore.
+                }
 
                 Player player = event.getPlayer();
                 ShopObject shop = plugin.getShopHandler().getShopByChest(event.getClickedBlock());
@@ -117,6 +122,7 @@ public class ShopListener implements Listener {
         plugin.getCreativeSelectionListener().returnPlayerData(player);
 
         player.sendMessage(ShopMessage.getMessage(event.getShop().getType().toString(), "create", event.getShop(), player));
+        plugin.getExchangeListener().sendEffects(true, player, event.getShop());
         //plugin.getShopHandler().saveShops();
     }
 

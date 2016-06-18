@@ -49,6 +49,11 @@ sign_text:
          2: 'Selling; &l[amount]'
          3: '&a[price]'
          4: '&d[server name]'
+      no_display:
+         1: '&l[shop (selling)]'
+         2: '[item type]: [amount]'
+         3: '&a[price]'
+         4: '[owner]'
    BUY:
       normal:
          1: '&l[shop]'
@@ -60,6 +65,11 @@ sign_text:
          2: 'Buying; &l[amount]'
          3: '&a[price]'
          4: '&d[server name]'
+      no_display:
+         1: '&l[shop (buying)]'
+         2: '[item type]: [amount]'
+         3: '&a[price]'
+         4: '[owner]'
    BARTER:
       normal:
          1: '&l[shop]'
@@ -71,4 +81,9 @@ sign_text:
          2: 'Bartering;'
          3: '&a[amount]   for   [price]'
          4: '&d[server name]'
+      no_display:
+         1: '&l[shop (barter)]'
+         2: '[item type]: [amount]'
+         3: '[barter item type]: [price]'
+         4: '[owner]'
    zeroPrice: 'FREE'

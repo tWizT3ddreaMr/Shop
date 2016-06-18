@@ -30,7 +30,8 @@ public class ItemNameUtil {
                     String name = cols[2];
                     String id = cols[0];
                     String metadata = cols[1];
-                    String idAndMetadata = metadata.equals("0") ? id : (id + ":" + metadata);
+                    //String idAndMetadata = metadata.equals("0") ? id : (id + ":" + metadata);
+                    String idAndMetadata = id+":"+metadata;
                     names.put(idAndMetadata, name);
                 }
             } catch (IOException e) {

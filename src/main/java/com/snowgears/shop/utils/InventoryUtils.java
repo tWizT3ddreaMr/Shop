@@ -25,7 +25,7 @@ public class InventoryUtils {
         for (int i = 0; i < contents.length; i++) {
             ItemStack is = contents[i];
             if (is != null) {
-                if (is.isSimilar(itemStack)) {
+                if (itemstacksAreSimilar(is, itemStack)) {
                     if (is.getAmount() > amount) {
                         contents[i].setAmount(is.getAmount() - amount);
                         inventory.setContents(contents);
@@ -91,11 +91,24 @@ public class InventoryUtils {
         for (int i = 0; i < contents.length; i++) {
             ItemStack is = contents[i];
             if (is != null) {
-                if (is.isSimilar(itemStack)) {
+                if (itemstacksAreSimilar(is, itemStack)) {
                     amount += is.getAmount();
                 }
             }
         }
         return (amount / itemStack.getAmount());
+    }
+
+    public static boolean itemstacksAreSimilar(ItemStack i1, ItemStack i2){
+        if(i1 == null || i2 == null)
+            return false;
+        if(i1.getType() == i2.getType() && i1.getItemMeta().equals(i2.getItemMeta())){
+            if(i1.getEnchantments().equals(i2.getEnchantments())){
+                if((!Shop.getPlugin().checkItemDurability() || (Shop.getPlugin().checkItemDurability() && i1.getDurability() == i2.getDurability()))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

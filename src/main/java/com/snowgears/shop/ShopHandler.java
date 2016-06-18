@@ -7,12 +7,15 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -32,6 +35,7 @@ public class ShopHandler {
 
     private HashMap<Location, ShopObject> allShops = new HashMap<Location, ShopObject>();
     private ArrayList<Material> shopMaterials = new ArrayList<Material>();
+    private UUID adminUUID;
 
     public ShopHandler(Shop instance) {
         plugin = instance;
@@ -45,6 +49,7 @@ public class ShopHandler {
         shopMaterials.add(Material.TRAPPED_CHEST);
         if(plugin.useEnderChests())
             shopMaterials.add(Material.ENDER_CHEST);
+        adminUUID = UUID.randomUUID();
     }
 
     public ShopObject getShop(Location loc) {
@@ -54,22 +59,39 @@ public class ShopHandler {
     public ShopObject getShopByChest(Block shopChest) {
         if (this.isChest(shopChest)) {
             BlockFace chestFacing = UtilMethods.getDirectionOfChest(shopChest);
-            Block signBlock = shopChest.getRelative(chestFacing);
-            if(signBlock.getType() == Material.WALL_SIGN) {
-                Sign sign = (Sign) signBlock.getState().getData();
-                if (chestFacing == sign.getFacing()) {
+
+            ArrayList<Block> chestBlocks = new ArrayList<>();
+            chestBlocks.add(shopChest);
+
+            Chest chest = (Chest) shopChest.getState();
+            InventoryHolder ih = chest.getInventory().getHolder();
+
+            if (ih instanceof DoubleChest) {
+                DoubleChest dc = (DoubleChest) ih;
+                Chest leftChest = (Chest) dc.getLeftSide();
+                Chest rightChest = (Chest) dc.getRightSide();
+                if (chest.getLocation().equals(leftChest.getLocation()))
+                    chestBlocks.add(rightChest.getBlock());
+                else
+                    chestBlocks.add(leftChest.getBlock());
+            }
+
+            for (Block chestBlock : chestBlocks) {
+                Block signBlock = chestBlock.getRelative(chestFacing);
+                if (signBlock.getType() == Material.WALL_SIGN) {
+                    Sign sign = (Sign) signBlock.getState().getData();
+                    if (chestFacing == sign.getFacing()) {
+                        ShopObject shop = this.getShop(signBlock.getLocation());
+                        if (shop != null)
+                            return shop;
+                    }
+                } else if(!(ih instanceof DoubleChest)){
                     ShopObject shop = this.getShop(signBlock.getLocation());
-                    if(shop != null)
-                        return shop;
+                    //delete the shop if it doesn't have a sign
+                    if (shop != null)
+                        shop.delete();
                 }
             }
-            else{
-                ShopObject shop = this.getShop(signBlock.getLocation());
-                //delete the shop if it doesn't have a sign
-                if(shop != null)
-                    shop.delete();
-            }
-            return null;
         }
         return null;
     }
@@ -130,12 +152,17 @@ public class ShopHandler {
         return list;
     }
 
-    public void refreshShopItems() {
+    public void refreshShopDisplays() {
         for (World world : plugin.getServer().getWorlds()) {
             for (Entity entity : world.getEntities()) {
                 if (entity.getType() == EntityType.DROPPED_ITEM) {
                     ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
                     if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+                        entity.remove();
+                    }
+                }
+                else if(entity.getType() == EntityType.ARMOR_STAND){
+                    if (UtilMethods.stringStartsWithUUID(entity.getCustomName())) {
                         entity.remove();
                     }
                 }
@@ -323,6 +350,10 @@ public class ShopHandler {
         else
             //load normally
             loadShopsFromConfig(config);
+    }
+
+    public UUID getAdminUUID(){
+        return adminUUID;
     }
 
 

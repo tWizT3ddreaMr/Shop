@@ -21,7 +21,7 @@ public class ClearLaggListener implements Listener {
         Iterator<Entity> iterator = event.getEntityList().iterator();
         while (iterator.hasNext()) {
             Entity e = iterator.next();
-            if (plugin.getDisplayListener().containsItem(e)) {
+            if (plugin.getDisplayListener().isDisplayEntity(e)) {
                 iterator.remove();
             }
         }

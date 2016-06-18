@@ -97,16 +97,16 @@ interaction_issue:
 
 description:
    SELL:
-      item: '&7Item(s) this shop sells to you: &b[[item]]'
+      item: '&7Item(s) this shop sells to you: &b[[item]] &7([item durability]% durability)'
       price: '&aYou can buy &f[item amount] [item](s) &afrom this shop for &f[price].'
       pricePerItem: '&7That is [price per item] per [item].'
    BUY:
-      item: '&7Item(s) this shop buys from you: &b[[item]]'
+      item: '&7Item(s) this shop buys from you: &b[[item]] &7([item durability]% durability)'
       price: '&aYou can sell &f[item amount] [item](s) &ato this shop for &f[price].'
       pricePerItem: '&7That is [price per item] per [item].'
    BARTER:
-      item: '&7Item(s) this shop trades to you: &b[[item]]'
-      barterItem: '&7Item(s) you trade to the shop: &b[[barter item]]'
+      item: '&7Item(s) this shop trades to you: &b[[item]] &7([item durability]% durability)'
+      barterItem: '&7Item(s) you trade to the shop: &b[[barter item]] &7([barter item durability]% durability)'
       price: '&aYou can barter &f[barter item amount] &aof your &f[barter item](s) &ato this shop for &f[item amount] [item](s)&f.'
       pricePerItem: '&7That is [price per item](s) per [item].'
    stock: '&7This shop is currently able to provide [stock] more transactions.'

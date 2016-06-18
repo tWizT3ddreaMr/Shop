@@ -1,11 +1,25 @@
 # Thanks for downloading Shop! #
 #==============================#
 
+# If you want to use permissions with Shop, you must set this to true #
 usePermissions: false
 
 # If you want to use virtual money, install the plugin Vault and set this to true #
 # Otherwise, shops will use physical items as the economy on the server #
 useVault: false
+
+# This will change the types of displays that shops will use above their chests #
+# The options are: NONE, ITEM, LARGE_ITEM #
+displayType: ITEM
+
+# This will make it so shops will only complete transactions if the item durabilities are the same #
+checkItemDurability: true
+
+# These will play sounds and particle effects when creating and using shops #
+# These will need to be set to false if your server is running anything less than Minecraft 1.9 #
+playSounds: true
+playEffects: true
+
 
 
 # THIS SECTION IS ONLY USED IF VAULT IS BEING USED ON THE SERVER #

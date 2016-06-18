@@ -7,6 +7,7 @@ import com.snowgears.shop.events.PlayerCreateShopEvent;
 import com.snowgears.shop.events.PlayerDestroyShopEvent;
 import com.snowgears.shop.events.PlayerResizeShopEvent;
 import com.snowgears.shop.utils.EconomyUtils;
+import com.snowgears.shop.utils.InventoryUtils;
 import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.Bukkit;
@@ -23,6 +24,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
@@ -261,6 +263,9 @@ public class MiscListener implements Listener {
         if (event.isCancelled()) {
             return;
         }
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            return; // off hand packet, ignore.
+        }
         final Player player = event.getPlayer();
 
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
@@ -275,6 +280,7 @@ public class MiscListener implements Listener {
                 }
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", null, player));
+                    plugin.getExchangeListener().sendEffects(false, player, shop);
                     event.setCancelled(true);
                     return;
                 }
@@ -286,6 +292,7 @@ public class MiscListener implements Listener {
                 Block aboveShop = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
                 if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "displayRoom", null, player));
+                    plugin.getExchangeListener().sendEffects(false, player, shop);
                     event.setCancelled(true);
                     return;
                 }
@@ -300,10 +307,11 @@ public class MiscListener implements Listener {
 
                     }
                 } else if (shop.getBarterItemStack() == null) {
-                    if (!shop.getItemStack().isSimilar(shopItem)) {
+                    if (!(InventoryUtils.itemstacksAreSimilar(shop.getItemStack(), shopItem))) {
                         shop.setBarterItemStack(shopItem);
                     } else {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "sameItem", null, player));
+                        plugin.getExchangeListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
                         return;
                     }
@@ -315,6 +323,7 @@ public class MiscListener implements Listener {
                     boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
                     if(!removed){
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", shop, player));
+                        plugin.getExchangeListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
                         return;
                     }

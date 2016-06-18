@@ -80,10 +80,12 @@ public class ShopMessage {
         if(shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
             unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+            unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent(false));
         }
         if(shop != null && shop.getBarterItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getBarterItemStack().getAmount());
             unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
+            unformattedMessage = unformattedMessage.replace("[barter item durability]", "" + shop.getItemDurabilityPercent(true));
         }
         if(shop != null) {
             if(shop.isAdminShop())
@@ -99,7 +101,8 @@ public class ShopMessage {
             else
                 unformattedMessage = unformattedMessage.replace("[price per item]", "" + shop.getPricePerItemString());
             unformattedMessage = unformattedMessage.replace("[shop type]", "" + ShopMessage.getCreationWord(shop.getType().toString().toUpperCase())); //sub in user's word for SELL,BUY,BARTER
-            unformattedMessage = unformattedMessage.replace("[stock]", "" + shop.getStock());
+            if(unformattedMessage.contains("[stock]"))
+                unformattedMessage = unformattedMessage.replace("[stock]", "" + shop.getStock());
         }
         if(player != null) {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
