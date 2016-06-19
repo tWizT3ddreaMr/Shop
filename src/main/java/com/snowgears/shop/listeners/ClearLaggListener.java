@@ -1,5 +1,6 @@
 package com.snowgears.shop.listeners;
 
+import com.snowgears.shop.Display;
 import com.snowgears.shop.Shop;
 import me.minebuilders.clearlag.events.EntityRemoveEvent;
 import org.bukkit.entity.Entity;
@@ -21,7 +22,7 @@ public class ClearLaggListener implements Listener {
         Iterator<Entity> iterator = event.getEntityList().iterator();
         while (iterator.hasNext()) {
             Entity e = iterator.next();
-            if (plugin.getDisplayListener().isDisplayEntity(e)) {
+            if (Display.isDisplay(e)) {
                 iterator.remove();
             }
         }

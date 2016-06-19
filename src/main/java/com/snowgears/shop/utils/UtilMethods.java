@@ -108,6 +108,16 @@ public class UtilMethods {
         return false;
     }
 
+    public static boolean containsLocation(String s){
+        if(s == null)
+            return false;
+        if(s.startsWith("***{")){
+            if((s.indexOf(',') != s.lastIndexOf(',')) && s.indexOf('}') != -1)
+                return true;
+        }
+        return false;
+    }
+
     public static boolean basicLocationMatch(Location loc1, Location loc2){
         return (loc1.getBlockX() == loc2.getBlockX() && loc1.getBlockY() == loc2.getBlockY() && loc1.getBlockZ() == loc2.getBlockZ());
     }

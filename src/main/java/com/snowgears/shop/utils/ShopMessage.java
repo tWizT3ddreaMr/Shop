@@ -287,20 +287,22 @@ public class ShopMessage {
 
                 this.shopSignTextMap.put(type.toString() + "_admin", adminLines);
 
-                String[] noDisplayLines = new String[4];
-                Set<String> noDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".no_display").getKeys(false);
+                if(Shop.getPlugin().getDisplayType() == DisplayType.NONE) {
+                    String[] noDisplayLines = new String[4];
+                    Set<String> noDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".no_display").getKeys(false);
 
-                i = 0;
-                for (String number : noDisplayLineNumbers) {
-                    String message = signConfig.getString("sign_text." + typeString + ".no_display." + number);
-                    if (message == null)
-                        noDisplayLines[i] = "";
-                    else
-                        noDisplayLines[i] = message;
-                    i++;
+                    i = 0;
+                    for (String number : noDisplayLineNumbers) {
+                        String message = signConfig.getString("sign_text." + typeString + ".no_display." + number);
+                        if (message == null)
+                            noDisplayLines[i] = "";
+                        else
+                            noDisplayLines[i] = message;
+                        i++;
+                    }
+
+                    this.shopSignTextMap.put(type.toString() + "_no_display", noDisplayLines);
                 }
-
-                this.shopSignTextMap.put(type.toString() + "_no_display", noDisplayLines);
             }
         }
     }

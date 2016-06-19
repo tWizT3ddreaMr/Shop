@@ -25,7 +25,7 @@ public class Shop extends JavaPlugin {
     private static Shop plugin;
 
     private ShopListener shopListener = new ShopListener(this);
-    private DisplayItemListener displayListener;
+    private DisplayListener displayListener;
     private ExchangeListener exchangeListener = new ExchangeListener(this);
     private MiscListener miscListener = new MiscListener(this);
     private CreativeSelectionListener creativeSelectionListener;
@@ -88,7 +88,7 @@ public class Shop extends JavaPlugin {
         }
 
         creativeSelectionListener = new CreativeSelectionListener(this);
-        displayListener = new DisplayItemListener(this);
+        displayListener = new DisplayListener(this);
 
         getServer().getPluginManager().registerEvents(shopListener, this);
         getServer().getPluginManager().registerEvents(displayListener, this);
@@ -108,7 +108,9 @@ public class Shop extends JavaPlugin {
             // Failed to submit the stats
         }
 
-        displayType = DisplayType.valueOf(config.getString("displayType"));
+        try {
+            displayType = DisplayType.valueOf(config.getString("displayType"));
+        } catch (Exception e){ displayType = DisplayType.ITEM; }
 
         shopMessage = new ShopMessage(this);
         itemNameUtil = new ItemNameUtil();
@@ -260,7 +262,7 @@ public class Shop extends JavaPlugin {
         return shopListener;
     }
 
-    public DisplayItemListener getDisplayListener() {
+    public DisplayListener getDisplayListener() {
         return displayListener;
     }
 

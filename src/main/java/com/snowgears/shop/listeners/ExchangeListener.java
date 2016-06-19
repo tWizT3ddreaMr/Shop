@@ -403,13 +403,13 @@ public class ExchangeListener implements Listener {
             if(plugin.playSounds())
                 player.playSound(shop.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_TOUCH, 1.0F, 1.0F);
             if(plugin.playEffects())
-                player.playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK.getId());
+                player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK.getId());
         }
         else{
             if(plugin.playSounds())
                 player.playSound(shop.getSignLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0F, 1.0F);
             if(plugin.playEffects())
-                player.playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK.getId());
+                player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK.getId());
         }
     }
 }

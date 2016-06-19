@@ -20,9 +20,6 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 
@@ -154,6 +151,13 @@ public class ShopHandler {
             for (Entity entity : world.getEntities()) {
                 if(Display.isDisplay(entity)){
                     entity.remove();
+                }
+                //make to sure to clear items from old version of plugin too
+                else if (entity.getType() == EntityType.DROPPED_ITEM) {
+                    ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
+                    if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+                        entity.remove();
+                    }
                 }
             }
         }

@@ -38,7 +38,7 @@ public class Display {
         ItemStack item = shop.getItemStack().clone();
         item.setAmount(1);
         ItemMeta sellMeta = item.getItemMeta();
-        sellMeta.setDisplayName(shop.getOwnerUUID().toString()+random.nextInt()); // stop item stacking and aid in searching
+        sellMeta.setDisplayName(this.generateDisplayName(random));
         item.setItemMeta(sellMeta);
 
         //two display entities on the chest
@@ -50,12 +50,12 @@ public class Display {
             ItemStack barterItem = shop.getBarterItemStack().clone();
             barterItem.setAmount(1);
             ItemMeta buyMeta = barterItem.getItemMeta();
-            buyMeta.setDisplayName(shop.getOwnerUUID().toString()+random.nextInt()); // stop item stacking and aid in searching
+            buyMeta.setDisplayName(this.generateDisplayName(random)); // stop item stacking and aid in searching
             barterItem.setItemMeta(buyMeta);
 
             switch (Shop.getPlugin().getDisplayType()){
                 case NONE:
-                    //TODO (get from signConfig somehow)
+                    //do nothing
                     break;
                 case ITEM:
                     //Drop initial display item
@@ -63,17 +63,29 @@ public class Display {
                     i1.setVelocity(new Vector(0, 0.1, 0));
                     i1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(i1);
-                    Shop.getPlugin().getDisplayListener().addDisplay(i1); //stop item from despawning
 
                     //Drop the barter display item
                     Item i2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
                     i2.setVelocity(new Vector(0, 0.1, 0));
                     i2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(i2);
-                    Shop.getPlugin().getDisplayListener().addDisplay(i2); //stop item from despawning
                     break;
                 case LARGE_ITEM:
-                    //TODO (make getLargeItemLocation method for spacing out the two large items on one chest)
+                    //put first large display down
+                    Location leftLoc = shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
+                    leftLoc.add(getLargeItemBarterOffset(false));
+                    ArmorStand stand = DisplayUtil.createDisplay(item, leftLoc, shop.getFacing());
+                    stand.setCustomName(this.generateDisplayName(random));
+                    stand.setCustomNameVisible(false);
+                    entities.add(stand);
+
+                    //put first large display down
+                    Location rightLoc = shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
+                    rightLoc.add(getLargeItemBarterOffset(true));
+                    ArmorStand stand2 = DisplayUtil.createDisplay(barterItem, rightLoc, shop.getFacing());
+                    stand2.setCustomName(this.generateDisplayName(random));
+                    stand2.setCustomNameVisible(false);
+                    entities.add(stand2);
                     break;
             }
         }
@@ -81,21 +93,19 @@ public class Display {
         else {
             switch (Shop.getPlugin().getDisplayType()){
                 case NONE:
-                    //TODO (get from signConfig somehow)
+                    //do nothing
                     break;
                 case ITEM:
                     Item i = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     i.setVelocity(new Vector(0, 0.1, 0));
                     i.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(i);
-                    Shop.getPlugin().getDisplayListener().addDisplay(i); //stop item from despawning
                     break;
                 case LARGE_ITEM:
                     ArmorStand stand = DisplayUtil.createDisplay(item, shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation(), shop.getFacing());
-                    stand.setCustomName(shop.getOwnerUUID().toString());
+                    stand.setCustomName(this.generateDisplayName(random));
                     stand.setCustomNameVisible(false);
                     entities.add(stand);
-                    Shop.getPlugin().getDisplayListener().addDisplay(stand); //stop item from despawning
                     break;
             }
         }
@@ -106,14 +116,20 @@ public class Display {
         Iterator<Entity> displayIterator = entities.iterator();
         while(displayIterator.hasNext()) {
             Entity item = displayIterator.next();
-            Shop.getPlugin().getDisplayListener().removeDisplay(item);
             item.remove();
         }
         entities.clear();
 
-        for (Entity entity : shop.getChestLocation().getWorld().getNearbyEntities(shop.getChestLocation().clone().add(0.5, 0.5, 0.5), 0.5, 0.5, 0.5)) {
+        for (Entity entity : shop.getChestLocation().getWorld().getNearbyEntities(shop.getChestLocation().clone().add(0.5, 0.5, 0.5), 1, 1, 1)) {
+            //TODO delete this
+            if(entity.getType() == EntityType.ARMOR_STAND) {
+                System.out.println(((ArmorStand)entity).getChestplate());
+            }
             if(isDisplay(entity)){
-                entity.remove();
+                ShopObject s =  getShop(entity);
+                //remove any displays that are left over but still belong to the same shop
+                if(s != null && s.getSignLocation().equals(shop.getSignLocation()))
+                    entity.remove();
             }
         }
     }
@@ -159,17 +175,79 @@ public class Display {
         return shop.getChestLocation().clone().add(dropX, dropY, dropZ);
     }
 
+    private Vector getLargeItemBarterOffset(boolean isBarterItem){
+        Vector offset = new Vector(0,0,0);
+        double space = 0.24;
+        if (shop.getType() == ShopType.BARTER) {
+            Sign shopSign = (Sign) shop.getSignLocation().getBlock().getState().getData();
+            switch (shopSign.getFacing()) {
+                case NORTH:
+                    if (isBarterItem)
+                        offset.setX(-space);
+                    else
+                        offset.setX(space);
+                    break;
+                case EAST:
+                    if (isBarterItem)
+                        offset.setZ(-space);
+                    else
+                        offset.setZ(space);
+                    break;
+                case SOUTH:
+                    if (isBarterItem)
+                        offset.setX(space);
+                    else
+                        offset.setX(-space);
+                    break;
+                case WEST:
+                    if (isBarterItem)
+                        offset.setZ(space);
+                    else
+                        offset.setZ(-space);
+                    break;
+            }
+        }
+        return offset;
+    }
+
     public static boolean isDisplay(Entity entity){
         if (entity.getType() == EntityType.DROPPED_ITEM) {
             ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-            if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+            if (UtilMethods.containsLocation(itemMeta.getDisplayName())) {
                 return true;
             }
         } else if (entity.getType() == EntityType.ARMOR_STAND) {
-            if (UtilMethods.stringStartsWithUUID(entity.getCustomName())) {
+            if (UtilMethods.containsLocation(entity.getCustomName())) {
                 return true;
             }
         }
         return false;
+    }
+
+    public static ShopObject getShop(Entity display){
+        if(display == null)
+            return null;
+        String name = null;
+        if (display.getType() == EntityType.DROPPED_ITEM) {
+            ItemMeta itemMeta = ((Item) display).getItemStack().getItemMeta();
+            name = itemMeta.getDisplayName();
+        } else if (display.getType() == EntityType.ARMOR_STAND) {
+            name = display.getCustomName();
+        }
+        if(name == null)
+            return null;
+
+        if(UtilMethods.containsLocation(name))
+            return null;
+        String locString = name.substring(name.indexOf('{')+1, name.indexOf('}'));
+        String[] parts = locString.split(",");
+        Location location = new Location(display.getWorld(), Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
+        return Shop.getPlugin().getShopHandler().getShop(location);
+    }
+
+    private String generateDisplayName(Random random){
+        Location loc = shop.getSignLocation();
+        String name = "***{"+loc.getBlockX()+","+loc.getBlockY()+","+loc.getBlockZ()+"}"+random.nextInt(1000);
+        return name;
     }
 }

@@ -104,8 +104,10 @@ public class ShopListener implements Listener {
                 }
                 //player is sneaking and clicks own shop
                 else if(player.isSneaking()){
-                    shop.printSalesInfo(player);
-                    event.setCancelled(true);
+                    if(player.getItemInHand().getType() != Material.SIGN) {
+                        shop.printSalesInfo(player);
+                        event.setCancelled(true);
+                    }
                 }
             }
         }

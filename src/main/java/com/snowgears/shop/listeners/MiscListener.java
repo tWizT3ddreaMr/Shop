@@ -382,70 +382,34 @@ public class MiscListener implements Listener {
         } else if (plugin.getShopHandler().isChest(b)) {
 
             ShopObject shop = plugin.getShopHandler().getShopByChest(b);
-            if (shop != null) {
-                //player trying to break their own shop
-                if (shop.getOwnerName().equals(player.getName())) {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
-                    event.setCancelled(true);
-                    return;
-                }
-                else{
-                    if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))
+            if (shop == null)
+                return;
+
+            Chest chest = (Chest) b.getState();
+            InventoryHolder ih = chest.getInventory().getHolder();
+
+            if (ih instanceof DoubleChest) {
+                if(shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))){
+
+                    //the broken block was the initial chest with the sign
+                    if(shop.getChestLocation().equals(b.getLocation())){
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
-                    event.setCancelled(true);
-                }
-            }
-            //may be a double chest
-            else {
-                if(!(b.getState() instanceof Chest))
-                    return;
-
-                Chest chest = (Chest) b.getState();
-                InventoryHolder ih = chest.getInventory().getHolder();
-
-                if (ih instanceof DoubleChest) {
-                    DoubleChest dchest = (DoubleChest) ih;
-                    Chest chestLeft = (Chest) dchest.getLeftSide();
-                    Chest chestRight = (Chest) dchest.getRightSide();
-
-                    ShopObject shopLeft = plugin.getShopHandler().getShopByChest(chestLeft.getLocation().getBlock());
-                    ShopObject shopRight = plugin.getShopHandler().getShopByChest(chestRight.getLocation().getBlock());
-
-                    if (shopLeft == null && shopRight == null)
+                        event.setCancelled(true);
+                        plugin.getExchangeListener().sendEffects(false, player, shop);
+                    }
+                    else {
+                        PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shop, b.getLocation(), false);
+                        Bukkit.getPluginManager().callEvent(e);
                         return;
-                        //player trying to break non-sign side of double-shop
-                    else if (shopLeft == null) {
-                        //owner is trying to
-                        if (shopRight.getOwnerName().equals(player.getName())) {
-                            PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shopRight, b.getLocation(), false);
-                            Bukkit.getPluginManager().callEvent(e);
-                            return;
-                        }
-                        //other player is trying to
-                        else {
-                            if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
-                                PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shopRight, b.getLocation(), false);
-                                Bukkit.getPluginManager().callEvent(e);
-                            } else
-                                event.setCancelled(true);
-                        }
-                    } else if (shopRight == null) {
-                        //owner is trying to
-                        if (shopLeft.getOwnerName().equals(player.getName())) {
-                            PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shopLeft, b.getLocation(), false);
-                            Bukkit.getPluginManager().callEvent(e);
-                            return;
-                        }
-                        //other player is trying to
-                        else {
-                            if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
-                                PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shopLeft, b.getLocation(), false);
-                                Bukkit.getPluginManager().callEvent(e);
-                            } else
-                                event.setCancelled(true);
-                        }
                     }
                 }
+                else
+                    event.setCancelled(true);
+            }
+            else{
+                player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
+                event.setCancelled(true);
+                plugin.getExchangeListener().sendEffects(false, player, shop);
             }
         }
     }
