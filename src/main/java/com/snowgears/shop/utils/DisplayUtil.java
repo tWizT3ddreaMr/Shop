@@ -145,6 +145,22 @@ public class DisplayUtil {
                             break;
                     }
                 }
+                else if(material == Material.BANNER){
+                    switch (facing){
+                        case NORTH:
+                            standLocation = blockLocation.clone().add(1.1, -1.4, 0.9);
+                            break;
+                        case EAST:
+                            standLocation = blockLocation.clone().add(0.1, -1.4, 1.1);
+                            break;
+                        case SOUTH:
+                            standLocation = blockLocation.clone().add(-0.1, -1.4, 0.1);
+                            break;
+                        case WEST:
+                            standLocation = blockLocation.clone().add(0.9, -1.4, -0.1);
+                            break;
+                    }
+                }
                 //the material is a simple, default item
                 else{
                     switch (facing){
@@ -168,7 +184,7 @@ public class DisplayUtil {
         //make the stand face the correct direction when it spawns
         standLocation.setYaw(blockfaceToYaw(facing));
         //fences and bows are always 90 degrees off
-        if(isFence(material) || material == Material.BOW){
+        if(isFence(material) || material == Material.BOW || material == Material.BANNER){
             standLocation.setYaw(blockfaceToYaw(nextFace(facing)));
         }
 

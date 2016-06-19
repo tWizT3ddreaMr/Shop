@@ -100,8 +100,6 @@ public class Display {
             }
         }
         shop.updateSign();
-
-        removeOldItems();
     }
 
     public void remove() {
@@ -112,39 +110,12 @@ public class Display {
             item.remove();
         }
         entities.clear();
-    }
 
-//    public Location getLocation() {
-//        Location location = shop.getChestLocation().clone();
-//        location.add(0.5, 0.8, 0.5);
-//        return location;
-//    }
-
-    private void removeOldItems() {
-        for(Entity e : entities){
-            for(Entity oldItem : e.getNearbyEntities(0.1, 0.1, 0.1)) {
-                if (oldItem.getType() == EntityType.DROPPED_ITEM) {
-                    ItemMeta itemMeta = ((Item) oldItem).getItemStack().getItemMeta();
-                    if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
-                        if ((!entities.contains(oldItem)))
-                            oldItem.remove();
-                    }
-                }
+        for (Entity entity : shop.getChestLocation().getWorld().getNearbyEntities(shop.getChestLocation().clone().add(0.5, 0.5, 0.5), 0.5, 0.5, 0.5)) {
+            if(isDisplay(entity)){
+                entity.remove();
             }
         }
-//        for (Entity e : shop.getChestLocation().getChunk().getEntities()) {
-//            if (e.getType() == EntityType.DROPPED_ITEM) {
-//                if (UtilMethods.basicLocationMatch(e.getLocation(), shop.getChestLocation())){
-//                    ItemMeta meta = ((Item) e).getItemStack().getItemMeta();
-//                    if(meta.getDisplayName() != null) {
-//                        if (meta.getDisplayName().contains(shop.getOwnerUUID().toString())) {
-//                            Shop.getPlugin().getDisplayListener().removeDisplayItem((Item) e);
-//                            e.remove();
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
 
     private Location getItemDropLocation(boolean isBarterItem) {
@@ -186,5 +157,19 @@ public class Display {
             }
         }
         return shop.getChestLocation().clone().add(dropX, dropY, dropZ);
+    }
+
+    public static boolean isDisplay(Entity entity){
+        if (entity.getType() == EntityType.DROPPED_ITEM) {
+            ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
+            if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+                return true;
+            }
+        } else if (entity.getType() == EntityType.ARMOR_STAND) {
+            if (UtilMethods.stringStartsWithUUID(entity.getCustomName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

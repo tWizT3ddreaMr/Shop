@@ -113,16 +113,21 @@ public class ShopListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onCreateShop(final PlayerCreateShopEvent event) {
+        Player player = event.getPlayer();
+        ShopObject shop = event.getShop();
         if (event.isCancelled()) {
-            event.getShop().delete();
+            shop.delete();
             return;
         }
-        Player player = event.getPlayer();
-        event.getShop().updateSign();
+        shop.updateSign();
         plugin.getCreativeSelectionListener().returnPlayerData(player);
 
-        player.sendMessage(ShopMessage.getMessage(event.getShop().getType().toString(), "create", event.getShop(), player));
-        plugin.getExchangeListener().sendEffects(true, player, event.getShop());
+        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+        plugin.getExchangeListener().sendEffects(true, player, shop);
+
+        if(shop.isAdminShop()){
+            shop.setOwner(plugin.getShopHandler().getAdminUUID());
+        }
         //plugin.getShopHandler().saveShops();
     }
 

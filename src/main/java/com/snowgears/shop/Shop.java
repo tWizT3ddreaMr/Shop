@@ -108,6 +108,8 @@ public class Shop extends JavaPlugin {
             // Failed to submit the stats
         }
 
+        displayType = DisplayType.valueOf(config.getString("displayType"));
+
         shopMessage = new ShopMessage(this);
         itemNameUtil = new ItemNameUtil();
 
@@ -121,7 +123,6 @@ public class Shop extends JavaPlugin {
         }
 
         usePerms = config.getBoolean("usePermissions");
-        displayType = DisplayType.valueOf(config.getString("displayType"));
         checkItemDurability = config.getBoolean("checkItemDurability");
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");

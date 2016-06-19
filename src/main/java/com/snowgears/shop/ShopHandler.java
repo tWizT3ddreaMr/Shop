@@ -1,10 +1,7 @@
 package com.snowgears.shop;
 
 import com.snowgears.shop.utils.UtilMethods;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -155,16 +152,8 @@ public class ShopHandler {
     public void refreshShopDisplays() {
         for (World world : plugin.getServer().getWorlds()) {
             for (Entity entity : world.getEntities()) {
-                if (entity.getType() == EntityType.DROPPED_ITEM) {
-                    ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-                    if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
-                        entity.remove();
-                    }
-                }
-                else if(entity.getType() == EntityType.ARMOR_STAND){
-                    if (UtilMethods.stringStartsWithUUID(entity.getCustomName())) {
-                        entity.remove();
-                    }
+                if(Display.isDisplay(entity)){
+                    entity.remove();
                 }
             }
         }
@@ -174,73 +163,70 @@ public class ShopHandler {
     }
 
     public void saveShops() {
-        File fileDirectory = new File(plugin.getDataFolder(), "Data");
-        if (!fileDirectory.exists())
-            fileDirectory.mkdir();
-        File shopFile = new File(fileDirectory + "/shops.yml");
-        if (!shopFile.exists()) { // file doesn't exist
-            try {
-                shopFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else { //does exist, clear it for future saving
-            PrintWriter writer = null;
-            try {
-                writer = new PrintWriter(shopFile);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            writer.print("");
-            writer.close();
-        }
-
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(shopFile);
-        ArrayList<ShopObject> shopList = orderedShopList();
-
-        String owner;
-
-        int shopNumber = 1;
-        for (int i = 0; i < shopList.size(); i++) {
-            ShopObject s = shopList.get(i);
-            //don't save shops that are not initialized with items
-            if (s.isInitialized()) {
-                owner = s.getOwnerName() + " (" + s.getOwnerUUID().toString() + ")";
-                config.set("shops." + owner + "." + shopNumber + ".location", locationToString(s.getSignLocation()));
-                config.set("shops." + owner + "." + shopNumber + ".price", s.getPrice());
-                config.set("shops." + owner + "." + shopNumber + ".amount", s.getAmount());
-                String type = "";
-                if (s.isAdminShop())
-                    type = "admin ";
-                type = type + s.getType().toString();
-                config.set("shops." + owner + "." + shopNumber + ".type", type);
-
-                ItemStack itemStack = s.getItemStack();
-                itemStack.setAmount(1);
-                config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
-
-                if (s.getType() == ShopType.BARTER) {
-                    ItemStack barterItemStack = s.getBarterItemStack();
-                    barterItemStack.setAmount(1);
-                    config.set("shops." + owner + "." + shopNumber + ".itemBarter", barterItemStack);
-                }
-
-                shopNumber++;
-                //reset shop number if next shop has a different owner
-                if (i < shopList.size() - 1) {
-                    if (!(s.getOwnerUUID().equals(shopList.get(i + 1).getOwnerUUID())))
-                        shopNumber = 1;
-                }
-            }
-        }
-
         try {
-            config.save(shopFile);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+            File fileDirectory = new File(plugin.getDataFolder(), "Data");
+            UtilMethods.deleteDirectory(fileDirectory);
+            if (!fileDirectory.exists())
+                fileDirectory.mkdir();
 
-        plugin.getEnderChestHandler().saveEnderChests();
+            ArrayList<ShopObject> shopList = orderedShopList();
+            if (shopList.isEmpty())
+                return;
+            OfflinePlayer lastOwner = null;
+            File currentFile = null;
+            int shopNumber = 0;
+            String owner;
+
+            for (ShopObject shop : shopList) {
+
+                //use current file
+                if (shop.getOwnerPlayer().equals(lastOwner)) {
+                    if (!currentFile.exists()) // file doesn't exist
+                        currentFile.createNewFile();
+                    shopNumber++;
+                }
+                //change current file to next player
+                else {
+                    lastOwner = shop.getOwnerPlayer();
+                    if(lastOwner.getUniqueId().equals(adminUUID))
+                        currentFile = new File(fileDirectory + "/admin.yml");
+                    else
+                        currentFile = new File(fileDirectory + "/" + lastOwner.getName() + " (" + lastOwner.getUniqueId().toString() + ").yml");
+                    if (!currentFile.exists()) // file doesn't exist
+                        currentFile.createNewFile();
+                    shopNumber = 1;
+                }
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
+
+                //don't save shops that are not initialized with items
+                if (shop.isInitialized()) {
+                    owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
+                    config.set("shops." + owner + "." + shopNumber + ".location", locationToString(shop.getSignLocation()));
+                    config.set("shops." + owner + "." + shopNumber + ".price", shop.getPrice());
+                    config.set("shops." + owner + "." + shopNumber + ".amount", shop.getAmount());
+                    String type = "";
+                    if (shop.isAdminShop())
+                        type = "admin ";
+                    type = type + shop.getType().toString();
+                    config.set("shops." + owner + "." + shopNumber + ".type", type);
+
+                    ItemStack itemStack = shop.getItemStack();
+                    itemStack.setAmount(1);
+                    config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
+
+                    if (shop.getType() == ShopType.BARTER) {
+                        ItemStack barterItemStack = shop.getBarterItemStack();
+                        barterItemStack.setAmount(1);
+                        config.set("shops." + owner + "." + shopNumber + ".itemBarter", barterItemStack);
+                    }
+                }
+                config.save(currentFile);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        if(plugin.useEnderChests())
+            plugin.getEnderChestHandler().saveEnderChests();
     }
 
     public void loadShops() {
@@ -248,12 +234,27 @@ public class ShopHandler {
         if (!fileDirectory.exists())
             return;
         File shopFile = new File(fileDirectory + "/shops.yml");
-        if (!shopFile.exists())
-            return;
-
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(shopFile);
-        backwardsCompatibleLoadShopsFromConfig(config);
+        if (shopFile.exists()){
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(shopFile);
+            backwardsCompatibleLoadShopsFromConfig(config);
+        }
+        else{
+            // load all the yml files from the data directory
+            for (File file : fileDirectory.listFiles()) {
+                if (file.isFile()) {
+                    if(file.getName().endsWith(".yml") && !file.getName().contains("enderchests")) {
+                        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                        loadShopsFromConfig(config);
+                    }
+                }
+            }
+        }
     }
+
+
+    //==============================================================================//
+    //            OLD WAY OF LOADING SHOPS FROM ONE CONFIG FOR TRANSFERRING         //
+    //==============================================================================//
 
     private void loadShopsFromConfig(YamlConfiguration config) {
 
@@ -269,7 +270,11 @@ public class ShopHandler {
                 if (b.getType() == Material.WALL_SIGN) {
                     org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
                     //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
-                    UUID owner = uidFromString(shopOwner);
+                    UUID owner;
+                    if(shopOwner.equals("admin"))
+                        owner = this.getAdminUUID();
+                    else
+                        owner = uidFromString(shopOwner);
                     double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
                     int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
                     String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
@@ -286,6 +291,10 @@ public class ShopHandler {
                         shop.setBarterItemStack(barterItemStack);
                     }
 
+                    if(shop.isAdminShop()){
+                        shop.setOwner(plugin.getShopHandler().getAdminUUID());
+                    }
+
                     if(this.isChest(shop.getChestLocation().getBlock())) {
                         shop.updateSign();
                         this.addShop(shop);
@@ -295,61 +304,32 @@ public class ShopHandler {
         }
     }
 
-    private String locationToString(Location loc) {
-        return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
-    }
-
-    private Location locationFromString(String locString) {
-        String[] parts = locString.split(",");
-        return new Location(plugin.getServer().getWorld(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
-    }
-
-    private UUID uidFromString(String ownerString) {
-        int index = ownerString.indexOf("(");
-        String uidString = ownerString.substring(index + 1, ownerString.length() - 1);
-        return UUID.fromString(uidString);
-    }
-
-    private ShopType typeFromString(String typeString) {
-        if (typeString.contains("sell"))
-            return ShopType.SELL;
-        else if (typeString.contains("buy"))
-            return ShopType.BUY;
-        else
-            return ShopType.BARTER;
-    }
-
-    public boolean isChest(Block b){
-        return shopMaterials.contains(b.getType());
-    }
-
-
-
-
     private void backwardsCompatibleLoadShopsFromConfig(YamlConfiguration config){
         if (config.getConfigurationSection("shops") == null)
             return;
         Set<String> allShopOwners = config.getConfigurationSection("shops").getKeys(false);
 
-        boolean loadByOldConfig = false;
+        boolean loadByLegacyConfig = false;
         for (String shopOwner : allShopOwners) {
             Set<String> allShopNumbers = config.getConfigurationSection("shops." + shopOwner).getKeys(false);
             for (String shopNumber : allShopNumbers) {
                 ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
                 if (itemStack == null)
-                    loadByOldConfig = true;
+                    loadByLegacyConfig = true;
                 break;
             }
             break;
         }
 
-        if(loadByOldConfig) {
-            loadShopsFromOldConfig(config); //load as old
+        if(loadByLegacyConfig) {
+            loadShopsFromLegacyConfig(config); //load as old
             saveShops(); //save as new
         }
-        else
-            //load normally
+        else {
+            //load old config normally
             loadShopsFromConfig(config);
+            saveShops(); //save as new
+        }
     }
 
     public UUID getAdminUUID(){
@@ -358,10 +338,10 @@ public class ShopHandler {
 
 
     //==============================================================================//
-    //            OLD WAY OF LOADING SHOPS FROM CONFIG FOR TRANSFERRING             //
+    //            LEGACY WAY OF LOADING SHOPS FROM CONFIG FOR TRANSFERRING          //
     //==============================================================================//
 
-    private void loadShopsFromOldConfig(YamlConfiguration config) {
+    private void loadShopsFromLegacyConfig(YamlConfiguration config) {
 
         if (config.getConfigurationSection("shops") == null)
             return;
@@ -429,11 +409,44 @@ public class ShopHandler {
                     shop.setItemStack(itemStack);
                     if (shop.getType() == ShopType.BARTER)
                         shop.setBarterItemStack(barterItemStack);
+
+                    if(shop.isAdminShop()){
+                        shop.setOwner(plugin.getShopHandler().getAdminUUID());
+                    }
+
                     shop.updateSign();
                     this.addShop(shop);
                 }
             }
         }
+    }
+
+    private String locationToString(Location loc) {
+        return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+
+    private Location locationFromString(String locString) {
+        String[] parts = locString.split(",");
+        return new Location(plugin.getServer().getWorld(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
+    }
+
+    private UUID uidFromString(String ownerString) {
+        int index = ownerString.indexOf("(");
+        String uidString = ownerString.substring(index + 1, ownerString.length() - 1);
+        return UUID.fromString(uidString);
+    }
+
+    private ShopType typeFromString(String typeString) {
+        if (typeString.contains("sell"))
+            return ShopType.SELL;
+        else if (typeString.contains("buy"))
+            return ShopType.BUY;
+        else
+            return ShopType.BARTER;
+    }
+
+    public boolean isChest(Block b){
+        return shopMaterials.contains(b.getType());
     }
 
     private List<String> loreFromString(String loreString) {

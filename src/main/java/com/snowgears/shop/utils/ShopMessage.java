@@ -1,5 +1,6 @@
 package com.snowgears.shop.utils;
 
+import com.snowgears.shop.DisplayType;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
@@ -52,7 +53,7 @@ public class ShopMessage {
         else
             message = messageMap.get(key);
 
-        message = formatMessage(message, shop, player);
+        message = formatMessage(message, shop, player, false);
         return message;
     }
 
@@ -72,19 +73,23 @@ public class ShopMessage {
     //      # [user] : The name of the player who used the shop #
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
-    public static String formatMessage(String unformattedMessage, ShopObject shop, Player player){
+    public static String formatMessage(String unformattedMessage, ShopObject shop, Player player, boolean forSign){
         if(unformattedMessage == null) {
             loadMessagesFromConfig();
             return "";
         }
         if(shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
-            unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+            //dont replace [item] tag on first run through if its for a sign
+            if(!forSign)
+                unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
             unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent(false));
         }
         if(shop != null && shop.getBarterItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getBarterItemStack().getAmount());
-            unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
+            //dont replace [barter item] tag on first run through if its for a sign
+            if(!forSign)
+                unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
             unformattedMessage = unformattedMessage.replace("[barter item durability]", "" + shop.getItemDurabilityPercent(true));
         }
         if(shop != null) {
@@ -110,6 +115,35 @@ public class ShopMessage {
         }
         unformattedMessage = unformattedMessage.replace("[server name]", "" + Bukkit.getServer().getServerName());
 
+        if(forSign){
+            if(unformattedMessage.contains("[item]") && shop != null && shop.getItemStack() != null){
+                int tagLength = "[item]".length();
+                String itemName = Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack());
+                int itemNameLength = itemName.length();
+                int totalLength = unformattedMessage.length() - tagLength + itemNameLength;
+                if(totalLength > 17){
+                    String cutItemName = itemName.substring(0, (itemName.length()-(Math.abs(17 - totalLength))));
+                    unformattedMessage = unformattedMessage.replace("[item]", cutItemName);
+                }
+                else{
+                    unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+                }
+            }
+            if(unformattedMessage.contains("[barter item]") && shop != null && shop.getBarterItemStack() != null){
+                int tagLength = "[barter item]".length();
+                String itemName = Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack());
+                int itemNameLength = itemName.length();
+                int totalLength = unformattedMessage.length() - tagLength + itemNameLength;
+                if(totalLength > 17){
+                    String cutItemName = itemName.substring(0, (itemName.length()-(Math.abs(17 - totalLength))));
+                    unformattedMessage = unformattedMessage.replace("[barter item]", cutItemName);
+                }
+                else{
+                    unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
+                }
+            }
+        }
+
         unformattedMessage = ChatColor.translateAlternateColorCodes('&', unformattedMessage);
         return unformattedMessage;
     }
@@ -124,6 +158,8 @@ public class ShopMessage {
         String[] lines;
         if(shop.isAdminShop())
             lines = getUnformattedShopSignLines(shop.getType(), "admin");
+        else if(Shop.getPlugin().getDisplayType() == DisplayType.NONE)
+            lines = getUnformattedShopSignLines(shop.getType(), "no_display");
         else
             lines = getUnformattedShopSignLines(shop.getType(), "normal");
 
@@ -134,9 +170,13 @@ public class ShopMessage {
             else
                 lines[i] = lines[i].replace("[price]", shop.getPriceString());
             lines[i] = lines[i].replace("[owner]", "" + shop.getOwnerName());
-            lines[i] = lines[i].replace("[server name]", "" + Bukkit.getServer().getServerName());
+            lines[i] = formatMessage(lines[i], shop, null, true);
 
             lines[i] = ChatColor.translateAlternateColorCodes('&', lines[i]);
+
+            //TODO have smart way of cutting lines if too long so at least some of word can go on
+//            if(lines[i].length() > 15)
+//                lines[i]
         }
         return lines;
     }
@@ -246,6 +286,21 @@ public class ShopMessage {
                 }
 
                 this.shopSignTextMap.put(type.toString() + "_admin", adminLines);
+
+                String[] noDisplayLines = new String[4];
+                Set<String> noDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".no_display").getKeys(false);
+
+                i = 0;
+                for (String number : noDisplayLineNumbers) {
+                    String message = signConfig.getString("sign_text." + typeString + ".no_display." + number);
+                    if (message == null)
+                        noDisplayLines[i] = "";
+                    else
+                        noDisplayLines[i] = message;
+                    i++;
+                }
+
+                this.shopSignTextMap.put(type.toString() + "_no_display", noDisplayLines);
             }
         }
     }

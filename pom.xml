@@ -6,7 +6,7 @@
 
     <groupId>com.snowgears.shop</groupId>
     <artifactId>Shop</artifactId>
-    <version>1.5.3.18</version>
+    <version>1.6</version>
 
     <build>
         <plugins>

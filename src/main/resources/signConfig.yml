@@ -30,60 +30,60 @@
 
 
 sign_creation:
-   SHOP: 'shop'
-   SELL: 'sell'
-   BUY: 'buy'
-   BARTER: 'barter'
-   ADMIN: 'admin'
+   SHOP: "shop"
+   SELL: "sell"
+   BUY: "buy"
+   BARTER: "barter"
+   ADMIN: "admin"
 
 
 sign_text:
    SELL:
       normal:
-         1: '&l[shop]'
-         2: 'Selling; &l[amount]'
-         3: '&a[price]'
-         4: '[owner]'
+         1: "&l[shop]"
+         2: "Selling; &l[amount]"
+         3: "&a[price]"
+         4: "[owner]"
       admin:
-         1: '&l[shop]'
-         2: 'Selling; &l[amount]'
-         3: '&a[price]'
-         4: '&d[server name]'
+         1: "&l[shop]"
+         2: "Selling; &l[amount]"
+         3: "&a[price]"
+         4: "&d[server name]"
       no_display:
-         1: '&l[shop (selling)]'
-         2: '[item type]: [amount]'
-         3: '&a[price]'
-         4: '[owner]'
+         1: "&l[sell shop]"
+         2: "[item]: [amount]"
+         3: "&a[price]"
+         4: "[owner]"
    BUY:
       normal:
-         1: '&l[shop]'
-         2: 'Buying; &l[amount]'
-         3: '&a[price]'
-         4: '[owner]'
+         1: "&l[shop]"
+         2: "Buying; &l[amount]"
+         3: "&a[price]"
+         4: "[owner]"
       admin:
-         1: '&l[shop]'
-         2: 'Buying; &l[amount]'
-         3: '&a[price]'
-         4: '&d[server name]'
+         1: "&l[shop]"
+         2: "Buying; &l[amount]"
+         3: "&a[price]"
+         4: "&d[server name]"
       no_display:
-         1: '&l[shop (buying)]'
-         2: '[item type]: [amount]'
-         3: '&a[price]'
-         4: '[owner]'
+         1: "&l[buy shop]"
+         2: "[item]: [amount]"
+         3: "&a[price]"
+         4: "[owner]"
    BARTER:
       normal:
-         1: '&l[shop]'
-         2: 'Bartering;'
-         3: '&a[amount]   for   [price]'
-         4: '[owner]'
+         1: "&l[shop]"
+         2: "Bartering;"
+         3: "&a[amount]   for   [price]"
+         4: "[owner]"
       admin:
-         1: '&l[shop]'
-         2: 'Bartering;'
-         3: '&a[amount]   for   [price]'
-         4: '&d[server name]'
+         1: "&l[shop]"
+         2: "Bartering;"
+         3: "&a[amount]   for   [price]"
+         4: "&d[server name]"
       no_display:
-         1: '&l[shop (barter)]'
-         2: '[item type]: [amount]'
-         3: '[barter item type]: [price]'
-         4: '[owner]'
-   zeroPrice: 'FREE'
+         1: "&l[barter shop]"
+         2: "[item]: [amount]"
+         3: "[barter item]: [price]"
+         4: "[owner]"
+   zeroPrice: "FREE"

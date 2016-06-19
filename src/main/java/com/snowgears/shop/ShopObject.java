@@ -74,6 +74,8 @@ public class ShopObject {
     }
 
     public String getOwnerName() {
+        if(this.isAdminShop())
+            return "admin";
         if (Bukkit.getOfflinePlayer(this.owner) != null)
             return Bukkit.getOfflinePlayer(this.owner).getName();
         return ChatColor.RED + "CLOSED";
@@ -117,6 +119,10 @@ public class ShopObject {
                 barterItem.setDurability((short) 0); //set item to full durability
         }
         this.display.spawn();
+    }
+
+    public void setOwner(UUID newOwner){
+        this.owner = newOwner;
     }
 
     public int getStock(){
@@ -192,6 +198,8 @@ public class ShopObject {
     }
 
     public void updateSign() {
+
+        signLines = ShopMessage.getSignLines(this);
 
         Shop.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(Shop.getPlugin(), new Runnable() {
             public void run() {
@@ -294,7 +302,7 @@ public class ShopObject {
             boolean barterItem = false;
             if(part.contains("[barter item]"))
                 barterItem = true;
-            part = ShopMessage.formatMessage(part, this, player);
+            part = ShopMessage.formatMessage(part, this, player, false);
             part = ChatColor.stripColor(part);
             fancyMessage.then(part);
             if(color != null)
@@ -309,10 +317,5 @@ public class ShopObject {
             }
         }
         fancyMessage.send(player);
-    }
-
-    @Override
-    public String toString() {
-        return owner + "." + item.getType().toString();
     }
 }
