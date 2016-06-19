@@ -121,10 +121,6 @@ public class Display {
         entities.clear();
 
         for (Entity entity : shop.getChestLocation().getWorld().getNearbyEntities(shop.getChestLocation().clone().add(0.5, 0.5, 0.5), 1, 1, 1)) {
-            //TODO delete this
-            if(entity.getType() == EntityType.ARMOR_STAND) {
-                System.out.println(((ArmorStand)entity).getChestplate());
-            }
             if(isDisplay(entity)){
                 ShopObject s =  getShop(entity);
                 //remove any displays that are left over but still belong to the same shop
