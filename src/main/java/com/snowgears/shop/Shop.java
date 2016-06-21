@@ -36,6 +36,7 @@ public class Shop extends JavaPlugin {
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
 
+    private boolean versionBelowMC9;
     private boolean usePerms;
     private boolean useVault;
     private DisplayType displayType;
@@ -61,6 +62,7 @@ public class Shop extends JavaPlugin {
     @SuppressWarnings("deprecation")
     public void onEnable() {
         plugin = this;
+        calculateMCVersion();
 
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
@@ -258,6 +260,10 @@ public class Shop extends JavaPlugin {
         return econ != null;
     }
 
+    public boolean serverBelowMC9(){
+        return versionBelowMC9;
+    }
+
     public ShopListener getShopListener() {
         return shopListener;
     }
@@ -355,5 +361,13 @@ public class Shop extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void calculateMCVersion(){
+        String version = plugin.getServer().getVersion();
+        if(version.contains("1.5") || version.contains("1.6") || version.contains("1.7") || version.contains("1.8"))
+            versionBelowMC9 = true;
+        else
+            versionBelowMC9 = false;
     }
 }

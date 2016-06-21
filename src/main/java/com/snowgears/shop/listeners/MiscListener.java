@@ -263,7 +263,7 @@ public class MiscListener implements Listener {
         if (event.isCancelled()) {
             return;
         }
-        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+        if (!plugin.serverBelowMC9() && event.getHand() == EquipmentSlot.OFF_HAND) {
             return; // off hand packet, ignore.
         }
         final Player player = event.getPlayer();

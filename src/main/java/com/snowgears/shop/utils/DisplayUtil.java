@@ -132,10 +132,10 @@ public class DisplayUtil {
                 else if(material == Material.BOW){
                     switch (facing){
                         case NORTH:
-                            standLocation = blockLocation.clone().add(1, -0.8, 0.85);
+                            standLocation = blockLocation.clone().add(0.99, -0.8, 0.84);
                             break;
                         case EAST:
-                            standLocation = blockLocation.clone().add(0.15, -0.8, 1);
+                            standLocation = blockLocation.clone().add(0.15, -0.8, 0.99);
                             break;
                         case SOUTH:
                             standLocation = blockLocation.clone().add(0, -0.8, 0.15);
@@ -148,16 +148,16 @@ public class DisplayUtil {
                 else if(material == Material.BANNER){
                     switch (facing){
                         case NORTH:
-                            standLocation = blockLocation.clone().add(1.1, -1.4, 0.9);
+                            standLocation = blockLocation.clone().add(0.99, -1.4, 0.86);
                             break;
                         case EAST:
-                            standLocation = blockLocation.clone().add(0.1, -1.4, 1.1);
+                            standLocation = blockLocation.clone().add(0.12, -1.4, 1);
                             break;
                         case SOUTH:
-                            standLocation = blockLocation.clone().add(-0.1, -1.4, 0.1);
+                            standLocation = blockLocation.clone().add(0.01, -1.4, 0.12);
                             break;
                         case WEST:
-                            standLocation = blockLocation.clone().add(0.9, -1.4, -0.1);
+                            standLocation = blockLocation.clone().add(0.88, -1.4, 0);
                             break;
                     }
                 }
@@ -165,16 +165,16 @@ public class DisplayUtil {
                 else{
                     switch (facing){
                         case NORTH:
-                            standLocation = blockLocation.clone().add(0.15, -1.4, 1.075);
+                            standLocation = blockLocation.clone().add(0.125, -1.4, 0.95);
                             break;
                         case EAST:
-                            standLocation = blockLocation.clone().add(-0.075, -1.4, 0.15);
+                            standLocation = blockLocation.clone().add(0.005, -1.4, 0.11);
                             break;
                         case SOUTH:
-                            standLocation = blockLocation.clone().add(0.87, -1.4, -0.075);
+                            standLocation = blockLocation.clone().add(0.88, -1.4, 0.005);
                             break;
                         case WEST:
-                            standLocation = blockLocation.clone().add(1.07, -1.4, 0.85);
+                            standLocation = blockLocation.clone().add(0.99, -1.4, 0.88);
                             break;
                     }
                 }

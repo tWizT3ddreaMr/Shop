@@ -34,7 +34,8 @@ public class ExchangeListener implements Listener {
 
     @EventHandler
     public void onShopSignClick(PlayerInteractEvent event) {
-        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+
+        if (!plugin.serverBelowMC9() && event.getHand() == EquipmentSlot.OFF_HAND) {
             return; // off hand packet, ignore.
         }
         Player player = event.getPlayer();

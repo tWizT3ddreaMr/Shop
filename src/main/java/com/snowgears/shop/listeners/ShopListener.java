@@ -68,7 +68,7 @@ public class ShopListener implements Listener {
     public void onShopOpen(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (plugin.getShopHandler().isChest(event.getClickedBlock())) {
-                if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                if (!plugin.serverBelowMC9() && event.getHand() == EquipmentSlot.OFF_HAND) {
                     return; // off hand packet, ignore.
                 }
 
