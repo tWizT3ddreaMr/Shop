@@ -1,5 +1,6 @@
 package com.snowgears.shop.listeners;
 
+import com.snowgears.shop.DisplayType;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
@@ -12,6 +13,7 @@ import com.snowgears.shop.utils.ShopMessage;
 import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.entity.Player;
@@ -29,11 +31,13 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class MiscListener implements Listener {
 
     public Shop plugin = Shop.getPlugin();
+    private HashMap<String, Long> interactEventTick = new HashMap<>();
 
     public MiscListener(Shop instance) {
         plugin = instance;
@@ -121,7 +125,10 @@ public class MiscListener implements Listener {
                     return;
                 }
 
-                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BUY")))
+                //this is twice in order to fix german words for BUY and SELL colliding
+                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("SELL")))
+                    type = ShopType.SELL;
+                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BUY")))
                     type = ShopType.BUY;
                 else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BARTER")))
                     type = ShopType.BARTER;
@@ -463,6 +470,63 @@ public class MiscListener implements Listener {
                     Bukkit.getPluginManager().callEvent(e);
                 } else
                     event.setCancelled(true);
+            }
+        }
+    }
+
+    //allow players to place blocks that are occupied by large item displays
+    @EventHandler
+    public void onBlockPlaceAttempt(PlayerInteractEvent event) {
+        if(plugin.getDisplayType() != DisplayType.LARGE_ITEM)
+            return;
+        final Player player = event.getPlayer();
+
+
+        //must check the time between this and last interact event since it is thrown twice in MC 1.9
+        long tickCheck = System.currentTimeMillis();
+        if(interactEventTick.containsKey(player.getName())) {
+            if (tickCheck - interactEventTick.get(player.getName()) < 10) {
+                event.setCancelled(true);
+            }
+        }
+        interactEventTick.put(player.getName(), tickCheck);
+
+        if (event.isCancelled())
+            return;
+
+//        player.sendMessage("----------------------------");
+//        player.sendMessage("PlayerInteractEvent called.");
+//        player.sendMessage(event.getAction().toString());
+//        player.sendMessage(event.getHand().toString());
+
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if(player.getItemInHand().getType().isBlock()){
+                Block toChange = event.getClickedBlock().getRelative(event.getBlockFace());
+                if(toChange.getType() != Material.AIR)
+                    return;
+                BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+                Block[] checks = {toChange, toChange.getRelative(BlockFace.DOWN)};
+                for(Block check : checks) {
+                    for (BlockFace dir : directions) {
+                        Block b = check.getRelative(dir);
+                        if (plugin.getShopHandler().isChest(b)) {
+                            ShopObject shop = plugin.getShopHandler().getShopByChest(b);
+                            if (shop != null) {
+                                player.sendMessage("Clicked block: (" + toChange.getLocation().getBlockX() + ", " + toChange.getLocation().getBlockY() + ", " + toChange.getLocation().getBlockZ() + ")");
+                                toChange.setType(player.getItemInHand().getType());
+                                event.setCancelled(true);
+                                if (player.getGameMode() == GameMode.SURVIVAL) {
+                                    ItemStack hand = player.getItemInHand();
+                                    hand.setAmount(hand.getAmount() - 1);
+                                    if (hand.getAmount() == 0)
+                                        hand.setType(Material.AIR);
+                                    event.getPlayer().setItemInHand(hand);
+                                }
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         }
     }

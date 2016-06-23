@@ -57,17 +57,20 @@ public class ShopHandler {
             ArrayList<Block> chestBlocks = new ArrayList<>();
             chestBlocks.add(shopChest);
 
-            Chest chest = (Chest) shopChest.getState();
-            InventoryHolder ih = chest.getInventory().getHolder();
+            InventoryHolder ih = null;
+            if(shopChest.getState() instanceof Chest) {
+                Chest chest = (Chest) shopChest.getState();
+                ih = chest.getInventory().getHolder();
 
-            if (ih instanceof DoubleChest) {
-                DoubleChest dc = (DoubleChest) ih;
-                Chest leftChest = (Chest) dc.getLeftSide();
-                Chest rightChest = (Chest) dc.getRightSide();
-                if (chest.getLocation().equals(leftChest.getLocation()))
-                    chestBlocks.add(rightChest.getBlock());
-                else
-                    chestBlocks.add(leftChest.getBlock());
+                if (ih instanceof DoubleChest) {
+                    DoubleChest dc = (DoubleChest) ih;
+                    Chest leftChest = (Chest) dc.getLeftSide();
+                    Chest rightChest = (Chest) dc.getRightSide();
+                    if (chest.getLocation().equals(leftChest.getLocation()))
+                        chestBlocks.add(rightChest.getBlock());
+                    else
+                        chestBlocks.add(leftChest.getBlock());
+                }
             }
 
             for (Block chestBlock : chestBlocks) {

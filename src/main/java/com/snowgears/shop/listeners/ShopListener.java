@@ -43,7 +43,7 @@ public class ShopListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event){
         if(plugin.usePerms()){
             Player player = event.getPlayer();
-            int buildPermissionNumber = 0;
+            int buildPermissionNumber = -1;
             for(PermissionAttachmentInfo permInfo : player.getEffectivePermissions()){
                 if(permInfo.getPermission().contains("shop.buildlimit.")){
                     try {
@@ -53,7 +53,10 @@ public class ShopListener implements Listener {
                     } catch (Exception e) {}
                 }
             }
-            shopBuildLimits.put(player.getName(), buildPermissionNumber);
+            if(buildPermissionNumber == -1)
+                shopBuildLimits.put(player.getName(), 10000);
+            else
+                shopBuildLimits.put(player.getName(), buildPermissionNumber);
         }
     }
 

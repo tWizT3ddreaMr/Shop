@@ -115,12 +115,12 @@ public class Display {
     public void remove() {
         Iterator<Entity> displayIterator = entities.iterator();
         while(displayIterator.hasNext()) {
-            Entity item = displayIterator.next();
-            item.remove();
+            Entity displayEntity = displayIterator.next();
+            displayEntity.remove();
         }
         entities.clear();
 
-        for (Entity entity : shop.getChestLocation().getWorld().getNearbyEntities(shop.getChestLocation().clone().add(0.5, 0.5, 0.5), 1, 1, 1)) {
+        for (Entity entity : shop.getChestLocation().getWorld().getNearbyEntities(shop.getChestLocation().clone().add(0.5, 0.5, 0.5), 3, 3, 3)) {
             if(isDisplay(entity)){
                 ShopObject s =  getShop(entity);
                 //remove any displays that are left over but still belong to the same shop
@@ -230,11 +230,11 @@ public class Display {
         } else if (display.getType() == EntityType.ARMOR_STAND) {
             name = display.getCustomName();
         }
-        if(name == null)
-            return null;
 
-        if(UtilMethods.containsLocation(name))
+        if(!UtilMethods.containsLocation(name)) {
             return null;
+        }
+
         String locString = name.substring(name.indexOf('{')+1, name.indexOf('}'));
         String[] parts = locString.split(",");
         Location location = new Location(display.getWorld(), Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
