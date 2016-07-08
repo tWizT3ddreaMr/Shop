@@ -50,6 +50,7 @@ public class Shop extends JavaPlugin {
     private boolean useEnderchests;
     private double creationCost;
     private double destructionCost;
+    private double taxPercent;
     private ArrayList<String> worldBlackList;
 
     private YamlConfiguration config;
@@ -131,6 +132,7 @@ public class Shop extends JavaPlugin {
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
+        taxPercent = config.getDouble("taxPercent");
         String itemCurrencyIDString = config.getString("itemCurrencyID");
         int itemCurrencyId;
         int itemCurrencyData = 0;
@@ -197,7 +199,6 @@ public class Shop extends JavaPlugin {
                 sender.sendMessage("[Shop] Available Commands:");
                 sender.sendMessage("   /(shop / chestshop) list");
                 sender.sendMessage("   /(shop / chestshop) item refresh");
-                sender.sendMessage("   /(shop / chestshop) item hardreset");
             }
         } else if (args.length == 1) {
             if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
@@ -322,6 +323,10 @@ public class Shop extends JavaPlugin {
 
     public String getVaultCurrencySymbol() {
         return vaultCurrencySymbol;
+    }
+
+    public double getTaxPercent(){
+        return taxPercent;
     }
 
     public Economy getEconomy() {

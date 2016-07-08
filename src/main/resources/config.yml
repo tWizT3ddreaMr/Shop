@@ -9,7 +9,7 @@ usePermissions: false
 useVault: false
 
 # This will change the types of displays that shops will use above their chests #
-# The options are: NONE, ITEM, LARGE_ITEM #
+# The options are: NONE, ITEM, GLASS_CASE, LARGE_ITEM #
 displayType: ITEM
 
 # This will make it so shops will only complete transactions if the item durabilities are the same #

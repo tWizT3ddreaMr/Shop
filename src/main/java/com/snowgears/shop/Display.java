@@ -3,6 +3,7 @@ package com.snowgears.shop;
 import com.snowgears.shop.utils.DisplayUtil;
 import com.snowgears.shop.utils.UtilMethods;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -87,6 +88,28 @@ public class Display {
                     stand2.setCustomNameVisible(false);
                     entities.add(stand2);
                     break;
+                case GLASS_CASE:
+                    //put the extra large glass casing down
+                    Location caseLoc = shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
+                    caseLoc.add(0, -0.74, 0);
+                    ArmorStand caseStand = DisplayUtil.createDisplay(new ItemStack(Material.GLASS), caseLoc, shop.getFacing());
+                    caseStand.setSmall(false);
+                    caseStand.setCustomName(this.generateDisplayName(random));
+                    caseStand.setCustomNameVisible(false);
+                    entities.add(caseStand);
+
+                    //Drop initial display item
+                    Item item1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
+                    item1.setVelocity(new Vector(0, 0.1, 0));
+                    item1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(item1);
+
+                    //Drop the barter display item
+                    Item item2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
+                    item2.setVelocity(new Vector(0, 0.1, 0));
+                    item2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(item2);
+                    break;
             }
         }
         //one display entity on the chest
@@ -106,6 +129,22 @@ public class Display {
                     stand.setCustomName(this.generateDisplayName(random));
                     stand.setCustomNameVisible(false);
                     entities.add(stand);
+                    break;
+                case GLASS_CASE:
+                    //put the extra large glass casing down
+                    Location caseLoc = shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
+                    caseLoc.add(0, -0.74, 0);
+                    ArmorStand caseStand = DisplayUtil.createDisplay(new ItemStack(Material.GLASS), caseLoc, shop.getFacing());
+                    caseStand.setSmall(false);
+                    caseStand.setCustomName(this.generateDisplayName(random));
+                    caseStand.setCustomNameVisible(false);
+                    entities.add(caseStand);
+
+                    //drop the display item in the glass case
+                    Item caseDisplayItem = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
+                    caseDisplayItem.setVelocity(new Vector(0, 0.1, 0));
+                    caseDisplayItem.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(caseDisplayItem);
                     break;
             }
         }

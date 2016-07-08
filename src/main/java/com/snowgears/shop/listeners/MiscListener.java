@@ -78,7 +78,7 @@ public class MiscListener implements Listener {
     public void onShopCreation(SignChangeEvent event) {
         final Block b = event.getBlock();
         final Player player = event.getPlayer();
-        final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
+        final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData(); //TODO for some reason this has thrown cast errors
 
         Block chest;
         if (sign.isWallSign())
@@ -481,7 +481,6 @@ public class MiscListener implements Listener {
             return;
         final Player player = event.getPlayer();
 
-
         //must check the time between this and last interact event since it is thrown twice in MC 1.9
         long tickCheck = System.currentTimeMillis();
         if(interactEventTick.containsKey(player.getName())) {
@@ -494,12 +493,9 @@ public class MiscListener implements Listener {
         if (event.isCancelled())
             return;
 
-//        player.sendMessage("----------------------------");
-//        player.sendMessage("PlayerInteractEvent called.");
-//        player.sendMessage(event.getAction().toString());
-//        player.sendMessage(event.getHand().toString());
-
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if(plugin.getShopHandler().isChest(event.getClickedBlock()))
+                return;
             if(player.getItemInHand().getType().isBlock()){
                 Block toChange = event.getClickedBlock().getRelative(event.getBlockFace());
                 if(toChange.getType() != Material.AIR)
@@ -512,15 +508,16 @@ public class MiscListener implements Listener {
                         if (plugin.getShopHandler().isChest(b)) {
                             ShopObject shop = plugin.getShopHandler().getShopByChest(b);
                             if (shop != null) {
-                                player.sendMessage("Clicked block: (" + toChange.getLocation().getBlockX() + ", " + toChange.getLocation().getBlockY() + ", " + toChange.getLocation().getBlockZ() + ")");
-                                toChange.setType(player.getItemInHand().getType());
-                                event.setCancelled(true);
-                                if (player.getGameMode() == GameMode.SURVIVAL) {
-                                    ItemStack hand = player.getItemInHand();
-                                    hand.setAmount(hand.getAmount() - 1);
-                                    if (hand.getAmount() == 0)
-                                        hand.setType(Material.AIR);
-                                    event.getPlayer().setItemInHand(hand);
+                                if (player.getUniqueId().equals(shop.getOwnerUUID()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
+                                    toChange.setType(player.getItemInHand().getType());
+                                    event.setCancelled(true);
+                                    if (player.getGameMode() == GameMode.SURVIVAL) {
+                                        ItemStack hand = player.getItemInHand();
+                                        hand.setAmount(hand.getAmount() - 1);
+                                        if (hand.getAmount() == 0)
+                                            hand.setType(Material.AIR);
+                                        event.getPlayer().setItemInHand(hand);
+                                    }
                                 }
                                 return;
                             }

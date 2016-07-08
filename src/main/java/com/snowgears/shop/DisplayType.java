@@ -1,5 +1,5 @@
 package com.snowgears.shop;
 
 public enum DisplayType {
-    NONE, ITEM, LARGE_ITEM;
+    NONE, ITEM, LARGE_ITEM, GLASS_CASE;
 }
