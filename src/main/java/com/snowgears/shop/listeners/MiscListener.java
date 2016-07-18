@@ -78,6 +78,8 @@ public class MiscListener implements Listener {
     public void onShopCreation(SignChangeEvent event) {
         final Block b = event.getBlock();
         final Player player = event.getPlayer();
+        if(!(b.getState() instanceof Sign))
+            return;
         final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData(); //TODO for some reason this has thrown cast errors
 
         Block chest;

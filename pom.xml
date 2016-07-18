@@ -6,7 +6,7 @@
 
     <groupId>com.snowgears.shop</groupId>
     <artifactId>Shop</artifactId>
-    <version>1.6.3</version>
+    <version>1.6.4</version>
 
     <build>
         <plugins>
@@ -64,13 +64,8 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.10-R0.1-SNAPSHOT</version>
+            <version>1.10.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>mkremins</groupId>
-            <artifactId>fanciful</artifactId>
-            <version>0.3.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.milkbowl.vault</groupId>

@@ -4,9 +4,41 @@
 # If you want to use permissions with Shop, you must set this to true #
 usePermissions: false
 
+
+# =================================================================== #
+#                      ECONOMY AND CURRENCY                           #
+# =================================================================== #
+
 # If you want to use virtual money, install the plugin Vault and set this to true #
 # Otherwise, shops will use physical items as the economy on the server #
 useVault: false
+
+# If useVault is set to true, this is the currency symbol that is displayed #
+vaultCurrencySymbol: $
+# If useVault is set to false, this is the name name that is displayed #
+# TO CHANGE THE ACTUAL ITEM THAT IS USED, RUN THE COMMAND '/SHOP CURRENCY' IN-GAME #
+itemCurrencyName: Emerald(s)
+
+# This controls the way in which prices of shop items are enforced #
+# OFF - players are able to set any price they want to on any item (prices.tsv file will be ignored) #
+# EXACT - the prices of items will be set to thier pre-defined prices (in the prices.tsv file) #
+# MAXIMUM - players are able to set any price so long as the price is below the set price (in the prices.tsv file) #
+# (To disable pricing enforcement on certain items, simply use EXACT or MAXIMUM and set the items price to -1 (in the prices.tsv file) #
+enforcePrices: OFF
+
+# This is the tax percent that shop owners will be taxed on every transaction #
+# For example, if this were set to 10, if player A bought an item for $20 from player B, player B would only get $18 #
+taxPercent: 0
+
+# These allow you to charge money to players for creating/destroying their shops #
+creationCost: 0
+destructionCost: 0
+
+
+# =================================================================== #
+#                         GENERAL SETTINGS                            #
+# =================================================================== #
+
 
 # This will change the types of displays that shops will use above their chests #
 # The options are: NONE, ITEM, GLASS_CASE, LARGE_ITEM #
@@ -20,39 +52,8 @@ checkItemDurability: true
 playSounds: true
 playEffects: true
 
-
-
-# THIS SECTION IS ONLY USED IF VAULT IS BEING USED ON THE SERVER #
-# ================================================================== #
-
-# This will be the symbol in front of your currency on shop signs #
-# For example, if your server is using 'cents' you would use the cents symbol #
-vaultCurrencySymbol: $
-# ================================================================== #
-
-
-
-# THIS SECTION IS ONLY USED IF VAULT IS NOT BEING USED ON THE SERVER #
-# ================================================================== #
-
-# For item IDs, use this website:  http://minecraft-ids.grahamedgecombe.com  #
-# For example, if you wanted to use Lapis Lazuli as your currency, put 351;4    #
-# Default is set to Emerald (388;0) #
-itemCurrencyID: 388;0
-
-# This is what your currency will be called on shop signs #
-# This should match the name of the item you are using for the section above #
-itemCurrencyName: Emerald(s)
-# ================================================================== #
-
-
 # This controls whether or not ender chests are able to be used as shops on the server #
-enableEnderChests: true
-
-# These allow you to charge money to players for creating/destroying their shops #
-creationCost: 0
-destructionCost: 0
-
+enableEnderChests: false
 
 # Add the names of worlds that you do not want shops to be able to be created in here #
 worldBlacklist:

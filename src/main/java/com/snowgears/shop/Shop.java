@@ -1,11 +1,10 @@
 package com.snowgears.shop;
 
 import com.snowgears.shop.listeners.*;
-import com.snowgears.shop.utils.ItemNameUtil;
-import com.snowgears.shop.utils.Metrics;
-import com.snowgears.shop.utils.ShopMessage;
+import com.snowgears.shop.utils.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -35,6 +34,7 @@ public class Shop extends JavaPlugin {
     private EnderChestHandler enderChestHandler;
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
+    private PriceUtil priceUtil;
 
     private boolean versionBelowMC9;
     private boolean usePerms;
@@ -68,26 +68,32 @@ public class Shop extends JavaPlugin {
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
-            copy(getResource("config.yml"), configFile);
+            UtilMethods.copy(getResource("config.yml"), configFile);
         }
         config = YamlConfiguration.loadConfiguration(configFile);
 
         File chatConfigFile = new File(getDataFolder(), "chatConfig.yml");
         if (!chatConfigFile.exists()) {
             chatConfigFile.getParentFile().mkdirs();
-            copy(getResource("chatConfig.yml"), chatConfigFile);
+            UtilMethods.copy(getResource("chatConfig.yml"), chatConfigFile);
         }
 
         File signConfigFile = new File(getDataFolder(), "signConfig.yml");
         if (!signConfigFile.exists()) {
             signConfigFile.getParentFile().mkdirs();
-            copy(getResource("signConfig.yml"), signConfigFile);
+            UtilMethods.copy(getResource("signConfig.yml"), signConfigFile);
         }
 
         File itemNameFile = new File(getDataFolder(), "items.tsv");
         if (!itemNameFile.exists()) {
             itemNameFile.getParentFile().mkdirs();
-            copy(getResource("items.tsv"), itemNameFile);
+            UtilMethods.copy(getResource("items.tsv"), itemNameFile);
+        }
+
+        File pricesFile = new File(getDataFolder(), "prices.tsv");
+        if (!pricesFile.exists()) {
+            pricesFile.getParentFile().mkdirs();
+            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
         }
 
         creativeSelectionListener = new CreativeSelectionListener(this);
@@ -117,6 +123,7 @@ public class Shop extends JavaPlugin {
 
         shopMessage = new ShopMessage(this);
         itemNameUtil = new ItemNameUtil();
+        priceUtil = new PriceUtil();
 
         File fileDirectory = new File(this.getDataFolder(), "Data");
         if (!fileDirectory.exists()) {
@@ -133,18 +140,37 @@ public class Shop extends JavaPlugin {
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
         taxPercent = config.getDouble("taxPercent");
-        String itemCurrencyIDString = config.getString("itemCurrencyID");
-        int itemCurrencyId;
-        int itemCurrencyData = 0;
-        if (itemCurrencyIDString.contains(";")) {
-            itemCurrencyId = Integer.parseInt(itemCurrencyIDString.substring(0, itemCurrencyIDString.indexOf(";")));
-            itemCurrencyData = Integer.parseInt(itemCurrencyIDString.substring(itemCurrencyIDString.indexOf(";") + 1, itemCurrencyIDString.length()));
-        } else {
-            itemCurrencyId = Integer.parseInt(itemCurrencyIDString.substring(0, itemCurrencyIDString.length()));
+//        String itemCurrencyIDString = config.getString("itemCurrencyID");
+//        int itemCurrencyId;
+//        int itemCurrencyData = 0;
+//        if (itemCurrencyIDString.contains(";")) {
+//            itemCurrencyId = Integer.parseInt(itemCurrencyIDString.substring(0, itemCurrencyIDString.indexOf(";")));
+//            itemCurrencyData = Integer.parseInt(itemCurrencyIDString.substring(itemCurrencyIDString.indexOf(";") + 1, itemCurrencyIDString.length()));
+//        } else {
+//            itemCurrencyId = Integer.parseInt(itemCurrencyIDString.substring(0, itemCurrencyIDString.length()));
+//        }
+
+//        itemCurrency = new ItemStack(itemCurrencyId);
+//        itemCurrency.setData(new MaterialData(itemCurrencyId, (byte) itemCurrencyData));
+
+        //Loading the itemCurrency from a file makes it easier to allow servers to use detailed itemstacks as the server's economy item
+        File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");
+        if(itemCurrencyFile.exists()){
+            YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
+            itemCurrency = currencyConfig.getItemStack("item");
+            itemCurrency.setAmount(1);
+        }
+        else{
+            try {
+                itemCurrency = new ItemStack(Material.EMERALD);
+                itemCurrencyFile.createNewFile();
+
+                YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
+                currencyConfig.set("item", itemCurrency);
+                currencyConfig.save(itemCurrencyFile);
+            } catch (Exception e) {}
         }
 
-        itemCurrency = new ItemStack(itemCurrencyId);
-        itemCurrency.setData(new MaterialData(itemCurrencyId, (byte) itemCurrencyData));
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencySymbol");
 
@@ -197,8 +223,8 @@ public class Shop extends JavaPlugin {
         if (args.length == 0) {
             if (cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")) {
                 sender.sendMessage("[Shop] Available Commands:");
-                sender.sendMessage("   /(shop / chestshop) list");
-                sender.sendMessage("   /(shop / chestshop) item refresh");
+                sender.sendMessage("   /shop list");
+                sender.sendMessage("   /shop item refresh");
             }
         } else if (args.length == 1) {
             if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
@@ -222,10 +248,57 @@ public class Shop extends JavaPlugin {
                         return true;
                     }
                     shopHandler.saveShops();
-                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file.");
+                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file."); //TODO replace message
                 } else {
                     shopHandler.saveShops();
-                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file.");
+                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file."); //TODO replace message
+                }
+            }
+            else if (args[0].equalsIgnoreCase("currency")) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if ((usePerms && player.hasPermission("shop.operator")) || player.isOp()) {
+                        //TODO delete all of this and replace with ShopMessage messages
+                        if(useVault())
+                            player.sendMessage(ChatColor.GRAY + "The server is using virtual currency through Vault.");
+                        else{
+                            player.sendMessage(ChatColor.GRAY + "The server is using "+itemNameUtil.getName(itemCurrency)+" as currency.");
+                            player.sendMessage(ChatColor.GRAY + "To change this run the command '/shop setcurrency' with the item you want in your hand.");
+                        }
+                        return true;
+                    }
+                } else {
+                    sender.sendMessage("The server is using "+itemNameUtil.getName(itemCurrency)+" as currency.");
+                }
+            }
+            else if (args[0].equalsIgnoreCase("setcurrency")) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if ((usePerms && player.hasPermission("shop.operator")) || player.isOp()) {
+                        //TODO delete all of this and replace with ShopMessage messages
+                        if(useVault()) {
+                            player.sendMessage(ChatColor.RED + "The server is using virtual currency through Vault and so no item could be set.");
+                            return true;
+                        }
+                        else{
+                            itemCurrency = player.getItemInHand();
+                            itemCurrency.setAmount(1);
+
+                            //TODO move this to its own saveItemCurrency() method
+                            try {
+                                File fileDirectory = new File(this.getDataFolder(), "Data");
+                                File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");
+                                YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
+                                currencyConfig.set("item", itemCurrency);
+                                currencyConfig.save(itemCurrencyFile);
+                            } catch (Exception e) {}
+
+                            player.sendMessage(ChatColor.GRAY + "The server is now using "+itemNameUtil.getName(itemCurrency)+" as currency.");
+                        }
+                        return true;
+                    }
+                } else {
+                    sender.sendMessage("The server is using "+itemNameUtil.getName(itemCurrency)+" as currency.");
                 }
             }
         } else if (args.length == 2) {
@@ -351,21 +424,6 @@ public class Shop extends JavaPlugin {
 
     public ArrayList<String> getWorldBlacklist(){
         return worldBlackList;
-    }
-
-    private void copy(InputStream in, File file) {
-        try {
-            OutputStream out = new FileOutputStream(file);
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            out.close();
-            in.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void calculateMCVersion(){

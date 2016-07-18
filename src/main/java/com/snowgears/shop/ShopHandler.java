@@ -172,7 +172,7 @@ public class ShopHandler {
     public void saveShops() {
         try {
             File fileDirectory = new File(plugin.getDataFolder(), "Data");
-            UtilMethods.deleteDirectory(fileDirectory);
+            //UtilMethods.deleteDirectory(fileDirectory);
             if (!fileDirectory.exists())
                 fileDirectory.mkdir();
 
@@ -199,6 +199,7 @@ public class ShopHandler {
                         currentFile = new File(fileDirectory + "/admin.yml");
                     else
                         currentFile = new File(fileDirectory + "/" + lastOwner.getName() + " (" + lastOwner.getUniqueId().toString() + ").yml");
+                    currentFile.delete();
                     if (!currentFile.exists()) // file doesn't exist
                         currentFile.createNewFile();
                     shopNumber = 1;
@@ -249,7 +250,7 @@ public class ShopHandler {
             // load all the yml files from the data directory
             for (File file : fileDirectory.listFiles()) {
                 if (file.isFile()) {
-                    if(file.getName().endsWith(".yml") && !file.getName().contains("enderchests")) {
+                    if(file.getName().endsWith(".yml") && !file.getName().contains("enderchests") && !file.getName().contains("itemCurrency")) {
                         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
                         loadShopsFromConfig(config);
                     }

@@ -117,3 +117,19 @@ permission:
    create: "&cYou are not authorized to create [shop type]ing shops."
    destroy: "&cYou are not authorized to destroy shops."
    buildLimit: "&cYou have already reached your build limit of [build limit] shops."
+
+command:
+   shop:
+      - "&l[Shop] Available Commands"
+      - "   &7/shop list"
+      - "   &7/shop item refresh"
+      - "   &7/shop currency"
+      - "   &7/shop setcurrency"
+      - "   &7/shop save"
+   shopList:
+   shopItemRefresh: "[Shop] The display items on all of the shops have been refreshed."
+   shopCurrency:
+      vaultEconomy: "&7Shop is using &aVault &7for digital currency."
+      itemEconomy: "&7Shop is using &a[[economyItem](s)] &7as currency on the server. To change this, do &l/shop setcurrency"
+   shopSetCurrency: "&7Shop will now use &a[[economyItem](s)] &7 as the currency on the server."
+   shopSave: "[Shop] The shops have all been saved to the Data folder."
