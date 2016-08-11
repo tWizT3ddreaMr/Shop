@@ -90,11 +90,12 @@ public class Shop extends JavaPlugin {
             UtilMethods.copy(getResource("items.tsv"), itemNameFile);
         }
 
-        File pricesFile = new File(getDataFolder(), "prices.tsv");
-        if (!pricesFile.exists()) {
-            pricesFile.getParentFile().mkdirs();
-            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
-        }
+        //TODO
+//        File pricesFile = new File(getDataFolder(), "prices.tsv");
+//        if (!pricesFile.exists()) {
+//            pricesFile.getParentFile().mkdirs();
+//            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
+//        }
 
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
@@ -139,7 +140,9 @@ public class Shop extends JavaPlugin {
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
-        taxPercent = config.getDouble("taxPercent");
+        //TODO
+//        taxPercent = config.getDouble("taxPercent");
+
 //        String itemCurrencyIDString = config.getString("itemCurrencyID");
 //        int itemCurrencyId;
 //        int itemCurrencyData = 0;
@@ -149,7 +152,7 @@ public class Shop extends JavaPlugin {
 //        } else {
 //            itemCurrencyId = Integer.parseInt(itemCurrencyIDString.substring(0, itemCurrencyIDString.length()));
 //        }
-
+//
 //        itemCurrency = new ItemStack(itemCurrencyId);
 //        itemCurrency.setData(new MaterialData(itemCurrencyId, (byte) itemCurrencyData));
 
@@ -282,6 +285,10 @@ public class Shop extends JavaPlugin {
                         }
                         else{
                             itemCurrency = player.getItemInHand();
+                            if(itemCurrency == null || itemCurrency.getType() == Material.AIR){
+                                player.sendMessage(ChatColor.RED + "You must be holding a valid item to set the shop currency.");
+                                return true;
+                            }
                             itemCurrency.setAmount(1);
 
                             //TODO move this to its own saveItemCurrency() method

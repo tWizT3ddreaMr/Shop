@@ -19,17 +19,6 @@ vaultCurrencySymbol: $
 # TO CHANGE THE ACTUAL ITEM THAT IS USED, RUN THE COMMAND '/SHOP CURRENCY' IN-GAME #
 itemCurrencyName: Emerald(s)
 
-# This controls the way in which prices of shop items are enforced #
-# OFF - players are able to set any price they want to on any item (prices.tsv file will be ignored) #
-# EXACT - the prices of items will be set to thier pre-defined prices (in the prices.tsv file) #
-# MAXIMUM - players are able to set any price so long as the price is below the set price (in the prices.tsv file) #
-# (To disable pricing enforcement on certain items, simply use EXACT or MAXIMUM and set the items price to -1 (in the prices.tsv file) #
-enforcePrices: OFF
-
-# This is the tax percent that shop owners will be taxed on every transaction #
-# For example, if this were set to 10, if player A bought an item for $20 from player B, player B would only get $18 #
-taxPercent: 0
-
 # These allow you to charge money to players for creating/destroying their shops #
 creationCost: 0
 destructionCost: 0
