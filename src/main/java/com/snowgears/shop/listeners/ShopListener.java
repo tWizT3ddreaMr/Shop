@@ -80,6 +80,11 @@ public class ShopListener implements Listener {
                 if (shop == null)
                     return;
 
+                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || shop.getSignLocation().getBlock().getType() != Material.WALL_SIGN){
+                    shop.delete();
+                    return;
+                }
+
                 if(shop.getChestLocation().getBlock().getType() == Material.ENDER_CHEST) {
                     if(player.isSneaking()){
                         shop.printSalesInfo(player);

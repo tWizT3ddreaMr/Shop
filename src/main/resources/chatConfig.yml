@@ -65,16 +65,22 @@ transaction_issue:
 
 interaction:
    SELL:
+      initialize: "&6[Shop] Now just hit the sign with the item you want to sell to other players!"
       create: "&eYou have created a shop that sells &6[item](s)&e."
       destroy: "&7You have destroyed your selling shop."
       opDestroy: "&7You have destroyed a selling shop owned by [owner]."
       opOpen: "&7You are opening a selling shop owned by [owner]."
    BUY:
+      initialize: "&6[Shop] Now just hit the sign with the item you want to buy from other players!"
+      initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
       create: "&eYou have created a shop that buys &6[item](s)&e."
       destroy: "&7You have destroyed your buying shop."
       opDestroy: "&7You have destroyed a buying shop owned by [owner]."
       opOpen: "&7You are opening a buying shop owned by [owner]."
    BARTER:
+      initialize: "&6[Shop] Now hit the sign with the item you want to barter to other players!"
+      initializeInfo: "&7[Shop] You have set this shop's barter item to [item](s)"
+      initializeBarter: "&6[Shop] Now hit the sign again with the item you want barter for!"
       create: "&eYou have created a shop that barters &6[item](s) &efor &6[barter item](s)&e."
       destroy: "&7You have destroyed your bartering shop."
       opDestroy: "&7You have destroyed a bartering shop owned by [owner]."

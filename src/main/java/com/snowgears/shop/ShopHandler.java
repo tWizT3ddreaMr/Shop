@@ -141,7 +141,8 @@ public class ShopHandler {
         Collections.sort(list, new Comparator<ShopObject>() {
             @Override
             public int compare(ShopObject o1, ShopObject o2) {
-                //TODO for some reason there is a null pointer being thrown here
+                if(o1 == null || o2 == null)
+                    return 0;
                 //could have something to do with switching between online and offline mode
                 return o1.getOwnerName().toLowerCase().compareTo(o2.getOwnerName().toLowerCase());
             }

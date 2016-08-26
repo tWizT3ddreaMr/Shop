@@ -159,7 +159,7 @@ public class Display {
         }
         entities.clear();
 
-        for (Entity entity : shop.getChestLocation().getWorld().getNearbyEntities(shop.getChestLocation().clone().add(0.5, 0.5, 0.5), 3, 3, 3)) {
+        for (Entity entity : shop.getChestLocation().getChunk().getEntities()) {
             if(isDisplay(entity)){
                 ShopObject s =  getShop(entity);
                 //remove any displays that are left over but still belong to the same shop
@@ -246,15 +246,19 @@ public class Display {
     }
 
     public static boolean isDisplay(Entity entity){
-        if (entity.getType() == EntityType.DROPPED_ITEM) {
-            ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-            if (UtilMethods.containsLocation(itemMeta.getDisplayName())) {
-                return true;
+        try {
+            if (entity.getType() == EntityType.DROPPED_ITEM) {
+                ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
+                if (UtilMethods.containsLocation(itemMeta.getDisplayName())) {
+                    return true;
+                }
+            } else if (entity.getType() == EntityType.ARMOR_STAND) {
+                if (UtilMethods.containsLocation(entity.getCustomName())) {
+                    return true;
+                }
             }
-        } else if (entity.getType() == EntityType.ARMOR_STAND) {
-            if (UtilMethods.containsLocation(entity.getCustomName())) {
-                return true;
-            }
+        } catch (NoSuchFieldError error){
+            //do nothing
         }
         return false;
     }
@@ -266,8 +270,13 @@ public class Display {
         if (display.getType() == EntityType.DROPPED_ITEM) {
             ItemMeta itemMeta = ((Item) display).getItemStack().getItemMeta();
             name = itemMeta.getDisplayName();
-        } else if (display.getType() == EntityType.ARMOR_STAND) {
-            name = display.getCustomName();
+        }
+        try {
+            if (display.getType() == EntityType.ARMOR_STAND) {
+                name = display.getCustomName();
+            }
+        } catch (NoSuchFieldError error){
+            return null;
         }
 
         if(!UtilMethods.containsLocation(name)) {

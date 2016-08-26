@@ -206,6 +206,13 @@ public class ShopMessage {
             messageMap.put(type.toString() + "_user", chatConfig.getString("transaction." + type.toString().toUpperCase() + ".user"));
             messageMap.put(type.toString() + "_owner", chatConfig.getString("transaction." + type.toString().toUpperCase() + ".owner"));
 
+            messageMap.put(type.toString() + "_initialize", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initialize"));
+            if(type == ShopType.BUY)
+                messageMap.put(type.toString() + "_initializeAlt", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeAlt"));
+            else if(type == ShopType.BARTER) {
+                messageMap.put(type.toString() + "_initializeInfo", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeInfo"));
+                messageMap.put(type.toString() + "_initializeBarter", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeBarter"));
+            }
             messageMap.put(type.toString() + "_create", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".create"));
             messageMap.put(type.toString() + "_destroy", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".destroy"));
             messageMap.put(type.toString() + "_opDestroy", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".opDestroy"));
@@ -218,7 +225,7 @@ public class ShopMessage {
 
             messageMap.put(type.toString() + "_descriptionItem", chatConfig.getString("description."+type.toString().toUpperCase()+".item"));
             if(type == ShopType.BARTER)
-                messageMap.put(type.toString() + "_descriptionBarterItem", chatConfig.getString("description."+type.toString().toUpperCase()+".barterItem"));
+                messageMap.put(type.toString() + "_descriptionBarterItem", chatConfig.getString("description." + type.toString().toUpperCase() + ".barterItem"));
             messageMap.put(type.toString() + "_descriptionPrice", chatConfig.getString("description."+type.toString().toUpperCase()+".price"));
             messageMap.put(type.toString() + "_descriptionPricePerItem", chatConfig.getString("description."+type.toString().toUpperCase()+".pricePerItem"));
         }

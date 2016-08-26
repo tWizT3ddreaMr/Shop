@@ -233,15 +233,9 @@ public class MiscListener implements Listener {
 
                 shop.updateSign();
 
-                if (type == ShopType.SELL)
-                    player.sendMessage(ChatColor.GOLD + "[Shop] Now just hit the sign with the item you want to sell to other players!");
-                else if (type == ShopType.BUY) {
-                    player.sendMessage(ChatColor.GOLD + "[Shop] Now just hit the sign with the item you want to buy from other players!");
-                    player.sendMessage(ChatColor.GRAY + "[Shop] Alternatively, you can hit the shop with your hand to pick the item you want to receive from the creative menu.");
-                } else {
-                    player.sendMessage(ChatColor.GOLD + "[Shop] Now hit the sign with the item you want to barter to other players!");
-                    //	player.sendMessage(ChatColor.GOLD+"[Shop] Then hit the sign again with the item you want receive!");
-                    //	player.sendMessage(ChatColor.GRAY+"[Shop] For the item you want to receive, you can also hit the shop with your hand to pick the item from the creative menu.");
+                player.sendMessage(ShopMessage.getMessage(type.toString(), "initialize", shop, player));
+                if (type == ShopType.BUY) {
+                    player.sendMessage(ShopMessage.getMessage(type.toString(), "initializeAlt", shop, player));
                 }
 
                 //give player a limited amount of time to finish creating the shop until it is deleted
@@ -310,9 +304,9 @@ public class MiscListener implements Listener {
                 if (shop.getItemStack() == null) {
                     shop.setItemStack(shopItem);
                     if (shop.getType() == ShopType.BARTER) {
-                        player.sendMessage(ChatColor.GRAY + "[Shop] You have set this shop's barter item to " + shopItem.getType().name().replace("_", " ").toLowerCase() + "(s)");
-                        player.sendMessage(ChatColor.GOLD + "[Shop] Now hit the sign again with the item you want barter for!");
-                        player.sendMessage(ChatColor.GRAY + "[Shop] You can also hit the shop with your hand to pick the item from the creative menu.");
+                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeInfo", shop, player));
+                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeBarter", shop, player));
+                        player.sendMessage(ShopMessage.getMessage("BUY", "initializeAlt", shop, player));
 
                     }
                 } else if (shop.getBarterItemStack() == null) {
