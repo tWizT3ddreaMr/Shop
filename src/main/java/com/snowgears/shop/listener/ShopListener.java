@@ -1,11 +1,9 @@
-package com.snowgears.shop.listeners;
+package com.snowgears.shop.listener;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
-import com.snowgears.shop.events.PlayerCreateShopEvent;
-import com.snowgears.shop.events.PlayerDestroyShopEvent;
-import com.snowgears.shop.utils.EconomyUtils;
-import com.snowgears.shop.utils.ShopMessage;
+import com.snowgears.shop.event.PlayerExchangeShopEvent;
+import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -71,9 +69,11 @@ public class ShopListener implements Listener {
     public void onShopOpen(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (plugin.getShopHandler().isChest(event.getClickedBlock())) {
-                if (!plugin.serverBelowMC9() && event.getHand() == EquipmentSlot.OFF_HAND) {
-                    return; // off hand packet, ignore.
-                }
+                try {
+                    if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                        return; // off hand packet, ignore.
+                    }
+                } catch (NoSuchMethodError error) {}
 
                 Player player = event.getPlayer();
                 ShopObject shop = plugin.getShopHandler().getShopByChest(event.getClickedBlock());
@@ -121,51 +121,12 @@ public class ShopListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onCreateShop(final PlayerCreateShopEvent event) {
+    //TODO test with this and then delete it
+    @EventHandler
+    public void onExchangeShop(final PlayerExchangeShopEvent event) {
         Player player = event.getPlayer();
-        ShopObject shop = event.getShop();
-        if (event.isCancelled()) {
-            shop.delete();
-            return;
-        }
-        shop.updateSign();
-        plugin.getCreativeSelectionListener().returnPlayerData(player);
-
-        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
-        plugin.getExchangeListener().sendEffects(true, player, shop);
-
-        if(shop.isAdminShop()){
-            shop.setOwner(plugin.getShopHandler().getAdminUUID());
-        }
-        //plugin.getShopHandler().saveShops();
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onShopDestroy(PlayerDestroyShopEvent event) {
-        Player player = event.getPlayer();
-
-        //if players must pay to create shops, remove money first
-        double cost = plugin.getDestructionCost();
-        if(cost > 0){
-            boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
-            if(!removed){
-                player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyInsufficientFunds", event.getShop(), player));
-                event.setCancelled(true);
-            }
-        }
-
-        if (event.isCancelled()) {
-            return;
-        }
-
-        if (event.getShop().getOwnerName().equals(player.getName())) {
-            player.sendMessage(ShopMessage.getMessage(event.getShop().getType().toString(), "destroy", event.getShop(), player));
-        } else {
-            player.sendMessage(ShopMessage.getMessage(event.getShop().getType().toString(), "opDestroy", event.getShop(), player));
-        }
-        event.getShop().delete();
-        //plugin.getShopHandler().saveShops();
+        player.sendMessage("PlayerExchangeShopEvent called.");
+        event.setCancelled(true);
     }
 
     @EventHandler

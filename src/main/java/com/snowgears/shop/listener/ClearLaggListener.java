@@ -1,7 +1,7 @@
-package com.snowgears.shop.listeners;
+package com.snowgears.shop.listener;
 
-import com.snowgears.shop.Display;
 import com.snowgears.shop.Shop;
+import com.snowgears.shop.display.Display;
 import me.minebuilders.clearlag.events.EntityRemoveEvent;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;

@@ -1,21 +1,24 @@
 package com.snowgears.shop;
 
-import com.snowgears.shop.listeners.*;
-import com.snowgears.shop.utils.*;
+import com.snowgears.shop.display.DisplayListener;
+import com.snowgears.shop.display.DisplayType;
+import com.snowgears.shop.handler.CommandHandler;
+import com.snowgears.shop.handler.EnderChestHandler;
+import com.snowgears.shop.handler.ShopHandler;
+import com.snowgears.shop.listener.*;
+import com.snowgears.shop.util.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class Shop extends JavaPlugin {
@@ -23,10 +26,10 @@ public class Shop extends JavaPlugin {
     private static final Logger log = Logger.getLogger("Minecraft");
     private static Shop plugin;
 
-    private ShopListener shopListener = new ShopListener(this);
+    private ShopListener shopListener;
     private DisplayListener displayListener;
-    private ExchangeListener exchangeListener = new ExchangeListener(this);
-    private MiscListener miscListener = new MiscListener(this);
+    private ExchangeListener exchangeListener;
+    private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
     private ClearLaggListener clearLaggListener;
 
@@ -36,9 +39,9 @@ public class Shop extends JavaPlugin {
     private ItemNameUtil itemNameUtil;
     private PriceUtil priceUtil;
 
-    private boolean versionBelowMC9;
     private boolean usePerms;
     private boolean useVault;
+    private String commandAlias;
     private DisplayType displayType;
     private boolean checkItemDurability;
     private boolean playSounds;
@@ -63,7 +66,6 @@ public class Shop extends JavaPlugin {
     @SuppressWarnings("deprecation")
     public void onEnable() {
         plugin = this;
-        calculateMCVersion();
 
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
@@ -97,6 +99,9 @@ public class Shop extends JavaPlugin {
 //            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
 //        }
 
+        shopListener = new ShopListener(this);
+        exchangeListener = new ExchangeListener(this);
+        miscListener = new MiscListener(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
 
@@ -136,6 +141,7 @@ public class Shop extends JavaPlugin {
         }
 
         usePerms = config.getBoolean("usePermissions");
+        commandAlias = config.getString("commandAlias");
         checkItemDurability = config.getBoolean("checkItemDurability");
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
@@ -204,6 +210,12 @@ public class Shop extends JavaPlugin {
                 log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
 
+        try {
+            CommandHandler.registerFakeCommand(new CommandHandler(this, "shop.use", commandAlias, "Base command for the Shop plugin", "/shop", Arrays.asList(commandAlias)), this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         shopHandler = new ShopHandler(this);
         enderChestHandler = new EnderChestHandler(this);
 
@@ -217,116 +229,7 @@ public class Shop extends JavaPlugin {
     @Override
     public void onDisable(){
         enderChestHandler.saveEnderChests();
-        shopHandler.saveShops();
-    }
-
-    //TODO replace all of these messages
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (args.length == 0) {
-            if (cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")) {
-                sender.sendMessage("[Shop] Available Commands:");
-                sender.sendMessage("   /shop list");
-                sender.sendMessage("   /shop item refresh");
-            }
-        } else if (args.length == 1) {
-            if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
-                return true;
-            if (args[0].equalsIgnoreCase("list")) {
-                if (sender instanceof Player) {
-                    sender.sendMessage("There are " + ChatColor.GOLD + shopHandler.getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
-                    if(usePerms())
-                        sender.sendMessage(ChatColor.GRAY+"You have built "+shopHandler.getNumberOfShops((Player)sender) + " out of your "+ shopListener.getBuildLimit((Player)sender) +" allotted shops.");
-                    else
-                        sender.sendMessage(ChatColor.GRAY+"You own "+shopHandler.getNumberOfShops((Player)sender) + " of these shops.");
-                }
-                else
-                    sender.sendMessage("[Shop] There are " + shopHandler.getNumberOfShops() + " shops registered on the server.");
-            }
-            else if (args[0].equalsIgnoreCase("save")) {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
-                        player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
-                        return true;
-                    }
-                    shopHandler.saveShops();
-                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file."); //TODO replace message
-                } else {
-                    shopHandler.saveShops();
-                    sender.sendMessage("[Shop] The shops have been saved to the shops.yml file."); //TODO replace message
-                }
-            }
-            else if (args[0].equalsIgnoreCase("currency")) {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    if ((usePerms && player.hasPermission("shop.operator")) || player.isOp()) {
-                        //TODO delete all of this and replace with ShopMessage messages
-                        if(useVault())
-                            player.sendMessage(ChatColor.GRAY + "The server is using virtual currency through Vault.");
-                        else{
-                            player.sendMessage(ChatColor.GRAY + "The server is using "+itemNameUtil.getName(itemCurrency)+" as currency.");
-                            player.sendMessage(ChatColor.GRAY + "To change this run the command '/shop setcurrency' with the item you want in your hand.");
-                        }
-                        return true;
-                    }
-                } else {
-                    sender.sendMessage("The server is using "+itemNameUtil.getName(itemCurrency)+" as currency.");
-                }
-            }
-            else if (args[0].equalsIgnoreCase("setcurrency")) {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    if ((usePerms && player.hasPermission("shop.operator")) || player.isOp()) {
-                        //TODO delete all of this and replace with ShopMessage messages
-                        if(useVault()) {
-                            player.sendMessage(ChatColor.RED + "The server is using virtual currency through Vault and so no item could be set.");
-                            return true;
-                        }
-                        else{
-                            itemCurrency = player.getItemInHand();
-                            if(itemCurrency == null || itemCurrency.getType() == Material.AIR){
-                                player.sendMessage(ChatColor.RED + "You must be holding a valid item to set the shop currency.");
-                                return true;
-                            }
-                            itemCurrency.setAmount(1);
-
-                            //TODO move this to its own saveItemCurrency() method
-                            try {
-                                File fileDirectory = new File(this.getDataFolder(), "Data");
-                                File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");
-                                YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
-                                currencyConfig.set("item", itemCurrency);
-                                currencyConfig.save(itemCurrencyFile);
-                            } catch (Exception e) {}
-
-                            player.sendMessage(ChatColor.GRAY + "The server is now using "+itemNameUtil.getName(itemCurrency)+" as currency.");
-                        }
-                        return true;
-                    }
-                } else {
-                    sender.sendMessage("The server is using "+itemNameUtil.getName(itemCurrency)+" as currency.");
-                }
-            }
-        } else if (args.length == 2) {
-            if(!(cmd.getName().equalsIgnoreCase("shop") || cmd.getName().equalsIgnoreCase("chestshop")))
-                return true;
-            if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    if ((usePerms && !player.hasPermission("shop.operator")) || !player.isOp()) {
-                        player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
-                        return true;
-                    }
-                    shopHandler.refreshShopDisplays();
-                    sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
-                } else {
-                    shopHandler.refreshShopDisplays();
-                    sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
-                }
-            }
-        }
-        return true;
+        //shopHandler.saveAllShops();
     }
 
     private boolean setupEconomy() {
@@ -339,10 +242,6 @@ public class Shop extends JavaPlugin {
         }
         econ = rsp.getProvider();
         return econ != null;
-    }
-
-    public boolean serverBelowMC9(){
-        return versionBelowMC9;
     }
 
     public ShopListener getShopListener() {
@@ -397,6 +296,20 @@ public class Shop extends JavaPlugin {
         return itemCurrency;
     }
 
+    public void setItemCurrency(ItemStack itemCurrency){
+        this.itemCurrency = itemCurrency;
+
+        try {
+            File fileDirectory = new File(getDataFolder(), "Data");
+            File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");
+            YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
+            currencyConfig.set("item", plugin.getItemCurrency());
+            currencyConfig.save(itemCurrencyFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getItemCurrencyName() {
         return itemCurrencyName;
     }
@@ -431,13 +344,5 @@ public class Shop extends JavaPlugin {
 
     public ArrayList<String> getWorldBlacklist(){
         return worldBlackList;
-    }
-
-    private void calculateMCVersion(){
-        String version = plugin.getServer().getVersion();
-        if(version.contains("1.5") || version.contains("1.6") || version.contains("1.7") || version.contains("1.8"))
-            versionBelowMC9 = true;
-        else
-            versionBelowMC9 = false;
     }
 }

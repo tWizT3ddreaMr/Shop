@@ -1,9 +1,10 @@
 package com.snowgears.shop;
 
-import com.snowgears.shop.utils.EconomyUtils;
-import com.snowgears.shop.utils.InventoryUtils;
-import com.snowgears.shop.utils.ShopMessage;
-import com.snowgears.shop.utils.UtilMethods;
+import com.snowgears.shop.display.Display;
+import com.snowgears.shop.util.EconomyUtils;
+import com.snowgears.shop.util.InventoryUtils;
+import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.UtilMethods;
 import mkremins.fanciful.FancyMessage;
 import org.bukkit.*;
 import org.bukkit.block.Block;

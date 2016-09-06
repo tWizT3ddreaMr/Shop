@@ -1,5 +1,6 @@
-package com.snowgears.shop;
+package com.snowgears.shop.handler;
 
+import com.snowgears.shop.Shop;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;

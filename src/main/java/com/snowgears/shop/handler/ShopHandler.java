@@ -1,6 +1,10 @@
-package com.snowgears.shop;
+package com.snowgears.shop.handler;
 
-import com.snowgears.shop.utils.UtilMethods;
+import com.snowgears.shop.Shop;
+import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.ShopType;
+import com.snowgears.shop.display.Display;
+import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -27,6 +31,7 @@ public class ShopHandler {
 
     public Shop plugin = Shop.getPlugin();
 
+    private HashMap<UUID, List<Location>> playerShops = new HashMap<>();
     private HashMap<Location, ShopObject> allShops = new HashMap<Location, ShopObject>();
     private ArrayList<Material> shopMaterials = new ArrayList<Material>();
     private UUID adminUUID;
@@ -112,15 +117,45 @@ public class ShopHandler {
 
     public void addShop(ShopObject shop) {
         allShops.put(shop.getSignLocation(), shop);
+
+        List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
+        shopLocations.add(shop.getSignLocation());
+        playerShops.put(shop.getOwnerUUID(), shopLocations);
     }
 
     //This method should only be used by ShopObject to delete
     public boolean removeShop(ShopObject shop) {
         if (allShops.containsKey(shop.getSignLocation())) {
             allShops.remove(shop.getSignLocation());
-            return true;
         }
+        if(playerShops.containsKey(shop.getOwnerUUID())){
+            List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
+            if(shopLocations.contains(shop.getSignLocation())) {
+                shopLocations.remove(shop.getSignLocation());
+                playerShops.put(shop.getOwnerUUID(), shopLocations);
+            }
+        }
+
         return false;
+    }
+
+    public List<ShopObject> getShops(UUID player){
+        List<ShopObject> shops = new ArrayList<>();
+        for(Location shopSign : getShopLocations(player)){
+            ShopObject shop = getShop(shopSign);
+            if(shop != null)
+                shops.add(shop);
+        }
+        return shops;
+    }
+
+    private List<Location> getShopLocations(UUID player){
+        List<Location> shopLocations;
+        if(playerShops.containsKey(player))
+            shopLocations = playerShops.get(player);
+        else
+            shopLocations = new ArrayList<>();
+        return shopLocations;
     }
 
     public int getNumberOfShops() {
@@ -170,7 +205,67 @@ public class ShopHandler {
         }
     }
 
-    public void saveShops() {
+    public void saveShops(UUID player){
+        try {
+            File fileDirectory = new File(plugin.getDataFolder(), "Data");
+            //UtilMethods.deleteDirectory(fileDirectory);
+            if (!fileDirectory.exists())
+                fileDirectory.mkdir();
+
+            List<ShopObject> shopList = getShops(player);
+            if (shopList.isEmpty())
+                return;
+
+            String owner = null;
+            File currentFile = null;
+            if(player.equals(adminUUID)) {
+                currentFile = new File(fileDirectory + "/admin.yml");
+            }
+            else {
+                owner = Bukkit.getOfflinePlayer(player).getName();
+                currentFile = new File(fileDirectory + "/" + owner + " (" + player.toString() + ").yml");
+            }
+            owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
+
+            if (!currentFile.exists()) // file doesn't exist
+                currentFile.createNewFile();
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
+
+            int shopNumber = 1;
+            for (ShopObject shop : shopList) {
+
+                //don't save shops that are not initialized with items
+                if (shop.isInitialized()) {
+                    config.set("shops." + owner + "." + shopNumber + ".location", locationToString(shop.getSignLocation()));
+                    config.set("shops." + owner + "." + shopNumber + ".price", shop.getPrice());
+                    config.set("shops." + owner + "." + shopNumber + ".amount", shop.getAmount());
+                    String type = "";
+                    if (shop.isAdminShop())
+                        type = "admin ";
+                    type = type + shop.getType().toString();
+                    config.set("shops." + owner + "." + shopNumber + ".type", type);
+
+                    ItemStack itemStack = shop.getItemStack();
+                    itemStack.setAmount(1);
+                    config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
+
+                    if (shop.getType() == ShopType.BARTER) {
+                        ItemStack barterItemStack = shop.getBarterItemStack();
+                        barterItemStack.setAmount(1);
+                        config.set("shops." + owner + "." + shopNumber + ".itemBarter", barterItemStack);
+                    }
+                    shopNumber++;
+                }
+            }
+            config.save(currentFile);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        if(plugin.useEnderChests())
+            plugin.getEnderChestHandler().saveEnderChests();
+    }
+
+    public void saveAllShops() {
         try {
             File fileDirectory = new File(plugin.getDataFolder(), "Data");
             //UtilMethods.deleteDirectory(fileDirectory);
@@ -275,38 +370,40 @@ public class ShopHandler {
             Set<String> allShopNumbers = config.getConfigurationSection("shops." + shopOwner).getKeys(false);
             for (String shopNumber : allShopNumbers) {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
-                Block b = signLoc.getBlock();
-                if (b.getType() == Material.WALL_SIGN) {
-                    org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                    //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
-                    UUID owner;
-                    if(shopOwner.equals("admin"))
-                        owner = this.getAdminUUID();
-                    else
-                        owner = uidFromString(shopOwner);
-                    double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
-                    int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
-                    String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
-                    boolean isAdmin = false;
-                    if (type.contains("admin"))
-                        isAdmin = true;
-                    ShopType shopType = typeFromString(type);
+                if(signLoc != null) {
+                    Block b = signLoc.getBlock();
+                    if (b.getType() == Material.WALL_SIGN) {
+                        org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
+                        //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                        UUID owner;
+                        if (shopOwner.equals("admin"))
+                            owner = this.getAdminUUID();
+                        else
+                            owner = uidFromString(shopOwner);
+                        double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
+                        int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
+                        String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
+                        boolean isAdmin = false;
+                        if (type.contains("admin"))
+                            isAdmin = true;
+                        ShopType shopType = typeFromString(type);
 
-                    ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
-                    ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
-                    shop.setItemStack(itemStack);
-                    if (shop.getType() == ShopType.BARTER) {
-                        ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
-                        shop.setBarterItemStack(barterItemStack);
-                    }
+                        ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
+                        ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
+                        shop.setItemStack(itemStack);
+                        if (shop.getType() == ShopType.BARTER) {
+                            ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
+                            shop.setBarterItemStack(barterItemStack);
+                        }
 
-                    if(shop.isAdminShop()){
-                        shop.setOwner(plugin.getShopHandler().getAdminUUID());
-                    }
+                        if (shop.isAdminShop()) {
+                            shop.setOwner(plugin.getShopHandler().getAdminUUID());
+                        }
 
-                    if(this.isChest(shop.getChestLocation().getBlock())) {
-                        shop.updateSign();
-                        this.addShop(shop);
+                        if (this.isChest(shop.getChestLocation().getBlock())) {
+                            shop.updateSign();
+                            this.addShop(shop);
+                        }
                     }
                 }
             }
@@ -332,12 +429,12 @@ public class ShopHandler {
 
         if(loadByLegacyConfig) {
             loadShopsFromLegacyConfig(config); //load as old
-            saveShops(); //save as new
+            saveAllShops(); //save as new
         }
         else {
             //load old config normally
             loadShopsFromConfig(config);
-            saveShops(); //save as new
+            saveAllShops(); //save as new
         }
     }
 

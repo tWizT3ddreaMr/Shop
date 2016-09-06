@@ -1,9 +1,3 @@
-# Thanks for downloading Shop! #
-#==============================#
-
-# If you want to use permissions with Shop, you must set this to true #
-usePermissions: false
-
 
 # =================================================================== #
 #                      ECONOMY AND CURRENCY                           #
@@ -28,6 +22,11 @@ destructionCost: 0
 #                         GENERAL SETTINGS                            #
 # =================================================================== #
 
+# If you want to use permissions with Shop, you must set this to true #
+usePermissions: false
+
+# This is the command alias that will be used as the base for all shop commands #
+commandAlias: shop
 
 # This will change the types of displays that shops will use above their chests #
 # The options are: NONE, ITEM, GLASS_CASE, LARGE_ITEM #

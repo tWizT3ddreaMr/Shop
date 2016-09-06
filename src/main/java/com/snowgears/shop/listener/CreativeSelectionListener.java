@@ -1,12 +1,12 @@
-package com.snowgears.shop.listeners;
+package com.snowgears.shop.listener;
 
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
-import com.snowgears.shop.events.PlayerCreateShopEvent;
-import com.snowgears.shop.utils.PlayerData;
-import com.snowgears.shop.utils.ShopMessage;
+import com.snowgears.shop.event.PlayerCreateShopEvent;
+import com.snowgears.shop.util.PlayerData;
+import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -113,8 +113,9 @@ public class CreativeSelectionListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (gameModeHashMap.get(player.getUniqueId()) != null)
+        if (gameModeHashMap.get(player.getUniqueId()) != null) {
             event.setCancelled(true);
+        }
     }
 
     @EventHandler

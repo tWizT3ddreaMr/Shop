@@ -1,7 +1,10 @@
-package com.snowgears.shop;
+package com.snowgears.shop.display;
 
-import com.snowgears.shop.utils.DisplayUtil;
-import com.snowgears.shop.utils.UtilMethods;
+import com.snowgears.shop.Shop;
+import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.ShopType;
+import com.snowgears.shop.util.DisplayUtil;
+import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;

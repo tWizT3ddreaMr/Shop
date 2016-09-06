@@ -1,4 +1,4 @@
-package com.snowgears.shop.utils;
+package com.snowgears.shop.util;
 
 /*
  * Copyright 2011 Tyler Blair. All rights reserved.

@@ -1,6 +1,5 @@
-package com.snowgears.shop.listeners;
+package com.snowgears.shop.display;
 
-import com.snowgears.shop.Display;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import org.bukkit.block.BlockFace;

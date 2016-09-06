@@ -1,4 +1,4 @@
-package com.snowgears.shop.utils;
+package com.snowgears.shop.util;
 
 import com.snowgears.shop.Shop;
 import org.bukkit.Material;

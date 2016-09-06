@@ -1,7 +1,7 @@
 name: Shop
 author: Tanner Embry (SnowGears)
 description: Easily create shops to buy or sell items!
-version: 1.6.3.3
+version: 1.6.4
 main: com.snowgears.shop.Shop
 softdepend: [Vault]
 permissions:
@@ -37,11 +37,3 @@ permissions:
          default: op
     shop.operator:
         description: Allows access to operator actions.
-        default: op
-commands:
-   shop:
-      description: Different commands pertaining to plugin
-      usage: /<command>
-   chestshop:
-      description: Different commands pertaining to plugin
-      usage: /<command>

@@ -1,4 +1,4 @@
-package com.snowgears.shop.utils;
+package com.snowgears.shop.util;
 
 
 import com.snowgears.shop.Shop;
@@ -7,6 +7,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,6 +84,25 @@ public class InventoryUtils {
         return amount;
     }
 
+    public static boolean hasRoom(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
+        if (inventory == null)
+            return false;
+        if (itemStack.getAmount() <= 0)
+            return true;
+
+        int overflow = addItem(inventory, itemStack, inventoryOwner);
+
+        //revert back if inventory cannot hold all of the items
+        if (overflow > 0) {
+            ItemStack revert = itemStack.clone();
+            revert.setAmount(revert.getAmount() - overflow);
+            InventoryUtils.removeItem(inventory, revert, inventoryOwner);
+            return false;
+        }
+        removeItem(inventory, itemStack, inventoryOwner);
+        return true;
+    }
+
     //gets the amount of items in inventory
     public static int getAmount(Inventory inventory, ItemStack itemStack){
         if(inventory == null)
@@ -96,16 +117,45 @@ public class InventoryUtils {
                 }
             }
         }
-        return (amount / itemStack.getAmount());
+        return amount;
     }
 
     public static boolean itemstacksAreSimilar(ItemStack i1, ItemStack i2){
         if(i1 == null || i2 == null)
             return false;
-        if(i1.getType() == i2.getType() && i1.getItemMeta().equals(i2.getItemMeta())){
-            if(i1.getEnchantments().equals(i2.getEnchantments())){
-                if((!Shop.getPlugin().checkItemDurability() || (Shop.getPlugin().checkItemDurability() && i1.getDurability() == i2.getDurability()))) {
-                    return true;
+        if(i1.getType() == i2.getType()){
+            ItemMeta meta1 = i1.getItemMeta();
+            ItemMeta meta2 = i2.getItemMeta();
+
+            if(meta1.hasDisplayName() && meta2.hasDisplayName()){
+                if(!meta1.getDisplayName().equals(meta2.getDisplayName()))
+                    return false;
+            }
+            if(meta1.hasLore() && meta2.hasLore()){
+                if(!meta1.getLore().equals(meta2.getLore()))
+                    return false;
+            }
+            if(!meta1.getItemFlags().equals(meta2.getItemFlags()))
+                return false;
+            if(!meta1.getEnchants().equals(meta2.getEnchants()))
+                return false;
+
+            if(meta1 instanceof EnchantmentStorageMeta && meta2 instanceof EnchantmentStorageMeta){
+                if(!((EnchantmentStorageMeta)meta1).getStoredEnchants().equals(((EnchantmentStorageMeta)meta2).getStoredEnchants()))
+                    return false;
+            }
+
+            if (i1.getEnchantments().equals(i2.getEnchantments())) {
+                //only have the option to ignore durability if the item can be damaged
+                if(i1.getType().getMaxDurability() != 0) {
+                    if ((!Shop.getPlugin().checkItemDurability() || (Shop.getPlugin().checkItemDurability() && i1.getDurability() == i2.getDurability()))) {
+                        return true;
+                    }
+                }
+                else{
+                    if (i1.getDurability() == i2.getDurability()) {
+                        return true;
+                    }
                 }
             }
         }
