@@ -1,6 +1,7 @@
 package com.snowgears.shop;
 
 import com.snowgears.shop.display.Display;
+import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.EconomyUtils;
 import com.snowgears.shop.util.InventoryUtils;
 import com.snowgears.shop.util.ShopMessage;
@@ -14,6 +15,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.DecimalFormat;
 import java.util.UUID;
@@ -25,6 +27,7 @@ public class ShopObject {
     private UUID owner;
     private ItemStack item;
     private ItemStack barterItem;
+    private ItemStack gambleItem;
     private Display display;
     private double price;
     private int amount;
@@ -45,14 +48,14 @@ public class ShopObject {
         isAdminShop = admin;
         type = t;
         item = null;
-        signLines = ShopMessage.getSignLines(this);
         display = new Display(this);
+        signLines = ShopMessage.getSignLines(this);
 
         if(signLocation != null) {
             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
             chestLocation = signLocation.getBlock().getRelative(sign.getAttachedFace()).getLocation();
         }
-
+        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem();
     }
 
     public Location getSignLocation() {
@@ -101,7 +104,7 @@ public class ShopObject {
             if (item.getType().getMaxDurability() > 0)
                 item.setDurability((short) 0); //set item to full durability
         }
-        this.display.spawn();
+        //this.display.spawn();
     }
 
     public ItemStack getBarterItemStack() {
@@ -119,7 +122,25 @@ public class ShopObject {
             if (barterItem.getType().getMaxDurability() > 0)
                 barterItem.setDurability((short) 0); //set item to full durability
         }
-        this.display.spawn();
+        //this.display.spawn();
+    }
+
+    public ItemStack getGambleItemStack(){
+        return gambleItem;
+    }
+
+    public void shuffleGambleItem(){
+        this.setItemStack(gambleItem);
+        this.getDisplay().setType(DisplayType.ITEM);
+        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem();
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                setItemStack(Shop.getPlugin().getGambleDisplayItem());
+                getDisplay().setType(DisplayType.LARGE_ITEM);
+            }
+        }.runTaskLater(Shop.getPlugin(), 20);
     }
 
     public void setOwner(UUID newOwner){
@@ -129,14 +150,14 @@ public class ShopObject {
     public int getStock(){
         switch (type){
             case SELL:
-                return InventoryUtils.getAmount(this.getInventory(), this.getItemStack());
+                return InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / this.getAmount();
             case BUY:
                 double funds = EconomyUtils.getFunds(this.getOwnerPlayer(), this.getInventory());
                 if(this.getPrice() == 0)
                     return Integer.MAX_VALUE;
                 return (int)(funds / this.getPrice());
             case BARTER:
-                return InventoryUtils.getAmount(this.getInventory(), this.getItemStack());
+                return InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / this.getAmount();
         }
         return 0;
     }
@@ -147,6 +168,10 @@ public class ShopObject {
 
     public double getPrice() {
         return price;
+    }
+
+    public void setPrice(double price){
+        this.price = price;
     }
 
     public String getPriceString() {
@@ -188,6 +213,10 @@ public class ShopObject {
 
     public int getAmount() {
         return amount;
+    }
+
+    public void setAmount(int amount){
+        this.amount = amount;
     }
 
     public boolean isAdminShop() {

@@ -6,7 +6,9 @@ public enum ShopType {
 
     BUY(1),
 
-    BARTER(2);
+    BARTER(2),
+
+    GAMBLE(3);
 
     private final int slot;
 
@@ -20,7 +22,9 @@ public enum ShopType {
             return "sell";
         else if (this == ShopType.BUY)
             return "buy";
-        else
+        else if(this == ShopType.BARTER)
             return "barter";
+        else
+            return "gamble";
     }
 }

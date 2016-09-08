@@ -8,13 +8,9 @@ import com.snowgears.shop.event.PlayerCreateShopEvent;
 import com.snowgears.shop.event.PlayerDestroyShopEvent;
 import com.snowgears.shop.event.PlayerInitializeShopEvent;
 import com.snowgears.shop.event.PlayerResizeShopEvent;
-import com.snowgears.shop.util.EconomyUtils;
-import com.snowgears.shop.util.InventoryUtils;
-import com.snowgears.shop.util.ShopMessage;
-import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.entity.Player;
@@ -32,13 +28,11 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class MiscListener implements Listener {
 
     public Shop plugin = Shop.getPlugin();
-    private HashMap<String, Long> interactEventTick = new HashMap<>();
 
     public MiscListener(Shop instance) {
         plugin = instance;
@@ -80,6 +74,7 @@ public class MiscListener implements Listener {
     public void onShopCreation(SignChangeEvent event) {
         final Block b = event.getBlock();
         final Player player = event.getPlayer();
+
         if(!(b.getState() instanceof Sign))
             return;
         final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData(); //TODO for some reason this has thrown cast errors
@@ -93,6 +88,7 @@ public class MiscListener implements Listener {
         double price;
         int amount;
         ShopType type;
+        boolean isAdmin = false;
         if (plugin.getShopHandler().isChest(chest)) {
             final Sign signBlock = (Sign) b.getState();
             if (event.getLine(0).toLowerCase().contains(ShopMessage.getCreationWord("SHOP").toLowerCase())) {
@@ -117,6 +113,13 @@ public class MiscListener implements Listener {
                     }
                 }
 
+                boolean canCreateShopInRegion = WorldGuardHook.canCreateShop(player, b.getLocation());
+                if(!canCreateShopInRegion){
+                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
+                    event.setCancelled(true);
+                    return;
+                }
+
                 try {
                     String line2 = UtilMethods.cleanNumberText(event.getLine(1));
                     amount = Integer.parseInt(line2);
@@ -132,9 +135,9 @@ public class MiscListener implements Listener {
                 //change default shop type based on permissions
                 type = ShopType.SELL;
                 if(plugin.usePerms()){
-                    if(!player.hasPermission("shop.create.selling")) {
+                    if(!player.hasPermission("shop.create.sell")) {
                         type = ShopType.BUY;
-                        if(!player.hasPermission("shop.create.buying"))
+                        if(!player.hasPermission("shop.create.buy"))
                             type = ShopType.BARTER;
                     }
                 }
@@ -145,6 +148,8 @@ public class MiscListener implements Listener {
                     type = ShopType.BUY;
                 else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BARTER")))
                     type = ShopType.BARTER;
+                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("GAMBLE")))
+                    type = ShopType.GAMBLE;
 
                 if(plugin.useVault()){
                     try {
@@ -173,21 +178,14 @@ public class MiscListener implements Listener {
 
                 String playerMessage = null;
                 ShopObject tempShop = new ShopObject(null, player.getUniqueId(), 0, 0, false, type);
-                if (type == ShopType.SELL) {
-                    if (plugin.usePerms()) {
-                        if (!(player.hasPermission("shop.create.selling") || player.hasPermission("shop.create")))
-                            playerMessage = ShopMessage.getMessage("permission", "create", tempShop, player);
-                    }
-                } else if (type == ShopType.BUY) {
-                    if (plugin.usePerms()) {
-                        if (!(player.hasPermission("shop.create.buying") || player.hasPermission("shop.create")))
-                            playerMessage = ShopMessage.getMessage("permission", "create", tempShop, player);
-                    }
-                } else {
-                    if (plugin.usePerms()) {
-                        if (!(player.hasPermission("shop.create.barter") || player.hasPermission("shop.create")))
-                            playerMessage = ShopMessage.getMessage("permission", "create", tempShop, player);
-                    }
+
+                if (plugin.usePerms()) {
+                    if (!(player.hasPermission("shop.create."+type.toString().toLowerCase()) || player.hasPermission("shop.create")))
+                        playerMessage = ShopMessage.getMessage("permission", "create", tempShop, player);
+                }
+
+                if (type == ShopType.GAMBLE) {
+                    isAdmin = true;
                 }
 
                 //if players must pay to create shops, check that they have enough money first
@@ -198,7 +196,7 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if (plugin.usePerms() && player.hasPermission("shop.operator")) {
+                if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                     playerMessage = null;
                 }
 
@@ -208,8 +206,6 @@ public class MiscListener implements Listener {
                     return;
                 }
 
-
-                boolean isAdmin = false;
                 if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("ADMIN"))) {
                     if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))
                         isAdmin = true;
@@ -243,6 +239,19 @@ public class MiscListener implements Listener {
 
                 if(e.isCancelled())
                     return;
+
+                if(type == ShopType.GAMBLE){
+                    shop.setItemStack(plugin.getGambleDisplayItem());
+                    shop.setAmount(1);
+                    shop.setPrice(plugin.getGamblePrice());
+                    shop.setOwner(plugin.getShopHandler().getAdminUUID());
+                    plugin.getShopHandler().addShop(shop);
+                    shop.getDisplay().setType(DisplayType.LARGE_ITEM);
+                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                    plugin.getExchangeListener().sendEffects(true, player, shop);
+                    plugin.getShopHandler().saveShops(shop.getOwnerUUID());
+                    return;
+                }
 
                 plugin.getShopHandler().addShop(shop);
                 shop.updateSign();
@@ -338,14 +347,19 @@ public class MiscListener implements Listener {
                     if(e.isCancelled())
                         return;
 
-                    shop.setItemStack(shopItem);
+                    if(shop.getItemStack() == null)
+                        shop.setItemStack(shopItem);
                     if (shop.getType() == ShopType.BARTER) {
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeInfo", shop, player));
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeBarter", shop, player));
                         player.sendMessage(ShopMessage.getMessage("BUY", "initializeAlt", shop, player));
                     }
-                    else
+                    else {
+                        shop.getDisplay().spawn();
+                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        plugin.getExchangeListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
+                    }
                 } else if (shop.getBarterItemStack() == null) {
                     if (!(InventoryUtils.itemstacksAreSimilar(shop.getItemStack(), shopItem))) {
 
@@ -355,7 +369,11 @@ public class MiscListener implements Listener {
                         if(e.isCancelled())
                             return;
 
-                        shop.setBarterItemStack(shopItem);
+                        if(shop.getBarterItemStack() == null)
+                            shop.setBarterItemStack(shopItem);
+                        shop.getDisplay().spawn();
+                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        plugin.getExchangeListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                     } else {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "sameItem", null, player));
@@ -538,57 +556,54 @@ public class MiscListener implements Listener {
         }
     }
 
-    //allow players to place blocks that are occupied by large item displays
-    @EventHandler
-    public void onBlockPlaceAttempt(PlayerInteractEvent event) {
-        if(plugin.getDisplayType() != DisplayType.LARGE_ITEM)
-            return;
-        final Player player = event.getPlayer();
-
-        //must check the time between this and last interact event since it is thrown twice in MC 1.9
-        long tickCheck = System.currentTimeMillis();
-        if(interactEventTick.containsKey(player.getName())) {
-            if (tickCheck - interactEventTick.get(player.getName()) < 10) {
-                event.setCancelled(true);
-            }
-        }
-        interactEventTick.put(player.getName(), tickCheck);
-
-        if (event.isCancelled())
-            return;
-
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if(plugin.getShopHandler().isChest(event.getClickedBlock()))
-                return;
-            if(player.getItemInHand().getType().isBlock()){
-                Block toChange = event.getClickedBlock().getRelative(event.getBlockFace());
-                if(toChange.getType() != Material.AIR)
-                    return;
-                BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
-                Block[] checks = {toChange, toChange.getRelative(BlockFace.DOWN)};
-                for(Block check : checks) {
-                    for (BlockFace dir : directions) {
-                        Block b = check.getRelative(dir);
-                        if (plugin.getShopHandler().isChest(b)) {
-                            ShopObject shop = plugin.getShopHandler().getShopByChest(b);
-                            if (shop != null) {
-                                if (player.getUniqueId().equals(shop.getOwnerUUID()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
-                                    toChange.setType(player.getItemInHand().getType());
-                                    event.setCancelled(true);
-                                    if (player.getGameMode() == GameMode.SURVIVAL) {
-                                        ItemStack hand = player.getItemInHand();
-                                        hand.setAmount(hand.getAmount() - 1);
-                                        if (hand.getAmount() == 0)
-                                            hand.setType(Material.AIR);
-                                        event.getPlayer().setItemInHand(hand);
-                                    }
-                                }
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    //allow players to place blocks that are occupied by large item displays
+//    @EventHandler
+//    public void onBlockPlaceAttempt(PlayerInteractEvent event) {
+//        try {
+//            if (event.getHand() == EquipmentSlot.OFF_HAND) {
+//                return; // off hand packet, ignore.
+//            }
+//        } catch (NoSuchMethodError error) {}
+//
+//        if(plugin.getDisplayType() != DisplayType.LARGE_ITEM)
+//            return;
+//        final Player player = event.getPlayer();
+//
+//        if (event.isCancelled())
+//            return;
+//
+//        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+//            if(plugin.getShopHandler().isChest(event.getClickedBlock()))
+//                return;
+//            if(player.getItemInHand().getType().isBlock()){
+//                Block toChange = event.getClickedBlock().getRelative(event.getBlockFace());
+//                if(toChange.getType() != Material.AIR)
+//                    return;
+//                BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+//                Block[] checks = {toChange, toChange.getRelative(BlockFace.DOWN)};
+//                for(Block check : checks) {
+//                    for (BlockFace dir : directions) {
+//                        Block b = check.getRelative(dir);
+//                        if (plugin.getShopHandler().isChest(b)) {
+//                            ShopObject shop = plugin.getShopHandler().getShopByChest(b);
+//                            if (shop != null) {
+//                                if (player.getUniqueId().equals(shop.getOwnerUUID()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
+//                                    toChange.setType(player.getItemInHand().getType());
+//                                    event.setCancelled(true);
+//                                    if (player.getGameMode() == GameMode.SURVIVAL) {
+//                                        ItemStack hand = player.getItemInHand();
+//                                        hand.setAmount(hand.getAmount() - 1);
+//                                        if (hand.getAmount() == 0)
+//                                            hand.setType(Material.AIR);
+//                                        event.getPlayer().setItemInHand(hand);
+//                                    }
+//                                }
+//                                return;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 }

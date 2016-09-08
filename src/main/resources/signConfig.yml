@@ -34,6 +34,7 @@ sign_creation:
    SELL: "sell"
    BUY: "buy"
    BARTER: "barter"
+   GAMBLE: "gamble"
    ADMIN: "admin"
 
 
@@ -86,4 +87,15 @@ sign_text:
          2: "[item]: [amount]"
          3: "[barter item]: [price]"
          4: "[owner]"
+   GAMBLE:
+      normal:
+         1: "&l[shop]"
+         2: "&dGambling"
+         3: "&a[price]"
+         4: "&d[server name]"
+      no_display:
+         1: "&l[gamble shop]"
+         2: "Random Item"
+         3: "&a[price]"
+         4: "&d[server name]"
    zeroPrice: "FREE"

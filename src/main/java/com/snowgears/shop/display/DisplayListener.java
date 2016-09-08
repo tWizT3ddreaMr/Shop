@@ -14,13 +14,39 @@ import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.*;
 
 public class DisplayListener implements Listener {
 
     public Shop plugin = Shop.getPlugin();
+    private ArrayList<ItemStack> allServerRecipeResults = new ArrayList<>();
 
     public DisplayListener(Shop instance) {
         plugin = instance;
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                HashMap<ItemStack, Boolean> recipes = new HashMap();
+                Iterator<Recipe> recipeIterator = plugin.getServer().recipeIterator();
+                while(recipeIterator.hasNext()) {
+                    recipes.put(recipeIterator.next().getResult(), true);
+                }
+                allServerRecipeResults.addAll(recipes.keySet());
+                Collections.shuffle(allServerRecipeResults);
+            }
+        }.runTaskLater(this.plugin, 1); //load all recipes on server once all other plugins are loaded
+    }
+
+    public ItemStack getRandomItem(){
+        int index = new Random().nextInt(allServerRecipeResults.size());
+        //TODO maybe later on add random amount between 1-64 depending on item type
+        //like you could get 46 stack of dirt but not 46 stack of swords
+        return allServerRecipeResults.get(index);
     }
 
     @EventHandler

@@ -15,6 +15,8 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Sign;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -23,17 +25,22 @@ import java.util.Random;
 
 public class Display {
 
-    private ShopObject shop;
+    private Location shopSignLocation;
+    private DisplayType type;
     private ArrayList<Entity> entities;
+    private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
+    private BukkitTask saveShopsTask;
 
     public Display(ShopObject shop) {
-        this.shop = shop;
+        this.shopSignLocation = shop.getSignLocation();
         entities = new ArrayList<>();
     }
 
     public void spawn() {
         remove();
         Random random = new Random();
+
+        ShopObject shop = this.getShop();
 
         if (shop.getItemStack() == null)
             return;
@@ -44,6 +51,10 @@ public class Display {
         ItemMeta sellMeta = item.getItemMeta();
         sellMeta.setDisplayName(this.generateDisplayName(random));
         item.setItemMeta(sellMeta);
+
+        DisplayType displayType = this.type;
+        if(displayType == null)
+            displayType = Shop.getPlugin().getDisplayType();
 
         //two display entities on the chest
         if (shop.getType() == ShopType.BARTER) {
@@ -57,7 +68,7 @@ public class Display {
             buyMeta.setDisplayName(this.generateDisplayName(random)); // stop item stacking and aid in searching
             barterItem.setItemMeta(buyMeta);
 
-            switch (Shop.getPlugin().getDisplayType()){
+            switch (displayType){
                 case NONE:
                     //do nothing
                     break;
@@ -117,7 +128,7 @@ public class Display {
         }
         //one display entity on the chest
         else {
-            switch (Shop.getPlugin().getDisplayType()){
+            switch (displayType){
                 case NONE:
                     //do nothing
                     break;
@@ -154,7 +165,47 @@ public class Display {
         shop.updateSign();
     }
 
+    public DisplayType getType(){
+        return type;
+    }
+
+    public ShopObject getShop(){
+        return Shop.getPlugin().getShopHandler().getShop(this.shopSignLocation);
+    }
+
+    public void setType(DisplayType type){
+        try{
+            if(EntityType.ARMOR_STAND == EntityType.ARROW){
+                //check that armor stand exists (server not on MC 1.7)
+            }
+        } catch(NoSuchFieldError e){
+            return;
+        }
+        this.type = type;
+        this.spawn();
+
+        saveShopsLater();
+    }
+
+    public void cycleType(){
+        DisplayType displayType = this.type;
+        if(displayType == null)
+            displayType = Shop.getPlugin().getDisplayType();
+
+        int index = 0;
+        for(int i=0; i<cycle.length; i++){
+            if(cycle[i] == displayType)
+                index = i + 1;
+        }
+        if(index >= cycle.length)
+            index = 0;
+
+        this.setType(cycle[index]);
+    }
+
     public void remove() {
+        ShopObject shop = this.getShop();
+
         Iterator<Entity> displayIterator = entities.iterator();
         while(displayIterator.hasNext()) {
             Entity displayEntity = displayIterator.next();
@@ -173,6 +224,8 @@ public class Display {
     }
 
     private Location getItemDropLocation(boolean isBarterItem) {
+        ShopObject shop = this.getShop();
+
         //calculate which x,z to drop items at depending on direction of the shop sign
         double dropY = 1.2;
         double dropX = 0.5;
@@ -214,6 +267,8 @@ public class Display {
     }
 
     private Vector getLargeItemBarterOffset(boolean isBarterItem){
+        ShopObject shop = this.getShop();
+
         Vector offset = new Vector(0,0,0);
         double space = 0.24;
         if (shop.getType() == ShopType.BARTER) {
@@ -293,8 +348,20 @@ public class Display {
     }
 
     private String generateDisplayName(Random random){
-        Location loc = shop.getSignLocation();
+        Location loc = this.shopSignLocation;
         String name = "***{"+loc.getBlockX()+","+loc.getBlockY()+","+loc.getBlockZ()+"}"+random.nextInt(1000);
         return name;
+    }
+
+    private void saveShopsLater(){
+        if(saveShopsTask != null)
+            saveShopsTask.cancel();
+
+        saveShopsTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                Shop.getPlugin().getShopHandler().saveShops(getShop().getOwnerUUID());
+            }
+        }.runTaskLater(Shop.getPlugin(), 1200); //save shops after 1 minute
     }
 }

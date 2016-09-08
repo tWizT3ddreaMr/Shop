@@ -17,6 +17,9 @@ itemCurrencyName: Emerald(s)
 creationCost: 0
 destructionCost: 0
 
+# This is the set price that all gambling shops will cost to use #
+gambleShopPrice: 5
+
 
 # =================================================================== #
 #                         GENERAL SETTINGS                            #
@@ -24,6 +27,10 @@ destructionCost: 0
 
 # If you want to use permissions with Shop, you must set this to true #
 usePermissions: false
+
+# Setting this to true will force all Shops to be created in WorldGuard regions with a shop flag #
+# WorldGuard plugin must be installed for this feature to work #
+hookWorldGuard: false
 
 # This is the command alias that will be used as the base for all shop commands #
 commandAlias: shop

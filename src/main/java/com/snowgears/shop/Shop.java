@@ -14,6 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,11 +42,14 @@ public class Shop extends JavaPlugin {
 
     private boolean usePerms;
     private boolean useVault;
+    private boolean hookWorldGuard;
     private String commandAlias;
     private DisplayType displayType;
     private boolean checkItemDurability;
     private boolean playSounds;
     private boolean playEffects;
+    private ItemStack gambleDisplayItem;
+    private double gamblePrice;
     private ItemStack itemCurrency = null;
     private String itemCurrencyName = "";
     private String vaultCurrencySymbol = "";
@@ -105,8 +109,8 @@ public class Shop extends JavaPlugin {
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
 
-        getServer().getPluginManager().registerEvents(shopListener, this);
         getServer().getPluginManager().registerEvents(displayListener, this);
+        getServer().getPluginManager().registerEvents(shopListener, this);
         getServer().getPluginManager().registerEvents(exchangeListener, this);
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
@@ -141,6 +145,7 @@ public class Shop extends JavaPlugin {
         }
 
         usePerms = config.getBoolean("usePermissions");
+        hookWorldGuard = config.getBoolean("hookWorldGuard");
         commandAlias = config.getString("commandAlias");
         checkItemDurability = config.getBoolean("checkItemDurability");
         playSounds = config.getBoolean("playSounds");
@@ -180,6 +185,16 @@ public class Shop extends JavaPlugin {
             } catch (Exception e) {}
         }
 
+        //load the gamble display item from it's file
+        File gambleDisplayFile = new File(fileDirectory, "gambleDisplayItem.yml");
+        if (!gambleDisplayFile.exists()) {
+            gambleDisplayFile.getParentFile().mkdirs();
+            UtilMethods.copy(getResource("GAMBLE_DISPLAY.yml"), gambleDisplayFile);
+        }
+        YamlConfiguration gambleItemConfig = YamlConfiguration.loadConfiguration(gambleDisplayFile);
+        gambleDisplayItem = gambleItemConfig.getItemStack("GAMBLE_DISPLAY");
+        gamblePrice = config.getDouble("gambleShopPrice");
+
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencySymbol");
 
@@ -216,14 +231,13 @@ public class Shop extends JavaPlugin {
             e.printStackTrace();
         }
 
-        shopHandler = new ShopHandler(this);
-        enderChestHandler = new EnderChestHandler(this);
-
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+        new BukkitRunnable() {
+            @Override
             public void run() {
-                shopHandler.refreshShopDisplays();
+                shopHandler = new ShopHandler(plugin);
+                enderChestHandler = new EnderChestHandler(plugin);
             }
-        }, 60L);
+        }.runTaskLater(this.plugin, 10);
     }
 
     @Override
@@ -276,6 +290,10 @@ public class Shop extends JavaPlugin {
         return useVault;
     }
 
+    public boolean hookWorldGuard(){
+        return hookWorldGuard;
+    }
+
     public DisplayType getDisplayType(){
         return displayType;
     }
@@ -290,6 +308,14 @@ public class Shop extends JavaPlugin {
 
     public boolean playEffects(){
         return playEffects;
+    }
+
+    public ItemStack getGambleDisplayItem(){
+        return gambleDisplayItem;
+    }
+
+    public double getGamblePrice(){
+        return gamblePrice;
     }
 
     public ItemStack getItemCurrency() {

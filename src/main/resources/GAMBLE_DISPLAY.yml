@@ -1,0 +1,9 @@
+GAMBLE_DISPLAY:
+  ==: org.bukkit.inventory.ItemStack
+  type: SKULL_ITEM
+  damage: 3
+  meta:
+    ==: ItemMeta
+    meta-type: SKULL
+    display-name: Random Item
+    internal: H4sIAAAAAAAAAE2PzWqDQBzE/y0UrPQxehXWjzV4yCFUIbtErYmarLeoK7rZtcFoE/tcfcB67GEYht/MYXQAHd4Ol0nKz+Gr6STX4JnU8I44slcetgzPq0rDcT1klDbCBm8s3LgVN00L66Avoysfxo7fXkEb+WOcBn7TAeBJg5f8LCcOv3ymqDi1qD5RWc3EXXJ6QDIm4roifT6XH8QlauHbjbubvX9dPJ6PWDKbtkWfTKXK0c7eS77dm5XKvpmIuugnuDOxcZjI5tCiHUtrWSjahn4tIkEwU8E99i8mOyZWmAZzpJJFoRMpKplY3M+s0I/aOK1QKApBetNrkvV6eQB/IuRRgxwBAAA=

@@ -4,6 +4,7 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.Display;
+import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -22,6 +23,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.util.*;
@@ -38,17 +40,14 @@ public class ShopHandler {
 
     public ShopHandler(Shop instance) {
         plugin = instance;
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-            public void run() {
-                loadShops();
-            }
-        }, 1L);
 
         shopMaterials.add(Material.CHEST);
         shopMaterials.add(Material.TRAPPED_CHEST);
         if(plugin.useEnderChests())
             shopMaterials.add(Material.ENDER_CHEST);
         adminUUID = UUID.randomUUID();
+
+        loadShops();
     }
 
     public ShopObject getShop(Location loc) {
@@ -158,6 +157,16 @@ public class ShopHandler {
         return shopLocations;
     }
 
+    public boolean attemptToRecoverShop(Block b){
+        if(b.getType() == Material.WALL_SIGN){
+            if(this.getShop(b.getLocation()) == null){
+                org.bukkit.block.Sign sign = (org.bukkit.block.Sign)b.getState();
+                //TODO match sign lines to key elements and create shop from them (if possible)
+            }
+        }
+        return false;
+    }
+
     public int getNumberOfShops() {
         return allShops.size();
     }
@@ -244,6 +253,8 @@ public class ShopHandler {
                         type = "admin ";
                     type = type + shop.getType().toString();
                     config.set("shops." + owner + "." + shopNumber + ".type", type);
+                    if(shop.getDisplay().getType() != null)
+                        config.set("shops." + owner + "." + shopNumber + ".displayType", shop.getDisplay().getType().toString());
 
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
@@ -313,6 +324,8 @@ public class ShopHandler {
                         type = "admin ";
                     type = type + shop.getType().toString();
                     config.set("shops." + owner + "." + shopNumber + ".type", type);
+                    if(shop.getDisplay().getType() != null)
+                        config.set("shops." + owner + "." + shopNumber + ".displayType", shop.getDisplay().getType().toString());
 
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
@@ -346,13 +359,22 @@ public class ShopHandler {
             // load all the yml files from the data directory
             for (File file : fileDirectory.listFiles()) {
                 if (file.isFile()) {
-                    if(file.getName().endsWith(".yml") && !file.getName().contains("enderchests") && !file.getName().contains("itemCurrency")) {
+                    if(file.getName().endsWith(".yml")
+                            && !file.getName().contains("enderchests")
+                            && !file.getName().contains("itemCurrency")
+                            && !file.getName().contains("gambleDisplay")) {
                         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
                         loadShopsFromConfig(config);
                     }
                 }
             }
         }
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                refreshShopDisplays();
+            }
+        }.runTaskLater(this.plugin, 20);
     }
 
 
@@ -361,7 +383,6 @@ public class ShopHandler {
     //==============================================================================//
 
     private void loadShopsFromConfig(YamlConfiguration config) {
-
         if (config.getConfigurationSection("shops") == null)
             return;
         Set<String> allShopOwners = config.getConfigurationSection("shops").getKeys(false);
@@ -383,26 +404,40 @@ public class ShopHandler {
                         double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
                         int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
                         String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
+
                         boolean isAdmin = false;
                         if (type.contains("admin"))
                             isAdmin = true;
                         ShopType shopType = typeFromString(type);
 
                         ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
-                        ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
-                        shop.setItemStack(itemStack);
-                        if (shop.getType() == ShopType.BARTER) {
-                            ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
-                            shop.setBarterItemStack(barterItemStack);
-                        }
-
-                        if (shop.isAdminShop()) {
-                            shop.setOwner(plugin.getShopHandler().getAdminUUID());
-                        }
+                        final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
 
                         if (this.isChest(shop.getChestLocation().getBlock())) {
-                            shop.updateSign();
                             this.addShop(shop);
+
+                            shop.setItemStack(itemStack);
+                            if (shop.getType() == ShopType.BARTER) {
+                                ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
+                                shop.setBarterItemStack(barterItemStack);
+                            }
+
+                            if (shop.isAdminShop()) {
+                                shop.setOwner(this.getAdminUUID());
+                            }
+
+                            final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+
+                                    if(displayType != null){
+                                        if(shop.getType() == ShopType.GAMBLE)
+                                            shop.setItemStack(plugin.getGambleDisplayItem());
+                                        shop.getDisplay().setType(DisplayType.valueOf(displayType));
+                                    }
+                                }
+                            }.runTaskLater(this.plugin, 2);
                         }
                     }
                 }
@@ -547,8 +582,10 @@ public class ShopHandler {
             return ShopType.SELL;
         else if (typeString.contains("buy"))
             return ShopType.BUY;
-        else
+        else if(typeString.contains("barter"))
             return ShopType.BARTER;
+        else
+            return ShopType.GAMBLE;
     }
 
     public boolean isChest(Block b){

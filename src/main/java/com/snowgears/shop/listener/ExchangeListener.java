@@ -8,11 +8,7 @@ import com.snowgears.shop.event.PlayerExchangeShopEvent;
 import com.snowgears.shop.util.EconomyUtils;
 import com.snowgears.shop.util.InventoryUtils;
 import com.snowgears.shop.util.ShopMessage;
-import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,11 +16,16 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 
 public class ExchangeListener implements Listener {
 
     private Shop plugin = Shop.getPlugin();
+    private HashMap<Location, UUID> shopMessageCooldown = new HashMap<>(); //shop location, shop owner
 //    private Logger exchangeLogger;
 
     public ExchangeListener(Shop instance) {
@@ -36,6 +37,9 @@ public class ExchangeListener implements Listener {
 
     @EventHandler
     public void onShopSignClick(PlayerInteractEvent event) {
+        if(event.isCancelled())
+            return;
+
         try {
             if (event.getHand() == EquipmentSlot.OFF_HAND) {
                 return; // off hand packet, ignore.
@@ -57,33 +61,15 @@ public class ExchangeListener implements Listener {
                 }
 
                 //player did not click their own shop
-                if ((!shop.getOwnerName().equals(player.getName())) || shop.isAdminShop()) {
-                    if (shop.getType() == ShopType.BUY) {
-                        if (plugin.usePerms() && !(player.hasPermission("shop.use.buying") || player.hasPermission("shop.use"))) {
-                            if (!player.hasPermission("shop.operator")) {
-                                player.sendMessage(ShopMessage.getMessage("permission", "use", shop, player));
-                                return;
-                            }
-                        }
-                        executeExchange(player, shop, true);
+                if (!shop.getOwnerName().equals(player.getName())) {
 
-                    } else if (shop.getType() == ShopType.SELL) {
-                        if (plugin.usePerms() && !(player.hasPermission("shop.use.selling") || player.hasPermission("shop.use"))) {
-                            if (!player.hasPermission("shop.operator")) {
-                                player.sendMessage(ShopMessage.getMessage("permission", "use", shop, player));
-                                return;
-                            }
+                    if (plugin.usePerms() && !(player.hasPermission("shop.use."+shop.getType().toString().toLowerCase()) || player.hasPermission("shop.use"))) {
+                        if (!player.hasPermission("shop.operator")) {
+                            player.sendMessage(ShopMessage.getMessage("permission", "use", shop, player));
+                            return;
                         }
-                        executeExchange(player, shop, true);
-                    } else {
-                        if (plugin.usePerms() && !(player.hasPermission("shop.use.barter") || player.hasPermission("shop.use"))) {
-                            if (!player.hasPermission("shop.operator")) {
-                                player.sendMessage(ShopMessage.getMessage("permission", "use", shop, player));
-                                return;
-                            }
-                        }
-                        executeExchange(player, shop, true);
                     }
+                    executeExchange(player, shop, true);
                 } else {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "useOwnShop", shop, player));
                     sendEffects(false, player, shop);
@@ -99,6 +85,9 @@ public class ExchangeListener implements Listener {
             case BUY:
                 issue = playerSellToShop(player, shop, isCheck);
                 break;
+            case GAMBLE:
+                if(!shop.getItemStack().equals(plugin.getGambleDisplayItem()))
+                    return;
             case SELL:
                 issue = playerBuyFromShop(player, shop, isCheck);
                 break;
@@ -107,7 +96,7 @@ public class ExchangeListener implements Listener {
                 break;
         }
 
-        //if there are no issues with the transaction
+        //if there are no issues with the test/check transaction
         if(issue == ExchangeIssue.NONE && isCheck){
 
             PlayerExchangeShopEvent e = new PlayerExchangeShopEvent(player, shop);
@@ -116,20 +105,32 @@ public class ExchangeListener implements Listener {
             if(e.isCancelled())
                 return;
 
-            //run the exchange again without the check clause
+            //run the transaction again without the check clause
             executeExchange(player, shop, false);
             return;
         }
-        //there was an issue when checking, send reason to player
+        //there was an issue when checking transaction, send reason to player
         else if(issue != ExchangeIssue.NONE){
             switch (issue){
                 case INSUFFICIENT_FUNDS_SHOP:
+                    if(!shop.isAdminShop()){
+                        Player owner = shop.getOwnerPlayer().getPlayer();
+                        //the shop owner is online
+                        if(owner != null && notifyOwner(shop))
+                            owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoStock", shop, owner));
+                    }
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoStock", shop, player));
                     break;
                 case INSUFFICIENT_FUNDS_PLAYER:
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoStock", shop, player));
                     break;
                 case INVENTORY_FULL_SHOP:
+                    if(!shop.isAdminShop()){
+                        Player owner = shop.getOwnerPlayer().getPlayer();
+                        //the shop owner is online
+                        if(owner != null && notifyOwner(shop))
+                            owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoSpace", shop, owner));
+                    }
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoSpace", shop, player));
                     break;
                 case INVENTORY_FULL_PLAYER:
@@ -147,6 +148,95 @@ public class ExchangeListener implements Listener {
 
     public ExchangeIssue playerBuyFromShop(Player player, ShopObject shop, boolean isCheck){
 
+        ItemStack shopItem;
+        if(shop.getType() == ShopType.GAMBLE)
+            shopItem = shop.getGambleItemStack();
+        else
+            shopItem = shop.getItemStack();
+        //check if shop has enough items
+        if (!shop.isAdminShop()) {
+            int shopItems = InventoryUtils.getAmount(shop.getInventory(), shopItem);
+            if (shopItems < shopItem.getAmount())
+                return ExchangeIssue.INSUFFICIENT_FUNDS_SHOP;
+            //remove items from shop
+            if(!isCheck)
+                InventoryUtils.removeItem(shop.getInventory(), shopItem, shop.getOwnerPlayer());
+        }
+
+        //check if player has enough currency
+        boolean hasFunds = EconomyUtils.hasSufficientFunds(player,player.getInventory(), shop.getPrice());
+        if(!hasFunds)
+            return ExchangeIssue.INSUFFICIENT_FUNDS_PLAYER;
+        //remove currency from player
+        if(!isCheck)
+            EconomyUtils.removeFunds(player,player.getInventory(),shop.getPrice());
+
+        //check if shop has enough room to accept currency
+        if (!shop.isAdminShop()) {
+            boolean hasRoom = EconomyUtils.canAcceptFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
+            if(!hasRoom)
+                return ExchangeIssue.INVENTORY_FULL_SHOP;
+            //add currency to shop
+            if(!isCheck)
+                EconomyUtils.addFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
+        }
+
+        //check if player has enough room to accept items
+        boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), shopItem, player);
+        if(!hasRoom)
+            return ExchangeIssue.INVENTORY_FULL_PLAYER;
+        //add items to player's inventory
+        if(!isCheck)
+            InventoryUtils.addItem(player.getInventory(), shopItem, player);
+
+        player.updateInventory();
+        return ExchangeIssue.NONE;
+    }
+
+    public ExchangeIssue playerSellToShop(Player player, ShopObject shop, boolean isCheck){
+
+        //check if player has enough items
+        int playerItems = InventoryUtils.getAmount(player.getInventory(), shop.getItemStack());
+        if (playerItems < shop.getItemStack().getAmount())
+            return ExchangeIssue.INSUFFICIENT_FUNDS_PLAYER;
+        //remove items from player
+        if(!isCheck)
+            InventoryUtils.removeItem(player.getInventory(), shop.getItemStack(), player);
+
+        //check if shop has enough currency
+        if(!shop.isAdminShop()) {
+            boolean hasFunds = EconomyUtils.hasSufficientFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
+            if (!hasFunds)
+                return ExchangeIssue.INSUFFICIENT_FUNDS_SHOP;
+            //remove currency from shop
+            if (!isCheck)
+                EconomyUtils.removeFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
+        }
+
+        //check if player has enough room to accept currency
+        boolean hasRoom = EconomyUtils.canAcceptFunds(player, player.getInventory(), shop.getPrice());
+        if(!hasRoom)
+            return ExchangeIssue.INVENTORY_FULL_PLAYER;
+        //add currency to player
+        if(!isCheck)
+            EconomyUtils.addFunds(player, player.getInventory(), shop.getPrice());
+
+        //check if shop has enough room to accept items
+        if(!shop.isAdminShop()) {
+            boolean shopHasRoom = InventoryUtils.hasRoom(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
+            if (!shopHasRoom)
+                return ExchangeIssue.INVENTORY_FULL_SHOP;
+            //add items to shop's inventory
+            if (!isCheck)
+                InventoryUtils.addItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
+        }
+
+        player.updateInventory();
+        return ExchangeIssue.NONE;
+    }
+
+    public ExchangeIssue playerBarterWithShop(Player player, ShopObject shop, boolean isCheck){
+
         //check if shop has enough items
         if (!shop.isAdminShop()) {
             int shopItems = InventoryUtils.getAmount(shop.getInventory(), shop.getItemStack());
@@ -157,22 +247,22 @@ public class ExchangeListener implements Listener {
                 InventoryUtils.removeItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
         }
 
-        //check if player has enough currency
-        boolean hasFunds = EconomyUtils.hasSufficientFunds(player,player.getInventory(), shop.getPrice());
-        if(!hasFunds)
+        //check if player has enough barter items
+        int playerItems = InventoryUtils.getAmount(player.getInventory(), shop.getBarterItemStack());
+        if (playerItems < shop.getBarterItemStack().getAmount())
             return ExchangeIssue.INSUFFICIENT_FUNDS_PLAYER;
-        //remove currency from player
+        //remove barter items from player
         if(!isCheck)
-            EconomyUtils.removeFunds(player,player.getInventory(),shop.getPrice());
+            InventoryUtils.removeItem(player.getInventory(), shop.getBarterItemStack(), player);
 
-        //check if shop has enough room to accept currency
+        //check if shop has enough room to accept barter items
         if (!shop.isAdminShop()) {
-            boolean hasRoom = EconomyUtils.canAcceptFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
+            boolean hasRoom = InventoryUtils.hasRoom(shop.getInventory(), shop.getBarterItemStack(), shop.getOwnerPlayer());
             if(!hasRoom)
                 return ExchangeIssue.INVENTORY_FULL_SHOP;
-            //add currency to shop
+            //add barter items to shop
             if(!isCheck)
-                EconomyUtils.addFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
+                InventoryUtils.addItem(shop.getInventory(), shop.getBarterItemStack(), shop.getOwnerPlayer());
         }
 
         //check if player has enough room to accept items
@@ -185,225 +275,6 @@ public class ExchangeListener implements Listener {
 
         player.updateInventory();
         return ExchangeIssue.NONE;
-    }
-
-    public ExchangeIssue playerSellToShop(Player player, ShopObject shop, boolean isCheck){
-
-        //TODO change all of these around as method below and then do barter
-        //check if player has enough items
-        int shopItems = InventoryUtils.getAmount(shop.getInventory(), shop.getItemStack());
-        if (shopItems < shop.getItemStack().getAmount())
-            return ExchangeIssue.INSUFFICIENT_FUNDS_SHOP;
-        //remove items from shop
-        if(!isCheck)
-            InventoryUtils.removeItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
-
-        //check if player has enough currency
-        boolean hasFunds = EconomyUtils.hasSufficientFunds(player,player.getInventory(), shop.getPrice());
-        if(!hasFunds)
-            return ExchangeIssue.INSUFFICIENT_FUNDS_PLAYER;
-        //remove currency from player
-        if(!isCheck)
-            EconomyUtils.removeFunds(player,player.getInventory(),shop.getPrice());
-
-        //check if shop has enough room to accept currency
-        if (!shop.isAdminShop()) {
-            boolean hasRoom = EconomyUtils.canAcceptFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
-            if(!hasRoom)
-                return ExchangeIssue.INVENTORY_FULL_SHOP;
-            //add currency to shop
-            if(!isCheck)
-                EconomyUtils.addFunds(shop.getOwnerPlayer(), shop.getInventory(), shop.getPrice());
-        }
-
-        //check if player has enough room to accept items
-        boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), shop.getItemStack(), player);
-        if(!hasRoom)
-            return ExchangeIssue.INVENTORY_FULL_PLAYER;
-        //add items to player's inventory
-        if(!isCheck)
-            InventoryUtils.addItem(player.getInventory(), shop.getItemStack(), player);
-
-        player.updateInventory();
-        return ExchangeIssue.NONE;
-    }
-
-    public boolean playerSellToShop(Player player, ShopObject shop) {
-        if (plugin.useVault()) {
-
-            //remove money from shop owner
-            if (!shop.isAdminShop()) {
-                EconomyResponse response = plugin.getEconomy().withdrawPlayer(shop.getOwnerPlayer(), shop.getPrice());
-                if (!response.transactionSuccess()) {
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoStock", shop, player));
-                    return false;
-                }
-            }
-
-            //remove items from player
-            int playerItemOverflow = InventoryUtils.removeItem(player.getInventory(), shop.getItemStack(), player);
-            //revert back if player does not have enough items in inventory
-            if (playerItemOverflow > 0) {
-                ItemStack revert = shop.getItemStack().clone();
-                revert.setAmount(revert.getAmount() - playerItemOverflow);
-                InventoryUtils.addItem(player.getInventory(), revert, player); //return underflow items back to players inventory
-                if (!shop.isAdminShop())
-                    plugin.getEconomy().depositPlayer(shop.getOwnerPlayer(), shop.getPrice()); //return money to shop owner
-
-                player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoStock", shop, player));
-                player.updateInventory();
-                return false;
-            }
-
-            //add those items to the shop
-            if (!shop.isAdminShop()) {
-                int shopOverflow = InventoryUtils.addItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
-                //revert back if shop does not have enough room for money items
-                if (shopOverflow > 0) {
-                    ItemStack revert = shop.getItemStack().clone();
-                    revert.setAmount(revert.getAmount() - shopOverflow);
-                    InventoryUtils.removeItem(shop.getInventory(), revert, shop.getOwnerPlayer()); //remove underflow items from shop inventory
-                    plugin.getEconomy().depositPlayer(shop.getOwnerPlayer(), shop.getPrice()); //return money to shop owner
-                    InventoryUtils.addItem(player.getInventory(), shop.getItemStack(), player); //return items back to seller
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoSpace", shop, player));
-                    player.updateInventory();
-                    return false;
-                }
-            }
-
-            //add money to seller (player)
-            plugin.getEconomy().depositPlayer(player, shop.getPrice());
-        } else {
-            ItemStack itemCost = plugin.getItemCurrency();
-            itemCost.setAmount((int) shop.getPrice());
-
-            //remove money items from shop's inventory
-            if (!shop.isAdminShop()) {
-                int shopMoneyOverflow = InventoryUtils.removeItem(shop.getInventory(), itemCost, shop.getOwnerPlayer());
-                //revert back if shop does not have enough money items in stock
-                if (shopMoneyOverflow > 0) {
-                    ItemStack revert = itemCost.clone();
-                    revert.setAmount(revert.getAmount() - shopMoneyOverflow);
-                    InventoryUtils.addItem(shop.getInventory(), revert, shop.getOwnerPlayer()); //return underflow items back to shops inventory
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoStock", shop, player));
-                    return false;
-                }
-            }
-
-            //remove items from player
-            int playerItemOverflow = InventoryUtils.removeItem(player.getInventory(), shop.getItemStack(), player);
-            //revert back if player does not have enough money items in inventory
-            if (playerItemOverflow > 0) {
-                ItemStack revert = shop.getItemStack().clone();
-                revert.setAmount(revert.getAmount() - playerItemOverflow);
-                InventoryUtils.addItem(player.getInventory(), revert, player); //return underflow items back to players inventory
-                InventoryUtils.addItem(shop.getInventory(), itemCost, shop.getOwnerPlayer()); //return money items back to shops inventory
-                player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoStock", shop, player));
-                player.updateInventory();
-                return false;
-            }
-
-            //add those items to the shop
-            if (!shop.isAdminShop()) {
-                int shopOverflow = InventoryUtils.addItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
-                //revert back if shop does not have enough room for money items
-                if (shopOverflow > 0) {
-                    ItemStack revert = shop.getItemStack().clone();
-                    revert.setAmount(revert.getAmount() - shopOverflow);
-                    InventoryUtils.removeItem(shop.getInventory(), revert, shop.getOwnerPlayer()); //remove underflow items from shop inventory
-                    InventoryUtils.addItem(shop.getInventory(), itemCost, shop.getOwnerPlayer()); //return money items back to shops inventory
-                    InventoryUtils.addItem(player.getInventory(), shop.getItemStack(), player); //return items back to seller
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoSpace", shop, player));
-                    player.updateInventory();
-                    return false;
-                }
-            }
-
-            //add money items to player's inventory
-            int sellerOverflow = InventoryUtils.addItem(player.getInventory(), itemCost, player);
-            //revert back if player does not have enough room in inventory
-            if (sellerOverflow > 0) {
-                ItemStack revert = itemCost.clone();
-                revert.setAmount(revert.getAmount() - sellerOverflow);
-                InventoryUtils.removeItem(player.getInventory(), revert, player); //remove underflow items from players inventory
-                if (!shop.isAdminShop()) {
-                    InventoryUtils.removeItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer()); //take items back from shop
-                    InventoryUtils.addItem(shop.getInventory(), itemCost, shop.getOwnerPlayer()); //return money items back to shops inventory
-                }
-                InventoryUtils.addItem(player.getInventory(), shop.getItemStack(), player); //give seller their items back
-                player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoSpace", shop, player));
-                player.updateInventory();
-                return false;
-            }
-        }
-        player.updateInventory();
-        return true;
-    }
-
-    public boolean playerBarterWithShop(Player player, ShopObject shop) {
-        //the shop is giving away its ItemStack
-        //the shop is receiving its BarterItemStack
-
-        //remove itemstack from shop's inventory
-        if (!shop.isAdminShop()) {
-            int shopOverflow = InventoryUtils.removeItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer());
-            //revert back if shop does not have enough items in stock
-            if (shopOverflow > 0) {
-                ItemStack revert = shop.getItemStack().clone();
-                revert.setAmount(revert.getAmount() - shopOverflow);
-                InventoryUtils.addItem(shop.getInventory(), revert, shop.getOwnerPlayer()); //return underflow items back to shops inventory
-                player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoStock", shop, player));
-                return false;
-            }
-        }
-
-        //remove barteritemstack from player
-        int playerOverflow = InventoryUtils.removeItem(player.getInventory(), shop.getBarterItemStack(), player);
-        //revert back if player does not have enough money items in inventory
-        if (playerOverflow > 0) {
-            ItemStack revert = shop.getBarterItemStack().clone();
-            revert.setAmount(revert.getAmount() - playerOverflow);
-            InventoryUtils.addItem(player.getInventory(), revert, player); //return underflow items back to players inventory
-            InventoryUtils.addItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer()); //return items back to shops inventory
-            player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoStock", shop, player));
-            player.updateInventory();
-            return false;
-        }
-
-        //add barteritemstack to the shop
-        if (!shop.isAdminShop()) {
-            int shopOverflow = InventoryUtils.addItem(shop.getInventory(), shop.getBarterItemStack(), shop.getOwnerPlayer());
-            //revert back if shop does not have enough room for money items
-            if (shopOverflow > 0) {
-                ItemStack revert = shop.getBarterItemStack().clone();
-                revert.setAmount(revert.getAmount() - shopOverflow);
-                InventoryUtils.removeItem(shop.getInventory(), revert, shop.getOwnerPlayer()); //remove underflow items from shop inventory
-                InventoryUtils.addItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer()); //return items back to shops inventory
-                InventoryUtils.addItem(player.getInventory(), shop.getBarterItemStack(), player); //return barter items back to buyer
-                player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoSpace", shop, player));
-                player.updateInventory();
-                return false;
-            }
-        }
-
-        //add item to buyer's inventory
-        int buyerOverflow = InventoryUtils.addItem(player.getInventory(), shop.getItemStack(), player);
-        //revert back if player does not have enough room in inventory
-        if (buyerOverflow > 0) {
-            ItemStack revert = shop.getItemStack().clone();
-            revert.setAmount(revert.getAmount() - buyerOverflow);
-            InventoryUtils.removeItem(player.getInventory(), revert, player); //remove underflow items from players inventory
-            if (!shop.isAdminShop()) {
-                InventoryUtils.removeItem(shop.getInventory(), shop.getBarterItemStack(), shop.getOwnerPlayer()); //take barteritem back from shop
-                InventoryUtils.addItem(shop.getInventory(), shop.getItemStack(), shop.getOwnerPlayer()); //return items back to shops inventory
-            }
-            InventoryUtils.addItem(player.getInventory(), shop.getBarterItemStack(), player); //give buyer their money items back
-            player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoSpace", shop, player));
-            player.updateInventory();
-            return false;
-        }
-        player.updateInventory();
-        return true;
     }
 
     private void sendExchangeMessages(ShopObject shop, Player player) {
@@ -412,6 +283,7 @@ public class ExchangeListener implements Listener {
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
         if ((owner != null) && (!shop.isAdminShop()))
             owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "owner", shop, player));
+        shop.shuffleGambleItem();
     }
 
     public void sendEffects(boolean success, Player player, ShopObject shop){
@@ -431,6 +303,29 @@ public class ExchangeListener implements Listener {
                 }
             }
         } catch (NoSuchFieldError e){ }
+    }
+
+    private boolean notifyOwner(final ShopObject shop){
+        if(shop.isAdminShop())
+            return false;
+        if(shopMessageCooldown.containsKey(shop.getSignLocation()))
+            return false;
+        else{
+            shopMessageCooldown.put(shop.getSignLocation(), shop.getOwnerUUID());
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if(shop != null){
+                        if(shopMessageCooldown.containsKey(shop.getSignLocation())){
+                            shopMessageCooldown.remove(shop.getSignLocation());
+                        }
+                    }
+                    //TODO if shop is null, should you clear the entire cooldown list so that that location isn't messed up?
+                }
+            }.runTaskLater(this.plugin, 2400); //make cooldown 2 minutes
+        }
+        return true;
     }
 
     private enum ExchangeIssue {

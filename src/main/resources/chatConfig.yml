@@ -45,23 +45,34 @@ transaction:
    BARTER:
       user: "&7You bartered &f[barter item amount] &7of your &f[barter item](s) &7for &f[item amount] &7of [owner]s &f[item](s)&7."
       owner: "&7[user] bartered &f[barter item amount] &7of their &f[barter item](s) &7for &f[item amount] &7of your &f[item](s)&7."
+   GAMBLE:
+      user: "&7You gambled &a[price] &7and received &f[gamble item]&7(x[gamble item amount])."
 
 transaction_issue:
    SELL:
       shopNoStock: "&cThis shop is out of stock."
+      ownerNoStock: "&c[Shop] Your selling shop at <[location]> is out of stock."
       shopNoSpace: "&cThis shop does not have enough space in its inventory to accept your payment."
+      ownerNoSpace: "&c[Shop] Your selling shop at <[location]> is full."
       playerNoStock: "&cYou do not have sufficient funds to buy from this shop."
       playerNoSpace: "&cYou do not have enough space in your inventory to buy from this shop."
    BUY:
       shopNoStock: "&cThis shop is out of funds."
+      ownerNoStock: "&c[Shop] Your buying shop at <[location]> is out of funds."
       shopNoSpace: "&cThis shop does not have enough space in its inventory for your items."
+      ownerNoSpace: "&c[Shop] Your buying shop at <[location]> is full."
       playerNoStock: "&cYou do not have enough items to sell to this shop."
       playerNoSpace: "&cYou do not have enough space in your inventory to accept the payment from this shop."
    BARTER:
       shopNoStock: "&cThis shop is out of stock."
+      ownerNoStock: "&c[Shop] Your barter shop at <[location]> is out of stock."
       shopNoSpace: "&cThis shop does not have enough space in its inventory to barter with you."
+      ownerNoSpace: "&c[Shop] Your barter shop at <[location]> is full."
       playerNoStock: "&cYou do not have sufficient items to barter with this shop."
       playerNoSpace: "&cYou do not have enough space in your inventory to barter with this shop."
+   GAMBLE:
+      playerNoStock: "&cYou do not have sufficient funds to gamble with this shop."
+      playerNoSpace: "&cYou do not have enough space in your inventory to gamble with this shop."
 
 interaction:
    SELL:
@@ -85,6 +96,9 @@ interaction:
       destroy: "&7You have destroyed your bartering shop."
       opDestroy: "&7You have destroyed a bartering shop owned by [owner]."
       opOpen: "&7You are opening a bartering shop owned by [owner]."
+   GAMBLE:
+      create: "&eYou have created a gambling shop."
+      opDestroy: "&7You have destroyed a gambling shop owned by [server name]."
 
 interaction_issue:
    createLine2: "&cThe amount (line 2) needs to be a positive number."
@@ -100,6 +114,7 @@ interaction_issue:
    useOwnShop: "&7You cannot use your own shop."
    adminOpen: "&7Admin shops are not able to be opened."
    worldBlacklist: "&cShops are not allowed to be created in this world."
+   regionRestriction: "&cYou do not have permission to create shops in this region."
 
 description:
    SELL:
@@ -115,6 +130,9 @@ description:
       barterItem: "&7Item(s) you trade to the shop: &b[[barter item]] &7([barter item durability]% durability)"
       price: "&aYou can barter &f[barter item amount] &aof your &f[barter item](s) &ato this shop for &f[item amount] [item](s)&f."
       pricePerItem: "&7That is [price per item](s) per [item]."
+   GAMBLE:
+      item: "&7This shop sells random items."
+      price: "&aYou can gamble with this shop for &f[price]."
    stock: "&7This shop is currently able to provide [stock] more transactions."
    stockAdmin: "&7This shop can never run out of stock."
 
@@ -123,19 +141,3 @@ permission:
    create: "&cYou are not authorized to create [shop type]ing shops."
    destroy: "&cYou are not authorized to destroy shops."
    buildLimit: "&cYou have already reached your build limit of [build limit] shops."
-
-command:
-   shop:
-      - "&l[Shop] Available Commands"
-      - "   &7/shop list"
-      - "   &7/shop item refresh"
-      - "   &7/shop currency"
-      - "   &7/shop setcurrency"
-      - "   &7/shop save"
-   shopList:
-   shopItemRefresh: "[Shop] The display items on all of the shops have been refreshed."
-   shopCurrency:
-      vaultEconomy: "&7Shop is using &aVault &7for digital currency."
-      itemEconomy: "&7Shop is using &a[[economyItem](s)] &7as currency on the server. To change this, do &l/shop setcurrency"
-   shopSetCurrency: "&7Shop will now use &a[[economyItem](s)] &7 as the currency on the server."
-   shopSave: "[Shop] The shops have all been saved to the Data folder."

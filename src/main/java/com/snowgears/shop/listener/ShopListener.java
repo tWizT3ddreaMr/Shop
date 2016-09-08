@@ -2,7 +2,6 @@ package com.snowgears.shop.listener;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
-import com.snowgears.shop.event.PlayerExchangeShopEvent;
 import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -64,6 +63,44 @@ public class ShopListener implements Listener {
         return Integer.MAX_VALUE;
     }
 
+    @EventHandler (priority = EventPriority.LOW)
+    public void onDisplayChange(PlayerInteractEvent event){
+        try {
+            if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                return; // off hand packet, ignore.
+            }
+        } catch (NoSuchMethodError error) {}
+
+        if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
+            if(event.getClickedBlock().getType() == Material.WALL_SIGN){
+                ShopObject shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
+                if (shop == null || !shop.isInitialized())
+                    return;
+                Player player = event.getPlayer();
+
+                //player clicked another player's shop sign
+                if (!shop.getOwnerName().equals(player.getName())) {
+                    if(!player.isSneaking())
+                        return;
+
+                    //player has permission to change another player's shop display
+                    if(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
+                        shop.getDisplay().cycleType();
+                        event.setCancelled(true);
+                    }
+                //player clicked own shop sign
+                } else {
+                    if(plugin.usePerms() && !player.hasPermission("shop.setdisplay"))
+                        return;
+
+                    shop.getDisplay().cycleType();
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+    }
+
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onShopOpen(PlayerInteractEvent event) {
@@ -119,14 +156,6 @@ public class ShopListener implements Listener {
                 }
             }
         }
-    }
-
-    //TODO test with this and then delete it
-    @EventHandler
-    public void onExchangeShop(final PlayerExchangeShopEvent event) {
-        Player player = event.getPlayer();
-        player.sendMessage("PlayerExchangeShopEvent called.");
-        event.setCancelled(true);
     }
 
     @EventHandler

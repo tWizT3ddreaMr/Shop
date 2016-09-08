@@ -1,33 +1,33 @@
 name: Shop
 author: Tanner Embry (SnowGears)
 description: Easily create shops to buy or sell items!
-version: 1.6.4
+version: 1.7
 main: com.snowgears.shop.Shop
-softdepend: [Vault]
+softdepend: [Vault, WorldGuard]
 permissions:
     shop.use:
         description: Allows player to use all shops.
         default: op
-    shop.use.selling:
+    shop.use.sell:
         description: Allows player to use selling shops.
         default: op
-    shop.use.buying:
+    shop.use.buy:
         description: Allows player to use buying shops.
         default: op
     shop.use.barter:
         description: Allows player to use barter shops.
         default: op
+    shop.use.gamble:
+        description: Allows player to use gambling shops.
+        default: op
     shop.create:
         description: Allows player to create all shops.
         default: op
-    shop.create.selling:
+    shop.create.sell:
         description: Allows player to create selling shops.
         default: op
-    shop.create.buying:
+    shop.create.buy:
         description: Allows player to create buying shops.
-        default: op
-    shop.create.barter:
-        description: Allows player to create barter shops.
         default: op
     shop.destroy:
         description: Allows player to destroy their own shops.
@@ -35,5 +35,9 @@ permissions:
     shop.buildlimit.#:
          description: Restricts the number of shop a player can build to #.
          default: op
+    shop.setdisplay:
+         description: Allows player to set the display type on their shop.
+         default: op
     shop.operator:
         description: Allows access to operator actions.
+        default: op

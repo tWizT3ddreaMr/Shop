@@ -80,10 +80,14 @@ public class ShopMessage {
         }
         if(shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
+            unformattedMessage = unformattedMessage.replace("[location]", shop.getChestLocation().getWorld().getName()+","+shop.getChestLocation().getBlockX()+","+shop.getChestLocation().getBlockY()+","+shop.getChestLocation().getBlockZ());
             //dont replace [item] tag on first run through if its for a sign
             if(!forSign)
                 unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
             unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent(false));
+
+            unformattedMessage = unformattedMessage.replace("[gamble item amount]", "" + shop.getGambleItemStack().getAmount());
+            unformattedMessage = unformattedMessage.replace("[gamble item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getGambleItemStack()));
         }
         if(shop != null && shop.getBarterItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getBarterItemStack().getAmount());
@@ -154,9 +158,14 @@ public class ShopMessage {
     //      # [server name] : The name of the server #
     public static String[] getSignLines(ShopObject shop){
         String[] lines;
-        if(shop.isAdminShop())
+
+        DisplayType displayType = shop.getDisplay().getType();
+        if(displayType == null)
+            displayType = Shop.getPlugin().getDisplayType();
+
+        if(shop.isAdminShop() && shop.getType() != ShopType.GAMBLE)
             lines = getUnformattedShopSignLines(shop.getType(), "admin");
-        else if(Shop.getPlugin().getDisplayType() == DisplayType.NONE)
+        else if(displayType == DisplayType.NONE)
             lines = getUnformattedShopSignLines(shop.getType(), "no_display");
         else
             lines = getUnformattedShopSignLines(shop.getType(), "normal");
@@ -180,23 +189,6 @@ public class ShopMessage {
     }
 
     private static String[] getUnformattedShopSignLines(ShopType type, String subtype) {
-        if (shopSignTextMap.get(type.toString()+"_"+subtype) == null) {
-            String[] lines = new String[4];
-            lines[0] = ChatColor.BOLD+"[shop]";
-            if(type == ShopType.SELL || type == ShopType.BUY) {
-                lines[1] = UtilMethods.capitalize(type.toString().toLowerCase()) + "ing: "+ChatColor.BOLD+"[amount]";
-                lines[2] = ChatColor.GREEN+"[price]";
-            }
-            else {
-                lines[1] = "Bartering:";
-                lines[2] = ChatColor.GREEN+"[price]   for   [amount]";
-            }
-            if(subtype.equalsIgnoreCase("admin"))
-                lines[3] = ChatColor.LIGHT_PURPLE+"[server name]";
-            else
-                lines[3] = "[owner]";
-            return lines;
-        }
         return shopSignTextMap.get(type.toString()+"_"+subtype).clone();
     }
 
@@ -219,7 +211,9 @@ public class ShopMessage {
             messageMap.put(type.toString() + "_opOpen", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".opOpen"));
 
             messageMap.put(type.toString() + "_shopNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".shopNoStock"));
+            messageMap.put(type.toString() + "_ownerNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".ownerNoStock"));
             messageMap.put(type.toString() + "_shopNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".shopNoSpace"));
+            messageMap.put(type.toString() + "_ownerNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".ownerNoSpace"));
             messageMap.put(type.toString() + "_playerNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoStock"));
             messageMap.put(type.toString() + "_playerNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoSpace"));
 
@@ -250,7 +244,7 @@ public class ShopMessage {
         messageMap.put("interactionIssue_useOwnShop", chatConfig.getString("interaction_issue.useOwnShop"));
         messageMap.put("interactionIssue_adminOpen", chatConfig.getString("interaction_issue.adminOpen"));
         messageMap.put("interactionIssue_worldBlacklist", chatConfig.getString("interaction_issue.worldBlacklist"));
-
+        messageMap.put("interactionIssue_regionRestriction", chatConfig.getString("interaction_issue.regionRestriction"));
     }
 
     private void loadSignTextFromConfig() {
@@ -277,37 +271,38 @@ public class ShopMessage {
 
                 this.shopSignTextMap.put(type.toString() + "_normal", normalLines);
 
-                String[] adminLines = new String[4];
-                Set<String> adminLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".admin").getKeys(false);
-
-                i = 0;
-                for (String number : adminLineNumbers) {
-                    String message = signConfig.getString("sign_text." + typeString + ".admin." + number);
-                    if (message == null)
-                        adminLines[i] = "";
-                    else
-                        adminLines[i] = message;
-                    i++;
-                }
-
-                this.shopSignTextMap.put(type.toString() + "_admin", adminLines);
-
-                if(Shop.getPlugin().getDisplayType() == DisplayType.NONE) {
-                    String[] noDisplayLines = new String[4];
-                    Set<String> noDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".no_display").getKeys(false);
+                //gambling shop sign text has no admin section
+                if(type != ShopType.GAMBLE) {
+                    String[] adminLines = new String[4];
+                    Set<String> adminLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".admin").getKeys(false);
 
                     i = 0;
-                    for (String number : noDisplayLineNumbers) {
-                        String message = signConfig.getString("sign_text." + typeString + ".no_display." + number);
+                    for (String number : adminLineNumbers) {
+                        String message = signConfig.getString("sign_text." + typeString + ".admin." + number);
                         if (message == null)
-                            noDisplayLines[i] = "";
+                            adminLines[i] = "";
                         else
-                            noDisplayLines[i] = message;
+                            adminLines[i] = message;
                         i++;
                     }
 
-                    this.shopSignTextMap.put(type.toString() + "_no_display", noDisplayLines);
+                    this.shopSignTextMap.put(type.toString() + "_admin", adminLines);
                 }
+
+                String[] noDisplayLines = new String[4];
+                Set<String> noDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".no_display").getKeys(false);
+
+                i = 0;
+                for (String number : noDisplayLineNumbers) {
+                    String message = signConfig.getString("sign_text." + typeString + ".no_display." + number);
+                    if (message == null)
+                        noDisplayLines[i] = "";
+                    else
+                        noDisplayLines[i] = message;
+                    i++;
+                }
+
+                this.shopSignTextMap.put(type.toString() + "_no_display", noDisplayLines);
             }
         }
     }
@@ -334,6 +329,12 @@ public class ShopMessage {
         String barterString = signConfig.getString("sign_creation.BARTER");
         if(barterString != null)
             creationWords.put("BARTER", barterString.toLowerCase());
+        else
+            creationWords.put("BARTER", "barter");
+
+        String gambleString = signConfig.getString("sign_creation.GAMBLE");
+        if(gambleString != null)
+            creationWords.put("GAMBLE", gambleString.toLowerCase());
         else
             creationWords.put("BARTER", "barter");
 

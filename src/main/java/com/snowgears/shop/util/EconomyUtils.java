@@ -13,13 +13,13 @@ public class EconomyUtils {
     public static boolean hasSufficientFunds(OfflinePlayer player, Inventory inventory, double amount){
         if(Shop.getPlugin().useVault()){
             double balance = Shop.getPlugin().getEconomy().getBalance(player);
-            return (balance > amount);
+            return (balance >= amount);
         }
         else{
             ItemStack currency = Shop.getPlugin().getItemCurrency();
             currency.setAmount(1);
             int stock = InventoryUtils.getAmount(inventory, currency);
-            return (stock > amount);
+            return (stock >= amount);
         }
     }
 
