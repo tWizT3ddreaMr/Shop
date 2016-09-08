@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -53,6 +54,7 @@ public class Shop extends JavaPlugin {
     private ItemStack itemCurrency = null;
     private String itemCurrencyName = "";
     private String vaultCurrencySymbol = "";
+    private String currencyFormat = "";
     private Economy econ = null;
     private boolean useEnderchests;
     private double creationCost;
@@ -196,7 +198,8 @@ public class Shop extends JavaPlugin {
         gamblePrice = config.getDouble("gambleShopPrice");
 
         itemCurrencyName = config.getString("itemCurrencyName");
-        vaultCurrencySymbol = config.getString("vaultCurrencySymbol");
+        vaultCurrencySymbol = config.getString("vaultCurrencyName");
+        currencyFormat = config.getString("currencyFormat");
 
         useEnderchests = config.getBoolean("enableEnderChests");
 
@@ -342,6 +345,28 @@ public class Shop extends JavaPlugin {
 
     public String getVaultCurrencySymbol() {
         return vaultCurrencySymbol;
+    }
+
+    public String getPriceString(double price, boolean pricePer){
+        if(price == 0){
+            return ShopMessage.getFreePriceWord();
+        }
+
+        if(currencyFormat.contains("[name]")){
+            if(useVault())
+                currencyFormat = currencyFormat.replace("[name]", vaultCurrencySymbol);
+            else
+                currencyFormat = currencyFormat.replace("[name]", itemCurrencyName);
+        }
+        if(currencyFormat.contains("[price]")){
+            if(useVault())
+                return currencyFormat.replace("[price]", new DecimalFormat("0.00").format(price).toString());
+            else if(pricePer)
+                return currencyFormat.replace("[price]", new DecimalFormat("#.##").format(price).toString());
+            else
+                return currencyFormat.replace("[price]", ""+(int)price);
+        }
+        return currencyFormat;
     }
 
     public double getTaxPercent(){

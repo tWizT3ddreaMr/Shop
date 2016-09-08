@@ -17,7 +17,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.text.DecimalFormat;
 import java.util.UUID;
 
 public class ShopObject {
@@ -175,28 +174,12 @@ public class ShopObject {
     }
 
     public String getPriceString() {
-        if(price == 0){
-            return ShopMessage.getFreePriceWord();
-        }
-        if (Shop.getPlugin().useVault())
-            //$12.00
-            return Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("0.00").format(price).toString();
-        else
-            //12 Emerald(s)
-            return (int) price + " " + Shop.getPlugin().getItemCurrencyName();
+        return Shop.getPlugin().getPriceString(this.price, false);
     }
 
     public String getPricePerItemString() {
         double pricePer = this.getPrice() / this.getAmount();
-        if(price == 0){
-            return ShopMessage.getFreePriceWord();
-        }
-        if (Shop.getPlugin().useVault())
-            //$12.00
-            return Shop.getPlugin().getVaultCurrencySymbol() + new DecimalFormat("#.00").format(pricePer).toString();
-        else
-            //1.50 Dirt(s)
-            return new DecimalFormat("#.##").format(pricePer).toString() + " " + Shop.getPlugin().getItemCurrencyName();
+        return Shop.getPlugin().getPriceString(pricePer, true);
     }
 
     public int getItemDurabilityPercent(boolean barterItem){

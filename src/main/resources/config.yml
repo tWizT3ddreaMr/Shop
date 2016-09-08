@@ -8,10 +8,13 @@
 useVault: false
 
 # If useVault is set to true, this is the currency symbol that is displayed #
-vaultCurrencySymbol: $
+vaultCurrencyName: "$"
 # If useVault is set to false, this is the name name that is displayed #
 # TO CHANGE THE ACTUAL ITEM THAT IS USED, RUN THE COMMAND '/SHOP CURRENCY' IN-GAME #
-itemCurrencyName: Emerald(s)
+itemCurrencyName: "Emerald(s)"
+
+# This is the format that the currency will be displayed as on signs and in chat #
+currencyFormat: "[price] [name]"
 
 # These allow you to charge money to players for creating/destroying their shops #
 creationCost: 0
