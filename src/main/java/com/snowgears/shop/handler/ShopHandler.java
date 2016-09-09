@@ -406,9 +406,9 @@ public class ShopHandler {
                             owner = this.getAdminUUID();
                         else
                             owner = uidFromString(shopOwner);
+                        String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
                         double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
                         int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
-                        String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
 
                         boolean isAdmin = false;
                         if (type.contains("admin"))
@@ -416,6 +416,11 @@ public class ShopHandler {
                         ShopType shopType = typeFromString(type);
 
                         ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
+                        if(shopType == ShopType.GAMBLE){
+                            itemStack = plugin.getGambleDisplayItem();
+                            price = plugin.getGamblePrice();
+                        }
+
                         final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
 
                         if (this.isChest(shop.getChestLocation().getBlock())) {
@@ -437,8 +442,6 @@ public class ShopHandler {
                                 public void run() {
 
                                     if(displayType != null){
-                                        if(shop.getType() == ShopType.GAMBLE)
-                                            shop.setItemStack(plugin.getGambleDisplayItem());
                                         shop.getDisplay().setType(DisplayType.valueOf(displayType));
                                     }
                                 }

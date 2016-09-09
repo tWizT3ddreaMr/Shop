@@ -7,6 +7,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -20,7 +21,7 @@ public class InventoryUtils {
     public static int removeItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
         if(inventory == null)
             return itemStack.getAmount();
-        if (itemStack.getAmount() <= 0)
+        if (itemStack == null || itemStack.getAmount() <= 0)
             return 0;
         ItemStack[] contents = inventory.getContents();
         int amount = itemStack.getAmount();
@@ -123,42 +124,50 @@ public class InventoryUtils {
     public static boolean itemstacksAreSimilar(ItemStack i1, ItemStack i2){
         if(i1 == null || i2 == null)
             return false;
-        if(i1.getType() == i2.getType()){
-            ItemMeta meta1 = i1.getItemMeta();
-            ItemMeta meta2 = i2.getItemMeta();
+        if(i1.getType() != i2.getType())
+            return false;
 
-            if(meta1.hasDisplayName() && meta2.hasDisplayName()){
-                if(!meta1.getDisplayName().equals(meta2.getDisplayName()))
-                    return false;
-            }
-            if(meta1.hasLore() && meta2.hasLore()){
-                if(!meta1.getLore().equals(meta2.getLore()))
-                    return false;
-            }
-            if(!meta1.getItemFlags().equals(meta2.getItemFlags()))
+        ItemMeta meta1 = i1.getItemMeta();
+        ItemMeta meta2 = i2.getItemMeta();
+
+        if(meta1.hasDisplayName() && meta2.hasDisplayName()){
+            if(!meta1.getDisplayName().equals(meta2.getDisplayName()))
                 return false;
-            if(!meta1.getEnchants().equals(meta2.getEnchants()))
+        }
+        if(meta1.hasLore() && meta2.hasLore()){
+            if(!meta1.getLore().equals(meta2.getLore()))
                 return false;
+        }
+        if(!meta1.getItemFlags().equals(meta2.getItemFlags()))
+            return false;
+        if(!meta1.getEnchants().equals(meta2.getEnchants()))
+            return false;
 
-            if(meta1 instanceof EnchantmentStorageMeta && meta2 instanceof EnchantmentStorageMeta){
-                if(!((EnchantmentStorageMeta)meta1).getStoredEnchants().equals(((EnchantmentStorageMeta)meta2).getStoredEnchants()))
+        if(meta1 instanceof EnchantmentStorageMeta && meta2 instanceof EnchantmentStorageMeta){
+            if(!((EnchantmentStorageMeta)meta1).getStoredEnchants().equals(((EnchantmentStorageMeta)meta2).getStoredEnchants()))
+                return false;
+        }
+
+        if (i1.getEnchantments().equals(i2.getEnchantments())) {
+            //only have the option to ignore durability if the item can be damaged
+            if(i1.getType().getMaxDurability() != 0) {
+                if (Shop.getPlugin().checkItemDurability() && i1.getDurability() != i2.getDurability()) {
                     return false;
-            }
-
-            if (i1.getEnchantments().equals(i2.getEnchantments())) {
-                //only have the option to ignore durability if the item can be damaged
-                if(i1.getType().getMaxDurability() != 0) {
-                    if ((!Shop.getPlugin().checkItemDurability() || (Shop.getPlugin().checkItemDurability() && i1.getDurability() == i2.getDurability()))) {
-                        return true;
-                    }
                 }
-                else{
-                    if (i1.getDurability() == i2.getDurability()) {
-                        return true;
-                    }
+            }
+            else{
+                if (i1.getDurability() != i2.getDurability()) {
+                    return false;
                 }
             }
         }
-        return false;
+
+        if(meta1 instanceof BookMeta && meta2 instanceof BookMeta){
+            if(((BookMeta)meta1).hasTitle() && !((BookMeta)meta1).getTitle().equals(((BookMeta)meta2).getTitle()))
+                return false;
+            if(((BookMeta)meta1).hasPages() && !((BookMeta)meta1).getPages().equals(((BookMeta)meta2).getPages()))
+                return false;
+        }
+        return true;
     }
 }

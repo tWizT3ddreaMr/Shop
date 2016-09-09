@@ -19,6 +19,7 @@ import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -102,6 +103,20 @@ public class CreativeSelectionListener implements Listener {
                     || event.getFrom().getBlockX() != event.getTo().getBlockX()
                     || event.getFrom().getBlockY() != event.getTo().getBlockY()) {
                 player.teleport(event.getFrom());
+                player.sendMessage(ChatColor.RED + "You cannot move in locked creative mode.");
+                player.sendMessage(ChatColor.GOLD + "Open your inventory and select the item you want to receive.");
+                player.sendMessage(ChatColor.YELLOW + "To select the item, pick it up and drop it outside of the inventory window.");
+
+            }
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event){
+        Player player = event.getPlayer();
+        if (gameModeHashMap.get(player.getUniqueId()) != null) {
+            if (event.getFrom().distanceSquared(event.getTo()) > 4) {
+                event.setCancelled(true);
                 player.sendMessage(ChatColor.RED + "You cannot move in locked creative mode.");
                 player.sendMessage(ChatColor.GOLD + "Open your inventory and select the item you want to receive.");
                 player.sendMessage(ChatColor.YELLOW + "To select the item, pick it up and drop it outside of the inventory window.");

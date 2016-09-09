@@ -16,7 +16,7 @@ public class EconomyUtils {
             return (balance >= amount);
         }
         else{
-            ItemStack currency = Shop.getPlugin().getItemCurrency();
+            ItemStack currency = Shop.getPlugin().getItemCurrency().clone();
             currency.setAmount(1);
             int stock = InventoryUtils.getAmount(inventory, currency);
             return (stock >= amount);
@@ -30,7 +30,7 @@ public class EconomyUtils {
             return true;
         }
         else{
-            ItemStack currency = Shop.getPlugin().getItemCurrency();
+            ItemStack currency = Shop.getPlugin().getItemCurrency().clone();
             currency.setAmount((int)amount);
 
             return InventoryUtils.hasRoom(inventory, currency, player);
@@ -44,7 +44,7 @@ public class EconomyUtils {
             return balance;
         }
         else{
-            ItemStack currency = Shop.getPlugin().getItemCurrency();
+            ItemStack currency = Shop.getPlugin().getItemCurrency().clone();
             currency.setAmount(1);
             int balance = InventoryUtils.getAmount(inventory, currency);
             return balance;
@@ -60,7 +60,7 @@ public class EconomyUtils {
                 return false;
         }
         else{
-            ItemStack currency = Shop.getPlugin().getItemCurrency();
+            ItemStack currency = Shop.getPlugin().getItemCurrency().clone();
             currency.setAmount((int)amount);
             int unremoved = InventoryUtils.removeItem(inventory, currency, player);
             if(unremoved > 0){
@@ -81,7 +81,7 @@ public class EconomyUtils {
                 return false;
         }
         else{
-            ItemStack currency = Shop.getPlugin().getItemCurrency();
+            ItemStack currency = Shop.getPlugin().getItemCurrency().clone();
             currency.setAmount((int)amount);
             int unadded = InventoryUtils.addItem(inventory, currency, player);
             if(unadded > 0){
