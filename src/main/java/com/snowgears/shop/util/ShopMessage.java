@@ -163,12 +163,20 @@ public class ShopMessage {
         if(displayType == null)
             displayType = Shop.getPlugin().getDisplayType();
 
-        if(shop.isAdminShop() && shop.getType() != ShopType.GAMBLE)
-            lines = getUnformattedShopSignLines(shop.getType(), "admin");
-        else if(displayType == DisplayType.NONE)
-            lines = getUnformattedShopSignLines(shop.getType(), "no_display");
-        else
-            lines = getUnformattedShopSignLines(shop.getType(), "normal");
+        if(shop.getType() == ShopType.GAMBLE){
+            if(displayType == DisplayType.NONE)
+                lines = getUnformattedShopSignLines(shop.getType(), "no_display");
+            else
+                lines = getUnformattedShopSignLines(shop.getType(), "normal");
+        }
+        else {
+            if (displayType == DisplayType.NONE)
+                lines = getUnformattedShopSignLines(shop.getType(), "no_display");
+            else if (shop.isAdminShop())
+                lines = getUnformattedShopSignLines(shop.getType(), "admin");
+            else
+                lines = getUnformattedShopSignLines(shop.getType(), "normal");
+        }
 
         for(int i=0; i<lines.length; i++) {
             lines[i] = lines[i].replace("[amount]", "" + shop.getAmount());

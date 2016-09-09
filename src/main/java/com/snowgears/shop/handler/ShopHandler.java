@@ -47,7 +47,12 @@ public class ShopHandler {
             shopMaterials.add(Material.ENDER_CHEST);
         adminUUID = UUID.randomUUID();
 
-        loadShops();
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                loadShops();
+            }
+        }.runTaskLater(this.plugin, 10);
     }
 
     public ShopObject getShop(Location loc) {

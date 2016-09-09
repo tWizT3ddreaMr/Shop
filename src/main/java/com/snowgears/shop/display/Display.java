@@ -189,8 +189,9 @@ public class Display {
 
     public void cycleType(){
         DisplayType displayType = this.type;
-        if(displayType == null)
+        if(displayType == null) {
             displayType = Shop.getPlugin().getDisplayType();
+        }
 
         int index = 0;
         for(int i=0; i<cycle.length; i++){
@@ -360,6 +361,10 @@ public class Display {
         saveShopsTask = new BukkitRunnable() {
             @Override
             public void run() {
+                if(getShop() == null) {
+                    cancel();
+                    return;
+                }
                 Shop.getPlugin().getShopHandler().saveShops(getShop().getOwnerUUID());
             }
         }.runTaskLater(Shop.getPlugin(), 1200); //save shops after 1 minute

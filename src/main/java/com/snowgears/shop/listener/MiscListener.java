@@ -233,6 +233,8 @@ public class MiscListener implements Listener {
                 signBlock.update();
 
                 final ShopObject shop = new ShopObject(signBlock.getLocation(), player.getUniqueId(), price, amount, isAdmin, type);
+                if(shop.isAdminShop())
+                    shop.setOwner(plugin.getShopHandler().getAdminUUID());
 
                 PlayerCreateShopEvent e = new PlayerCreateShopEvent(player, shop);
                 plugin.getServer().getPluginManager().callEvent(e);
@@ -244,7 +246,6 @@ public class MiscListener implements Listener {
                     shop.setItemStack(plugin.getGambleDisplayItem());
                     shop.setAmount(1);
                     shop.setPrice(plugin.getGamblePrice());
-                    shop.setOwner(plugin.getShopHandler().getAdminUUID());
                     plugin.getShopHandler().addShop(shop);
                     shop.getDisplay().setType(DisplayType.LARGE_ITEM);
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
@@ -307,10 +308,13 @@ public class MiscListener implements Listener {
                     return;
                 }
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", null, player));
-                    plugin.getExchangeListener().sendEffects(false, player, shop);
-                    event.setCancelled(true);
-                    return;
+                    //do not allow non operators to initialize other player's shops
+                    if((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", null, player));
+                        plugin.getExchangeListener().sendEffects(false, player, shop);
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
 
                 if (player.getItemInHand().getType() == Material.AIR) {
@@ -437,7 +441,7 @@ public class MiscListener implements Listener {
             }
             //player trying to break other players shop
             else {
-                if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
+                if (player.isOp() || (plugin.usePerms() && (player.hasPermission("shop.operator") || player.hasPermission("shop.destroy.other")))) {
                     PlayerDestroyShopEvent e = new PlayerDestroyShopEvent(player, shop);
                     plugin.getServer().getPluginManager().callEvent(e);
 
@@ -485,9 +489,11 @@ public class MiscListener implements Listener {
                     event.setCancelled(true);
             }
             else{
-                player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
+                if(shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
+                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
+                    plugin.getExchangeListener().sendEffects(false, player, shop);
+                }
                 event.setCancelled(true);
-                plugin.getExchangeListener().sendEffects(false, player, shop);
             }
         }
     }

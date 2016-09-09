@@ -1,16 +1,16 @@
 package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
+import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.List;
 
 public class CommandHandler extends BukkitCommand {
@@ -21,6 +21,11 @@ public class CommandHandler extends BukkitCommand {
         super(name, description, usageMessage, aliases);
         this.setPermission(permission);
         plugin = instance;
+        try {
+            register();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     //TODO replace all of these messages
@@ -67,10 +72,10 @@ public class CommandHandler extends BukkitCommand {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }
-                    plugin.onEnable();
+                    plugin.reload();
                     sender.sendMessage("[Shop] Reloaded plugin."); //TODO replace message
                 } else {
-                    plugin.onEnable();
+                    plugin.reload();
                     sender.sendMessage("[Shop] Reloaded plugin."); //TODO replace message
                 }
             }
@@ -135,17 +140,12 @@ public class CommandHandler extends BukkitCommand {
         return true;
     }
 
-    public static void registerFakeCommand(Command whatCommand, Plugin plugin)
+    private void register()
             throws ReflectiveOperationException {
-        //Getting command map from CraftServer
-        Method commandMap = plugin.getServer().getClass().getMethod("getCommandMap", null);
-        //Invoking the method and getting the returned object (SimpleCommandMap)
-        Object cmdmap = commandMap.invoke(plugin.getServer(), null);
-        //getting register method with parameters String and Command from SimpleCommandMap
-        Method register = cmdmap.getClass().getMethod("register", String.class,Command.class);
-        //Registering the command provided above
-        register.invoke(cmdmap, whatCommand.getName(),whatCommand);
-        //All the exceptions thrown above are due to reflection, They will be thrown if any of the above methods
-        //and objects used above change location or turn private. IF they do, let me know to update the thread!
+        final Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+        bukkitCommandMap.setAccessible(true);
+
+        CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
+        commandMap.register(this.getName(), this);
     }
 }

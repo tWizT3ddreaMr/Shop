@@ -11,10 +11,10 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +36,7 @@ public class Shop extends JavaPlugin {
     private ClearLaggListener clearLaggListener;
 
     private ShopHandler shopHandler;
+    private CommandHandler commandHandler;
     private EnderChestHandler enderChestHandler;
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
@@ -110,12 +111,6 @@ public class Shop extends JavaPlugin {
         miscListener = new MiscListener(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
-
-        getServer().getPluginManager().registerEvents(displayListener, this);
-        getServer().getPluginManager().registerEvents(shopListener, this);
-        getServer().getPluginManager().registerEvents(exchangeListener, this);
-        getServer().getPluginManager().registerEvents(miscListener, this);
-        getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
 
         if (getServer().getPluginManager().getPlugin("ClearLag") != null) {
             clearLaggListener = new ClearLaggListener(this);
@@ -228,25 +223,34 @@ public class Shop extends JavaPlugin {
                 log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
 
-        try {
-            CommandHandler.registerFakeCommand(new CommandHandler(this, "shop.use", commandAlias, "Base command for the Shop plugin", "/shop", Arrays.asList(commandAlias)), this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        commandHandler = new CommandHandler(this, "shop.use", commandAlias, "Base command for the Shop plugin", "/shop", Arrays.asList(commandAlias));
+        shopHandler = new ShopHandler(plugin);
+        enderChestHandler = new EnderChestHandler(plugin);
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                shopHandler = new ShopHandler(plugin);
-                enderChestHandler = new EnderChestHandler(plugin);
-            }
-        }.runTaskLater(this.plugin, 10);
+        getServer().getPluginManager().registerEvents(displayListener, this);
+        getServer().getPluginManager().registerEvents(shopListener, this);
+        getServer().getPluginManager().registerEvents(exchangeListener, this);
+        getServer().getPluginManager().registerEvents(miscListener, this);
+        getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
     }
 
     @Override
     public void onDisable(){
-        enderChestHandler.saveEnderChests();
+        if(enderChestHandler != null)
+            enderChestHandler.saveEnderChests();
         //shopHandler.saveAllShops();
+    }
+
+    public void reload(){
+        HandlerList.unregisterAll(displayListener);
+        HandlerList.unregisterAll(shopListener);
+        HandlerList.unregisterAll(exchangeListener);
+        HandlerList.unregisterAll(miscListener);
+        HandlerList.unregisterAll(creativeSelectionListener);
+        if(clearLaggListener != null)
+            HandlerList.unregisterAll(clearLaggListener);
+
+        onEnable();
     }
 
     private boolean setupEconomy() {

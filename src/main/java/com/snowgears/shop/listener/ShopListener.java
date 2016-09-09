@@ -87,6 +87,7 @@ public class ShopListener implements Listener {
                     if(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                         shop.getDisplay().cycleType();
                         event.setCancelled(true);
+                        return;
                     }
                 //player clicked own shop sign
                 } else {
@@ -182,9 +183,11 @@ public class ShopListener implements Listener {
     public void signDetachCheck(BlockPhysicsEvent event) {
         Block b = event.getBlock();
         if (b.getType() == Material.WALL_SIGN) {
-            ShopObject shop = plugin.getShopHandler().getShop(b.getLocation());
-            if (shop != null) {
-                event.setCancelled(true);
+            if(plugin.getShopHandler() != null) {
+                ShopObject shop = plugin.getShopHandler().getShop(b.getLocation());
+                if (shop != null) {
+                    event.setCancelled(true);
+                }
             }
         }
     }

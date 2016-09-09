@@ -4,13 +4,10 @@ package com.snowgears.shop.listener;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
-import com.snowgears.shop.event.PlayerCreateShopEvent;
+import com.snowgears.shop.event.PlayerInitializeShopEvent;
 import com.snowgears.shop.util.PlayerData;
 import com.snowgears.shop.util.ShopMessage;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -68,9 +65,12 @@ public class CreativeSelectionListener implements Listener {
                     return;
                 }
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", shop, player));
-                    event.setCancelled(true);
-                    return;
+                    if((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", shop, player));
+                        plugin.getExchangeListener().sendEffects(false, player, shop);
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
                 if (shop.getType() == ShopType.BARTER && shop.getItemStack() == null) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "noItem", shop, player));
@@ -139,14 +139,34 @@ public class CreativeSelectionListener implements Listener {
                 ShopObject shop = playerData.getShop();
                 if (shop != null) {
                     if (shop.getType() == ShopType.BUY) {
+
+                        PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
+                        Bukkit.getServer().getPluginManager().callEvent(e);
+
+                        if(e.isCancelled())
+                            return;
+
                         shop.setItemStack(event.getCursor());
+                        shop.getDisplay().spawn();
+                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        plugin.getExchangeListener().sendEffects(true, player, shop);
+                        plugin.getShopHandler().saveShops(shop.getOwnerUUID());
+
                     } else if (shop.getType() == ShopType.BARTER) {
+
+                        PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
+                        Bukkit.getServer().getPluginManager().callEvent(e);
+
+                        if(e.isCancelled())
+                            return;
+
                         shop.setBarterItemStack(event.getCursor());
+                        shop.getDisplay().spawn();
+                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        plugin.getExchangeListener().sendEffects(true, player, shop);
+                        plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                     }
                     returnPlayerData(player);
-
-                    PlayerCreateShopEvent e = new PlayerCreateShopEvent(player, shop);
-                    plugin.getServer().getPluginManager().callEvent(e);
                 }
             }
             event.setCancelled(true);

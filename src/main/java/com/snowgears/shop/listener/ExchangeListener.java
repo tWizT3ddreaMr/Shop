@@ -283,7 +283,8 @@ public class ExchangeListener implements Listener {
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
         if ((owner != null) && (!shop.isAdminShop()))
             owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "owner", shop, player));
-        shop.shuffleGambleItem();
+        if(shop.getType() == ShopType.GAMBLE)
+            shop.shuffleGambleItem();
     }
 
     public void sendEffects(boolean success, Player player, ShopObject shop){
