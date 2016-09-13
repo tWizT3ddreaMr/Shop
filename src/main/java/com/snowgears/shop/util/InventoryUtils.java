@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -138,13 +139,21 @@ public class InventoryUtils {
             if(!meta1.getLore().equals(meta2.getLore()))
                 return false;
         }
-        if(!meta1.getItemFlags().equals(meta2.getItemFlags()))
-            return false;
+        try {
+            if (!meta1.getItemFlags().equals(meta2.getItemFlags()))
+                return false;
+        } catch(NoSuchMethodError e) {}
+
         if(!meta1.getEnchants().equals(meta2.getEnchants()))
             return false;
 
         if(meta1 instanceof EnchantmentStorageMeta && meta2 instanceof EnchantmentStorageMeta){
             if(!((EnchantmentStorageMeta)meta1).getStoredEnchants().equals(((EnchantmentStorageMeta)meta2).getStoredEnchants()))
+                return false;
+        }
+
+        if(meta1 instanceof PotionMeta && meta2 instanceof PotionMeta){
+            if(!((PotionMeta)meta1).getBasePotionData().equals(((PotionMeta)meta2).getBasePotionData()))
                 return false;
         }
 
