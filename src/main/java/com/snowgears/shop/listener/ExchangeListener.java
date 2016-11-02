@@ -338,7 +338,8 @@ public class ExchangeListener implements Listener {
                         player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK.getId());
                 }
             }
-        } catch (NoSuchFieldError e){ }
+        } catch (Error e){
+        } catch (Exception e) {}
     }
 
     private boolean notifyOwner(final ShopObject shop){

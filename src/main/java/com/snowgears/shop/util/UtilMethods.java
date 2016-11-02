@@ -18,6 +18,8 @@ import java.util.UUID;
 
 public class UtilMethods {
 
+    private static ArrayList<Material> nonIntrusiveMaterials = new ArrayList<Material>();
+
     public static boolean isNumber(String s) {
         try {
             Double.parseDouble(s);
@@ -126,7 +128,14 @@ public class UtilMethods {
     }
 
     public static boolean materialIsNonIntrusive(Material material){
-        ArrayList<Material> nonIntrusiveMaterials = new ArrayList<Material>();
+        if(nonIntrusiveMaterials.isEmpty()){
+            initializeNonIntrusiveMaterials();
+        }
+
+        return (nonIntrusiveMaterials.contains(material));
+    }
+
+    private static void initializeNonIntrusiveMaterials(){
         for(Material m : Material.values()){
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
@@ -139,8 +148,7 @@ public class UtilMethods {
         nonIntrusiveMaterials.remove(Material.FIRE);
         nonIntrusiveMaterials.remove(Material.ENDER_PORTAL);
         nonIntrusiveMaterials.remove(Material.PORTAL);
-
-        return (nonIntrusiveMaterials.contains(material));
+        nonIntrusiveMaterials.remove(Material.SKULL);
     }
 
     public static BlockFace getDirectionOfChest(Block block){

@@ -12,7 +12,6 @@ import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -104,13 +103,6 @@ public class DisplayListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemDespawn(ItemDespawnEvent event) {
         if (Display.isDisplay(event.getEntity())) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onArmorStandInteract(PlayerInteractAtEntityEvent event) {
-        if (Display.isDisplay(event.getRightClicked())) {
             event.setCancelled(true);
         }
     }

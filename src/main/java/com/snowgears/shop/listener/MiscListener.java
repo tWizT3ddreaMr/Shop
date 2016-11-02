@@ -248,6 +248,7 @@ public class MiscListener implements Listener {
                     shop.setPrice(plugin.getGamblePrice());
                     plugin.getShopHandler().addShop(shop);
                     shop.getDisplay().setType(DisplayType.LARGE_ITEM);
+
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
                     plugin.getExchangeListener().sendEffects(true, player, shop);
                     plugin.getShopHandler().saveShops(shop.getOwnerUUID());
@@ -332,7 +333,7 @@ public class MiscListener implements Listener {
 
                 //if players must pay to create shops, remove money first
                 double cost = plugin.getCreationCost();
-                if(cost > 0){
+                if(cost > 0 && !shop.isAdminShop()){
                     boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
                     if(!removed){
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", shop, player));

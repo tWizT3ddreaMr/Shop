@@ -174,14 +174,17 @@ public class Display {
     }
 
     public void setType(DisplayType type){
-        try{
-            if(EntityType.ARMOR_STAND == EntityType.ARROW){
-                //check that armor stand exists (server not on MC 1.7)
-            }
-        } catch(NoSuchFieldError e){
-            return;
-        }
+        DisplayType oldType = this.type;
         this.type = type;
+        if(!(type == DisplayType.NONE || type == DisplayType.ITEM)) {
+            try {
+                if (EntityType.ARMOR_STAND == EntityType.ARROW) {
+                    //check that armor stand exists (server not on MC 1.7)
+                }
+            } catch (NoSuchFieldError e) {
+                this.type = oldType;
+            }
+        }
         this.spawn();
 
         saveShopsLater();

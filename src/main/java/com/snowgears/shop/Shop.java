@@ -12,6 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,6 +35,7 @@ public class Shop extends JavaPlugin {
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
     private ClearLaggListener clearLaggListener;
+    private ArmorStandListener armorStandListener;
 
     private ShopHandler shopHandler;
     private CommandHandler commandHandler;
@@ -111,6 +113,7 @@ public class Shop extends JavaPlugin {
         miscListener = new MiscListener(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
+        armorStandListener = new ArmorStandListener(this);
 
         if (getServer().getPluginManager().getPlugin("ClearLag") != null) {
             clearLaggListener = new ClearLaggListener(this);
@@ -232,6 +235,15 @@ public class Shop extends JavaPlugin {
         getServer().getPluginManager().registerEvents(exchangeListener, this);
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
+
+        try {
+            if(PlayerInteractAtEntityEvent.class != null){} //throw error on MC 1.7 or below (when ArmorStands weren't in game yet)
+                getServer().getPluginManager().registerEvents(armorStandListener, this);
+        } catch (NoClassDefFoundError e){
+            //do not register armor stand listener in MC 1.7 or below
+            //also set the gamble display to a gold block
+            gambleDisplayItem = new ItemStack(Material.GOLD_BLOCK);
+        }
     }
 
     @Override
