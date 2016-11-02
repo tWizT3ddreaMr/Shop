@@ -2,12 +2,16 @@ package com.snowgears.shop;
 
 import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
-import com.snowgears.shop.util.EconomyUtils;
-import com.snowgears.shop.util.InventoryUtils;
-import com.snowgears.shop.util.ShopMessage;
-import com.snowgears.shop.util.UtilMethods;
-import mkremins.fanciful.FancyMessage;
-import org.bukkit.*;
+import com.snowgears.shop.util.*;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -306,29 +310,41 @@ public class ShopObject {
 
     private void formatAndSendFancyMessage(String message, Player player){
         String[] parts = message.split("(?=&[0-9A-FK-ORa-fk-or])");
-        FancyMessage fancyMessage = new FancyMessage("");
+        TextComponent fancyMessage = new TextComponent("");
 
         for(String part : parts){
-            ChatColor color = UtilMethods.getChatColor(part);
-            if(color != null)
+            ComponentBuilder builder = new ComponentBuilder("");
+            org.bukkit.ChatColor cc = UtilMethods.getChatColor(part);
+            if(cc != null)
                 part = part.substring(2, part.length());
             boolean barterItem = false;
             if(part.contains("[barter item]"))
                 barterItem = true;
             part = ShopMessage.formatMessage(part, this, player, false);
             part = ChatColor.stripColor(part);
-            fancyMessage.then(part);
-            if(color != null)
-                fancyMessage.color(color);
+            builder.append(part);
+            if(cc != null) {
+                builder.color(ChatColor.valueOf(cc.name()));
+            }
 
             if(part.startsWith("[")) {
+                String itemJson;
                 if (barterItem) {
-                    fancyMessage.itemTooltip(this.getBarterItemStack());
+                    itemJson = ReflectionUtil.convertItemStackToJson(this.getBarterItemStack());
                 } else {
-                    fancyMessage.itemTooltip(this.getItemStack());
+                    itemJson = ReflectionUtil.convertItemStackToJson(this.getItemStack());
                 }
+                // Prepare a BaseComponent array with the itemJson as a text component
+                BaseComponent[] hoverEventComponents = new BaseComponent[]{ new TextComponent(itemJson) }; // The only element of the hover events basecomponents is the item json
+                HoverEvent event = new HoverEvent(HoverEvent.Action.SHOW_ITEM, hoverEventComponents);
+
+                builder.event(event);
+            }
+
+            for(BaseComponent b : builder.create()) {
+                fancyMessage.addExtra(b);
             }
         }
-        fancyMessage.send(player);
+        player.spigot().sendMessage(fancyMessage);
     }
 }
