@@ -114,7 +114,7 @@ interaction_issue:
    useOwnShop: "&7You cannot use your own shop."
    adminOpen: "&7Admin shops are not able to be opened."
    worldBlacklist: "&cShops are not allowed to be created in this world."
-   regionRestriction: "&cYou do not have permission to create shops in this region."
+   regionRestriction: "&cYou do not have permission to do that in this region."
 
 description:
    SELL:

@@ -25,4 +25,20 @@ public class WorldGuardHook {
         } catch(NoClassDefFoundError e){}
         return true;
     }
+
+    public static boolean canUseShop(Player player, Location location){
+        try {
+            if(Shop.getPlugin().hookWorldGuard()) {
+                ApplicableRegionSet set = WGBukkit.getPlugin().getRegionManager(player.getWorld()).getApplicableRegions(location);
+                if (set.queryState(null, DefaultFlag.USE) == StateFlag.State.DENY) {
+                    return false;
+                }
+                if(player.isOp() || (Shop.getPlugin().usePerms() && player.hasPermission("shop.operator"))) {
+                    return true;
+                }
+                return false;
+            }
+        } catch(NoClassDefFoundError e){}
+        return true;
+    }
 }

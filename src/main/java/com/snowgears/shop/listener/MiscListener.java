@@ -245,7 +245,6 @@ public class MiscListener implements Listener {
                 if(type == ShopType.GAMBLE){
                     shop.setItemStack(plugin.getGambleDisplayItem());
                     shop.setAmount(1);
-                    shop.setPrice(plugin.getGamblePrice());
                     plugin.getShopHandler().addShop(shop);
                     shop.getDisplay().setType(DisplayType.LARGE_ITEM);
 

@@ -20,9 +20,6 @@ currencyFormat: "[price] [name]"
 creationCost: 0
 destructionCost: 0
 
-# This is the set price that all gambling shops will cost to use #
-gambleShopPrice: 5
-
 
 # =================================================================== #
 #                         GENERAL SETTINGS                            #

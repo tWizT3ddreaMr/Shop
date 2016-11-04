@@ -2,6 +2,8 @@ package com.snowgears.shop.display;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.util.InventoryUtils;
+import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -41,11 +43,18 @@ public class DisplayListener implements Listener {
         }.runTaskLater(this.plugin, 1); //load all recipes on server once all other plugins are loaded
     }
 
-    public ItemStack getRandomItem(){
-        int index = new Random().nextInt(allServerRecipeResults.size());
-        //TODO maybe later on add random amount between 1-64 depending on item type
-        //like you could get 46 stack of dirt but not 46 stack of swords
-        return allServerRecipeResults.get(index);
+    public ItemStack getRandomItem(ShopObject shop){
+        if(shop == null)
+            return new ItemStack(Material.AIR);
+
+        if(InventoryUtils.isEmpty(shop.getInventory())) {
+            int index = new Random().nextInt(allServerRecipeResults.size());
+            //TODO maybe later on add random amount between 1-64 depending on item type
+            //like you could get 46 stack of dirt but not 46 stack of swords
+            return allServerRecipeResults.get(index);
+        } else {
+            return InventoryUtils.getRandomItem(shop.getInventory());
+        }
     }
 
     @EventHandler

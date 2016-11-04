@@ -15,8 +15,6 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Sign;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -29,7 +27,6 @@ public class Display {
     private DisplayType type;
     private ArrayList<Entity> entities;
     private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
-    private BukkitTask saveShopsTask;
 
     public Display(ShopObject shop) {
         this.shopSignLocation = shop.getSignLocation();
@@ -174,6 +171,7 @@ public class Display {
     }
 
     public void setType(DisplayType type){
+
         DisplayType oldType = this.type;
         this.type = type;
         if(!(type == DisplayType.NONE || type == DisplayType.ITEM)) {
@@ -185,9 +183,8 @@ public class Display {
                 this.type = oldType;
             }
         }
-        this.spawn();
 
-        saveShopsLater();
+        this.spawn();
     }
 
     public void cycleType(){
@@ -205,6 +202,8 @@ public class Display {
             index = 0;
 
         this.setType(cycle[index]);
+
+        Shop.getPlugin().getShopHandler().saveShops(getShop().getOwnerUUID());
     }
 
     public void remove() {
@@ -355,21 +354,5 @@ public class Display {
         Location loc = this.shopSignLocation;
         String name = "***{"+loc.getBlockX()+","+loc.getBlockY()+","+loc.getBlockZ()+"}"+random.nextInt(1000);
         return name;
-    }
-
-    private void saveShopsLater(){
-        if(saveShopsTask != null)
-            saveShopsTask.cancel();
-
-        saveShopsTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if(getShop() == null) {
-                    cancel();
-                    return;
-                }
-                Shop.getPlugin().getShopHandler().saveShops(getShop().getOwnerUUID());
-            }
-        }.runTaskLater(Shop.getPlugin(), 1200); //save shops after 1 minute
     }
 }

@@ -57,8 +57,9 @@ public class ShopObject {
         if(signLocation != null) {
             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
             chestLocation = signLocation.getBlock().getRelative(sign.getAttachedFace()).getLocation();
+
+            this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
         }
-        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem();
     }
 
     public Location getSignLocation() {
@@ -133,17 +134,23 @@ public class ShopObject {
     }
 
     public void shuffleGambleItem(){
-        this.setItemStack(gambleItem);
-        this.getDisplay().setType(DisplayType.ITEM);
-        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem();
+        if(this.type == ShopType.GAMBLE) {
+            this.setItemStack(gambleItem);
+            final DisplayType initialDisplayType = this.getDisplay().getType();
+            this.getDisplay().setType(DisplayType.ITEM);
+            this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                setItemStack(Shop.getPlugin().getGambleDisplayItem());
-                getDisplay().setType(DisplayType.LARGE_ITEM);
-            }
-        }.runTaskLater(Shop.getPlugin(), 20);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    setItemStack(Shop.getPlugin().getGambleDisplayItem());
+                    if(initialDisplayType == null)
+                        display.setType(Shop.getPlugin().getDisplayType());
+                    else
+                        display.setType(initialDisplayType);
+                }
+            }.runTaskLater(Shop.getPlugin(), 20);
+        }
     }
 
     public void setOwner(UUID newOwner){

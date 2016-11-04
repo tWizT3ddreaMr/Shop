@@ -24,6 +24,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import java.io.File;
 import java.util.*;
@@ -37,6 +38,8 @@ public class ShopHandler {
     private HashMap<Location, ShopObject> allShops = new HashMap<Location, ShopObject>();
     private ArrayList<Material> shopMaterials = new ArrayList<Material>();
     private UUID adminUUID;
+
+    private ArrayList<UUID> playersSavingShops = new ArrayList<>();
 
     public ShopHandler(Shop instance) {
         plugin = instance;
@@ -219,16 +222,27 @@ public class ShopHandler {
         }
     }
 
-    public void saveShops(UUID player){
+    public void saveShops(final UUID player){
+        if(playersSavingShops.contains(player))
+            return;
+
+        BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        scheduler.scheduleAsyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                playersSavingShops.add(player);
+                saveShopsDriver(player);
+            }
+        }, 20L);
+    }
+
+    private void saveShopsDriver(UUID player){
         try {
+
             File fileDirectory = new File(plugin.getDataFolder(), "Data");
             //UtilMethods.deleteDirectory(fileDirectory);
             if (!fileDirectory.exists())
                 fileDirectory.mkdir();
-
-            List<ShopObject> shopList = getShops(player);
-            if (shopList.isEmpty())
-                return;
 
             String owner = null;
             File currentFile = null;
@@ -245,6 +259,15 @@ public class ShopHandler {
                 currentFile.createNewFile();
             YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
 
+            List<ShopObject> shopList = getShops(player);
+            if (shopList.isEmpty()) {
+                currentFile.delete();
+                if(playersSavingShops.contains(player)){
+                    playersSavingShops.remove(player);
+                }
+                return;
+            }
+
             int shopNumber = 1;
             for (ShopObject shop : shopList) {
 
@@ -258,8 +281,12 @@ public class ShopHandler {
                         type = "admin ";
                     type = type + shop.getType().toString();
                     config.set("shops." + owner + "." + shopNumber + ".type", type);
-                    if(shop.getDisplay().getType() != null)
+                    if(shop.getDisplay().getType() != null) {
                         config.set("shops." + owner + "." + shopNumber + ".displayType", shop.getDisplay().getType().toString());
+                    }
+                    else{ //not sure why I have to do this but if I don't it will be set to LARGE_ITEM for some reason (I cannot find right now)
+                        config.set("shops." + owner + "." + shopNumber + ".displayType", null);
+                    }
 
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
@@ -279,76 +306,21 @@ public class ShopHandler {
         }
         if(plugin.useEnderChests())
             plugin.getEnderChestHandler().saveEnderChests();
+
+        if(playersSavingShops.contains(player)){
+            playersSavingShops.remove(player);
+        }
     }
 
     public void saveAllShops() {
-        try {
-            File fileDirectory = new File(plugin.getDataFolder(), "Data");
-            //UtilMethods.deleteDirectory(fileDirectory);
-            if (!fileDirectory.exists())
-                fileDirectory.mkdir();
-
-            ArrayList<ShopObject> shopList = orderedShopList();
-            if (shopList.isEmpty())
-                return;
-            OfflinePlayer lastOwner = null;
-            File currentFile = null;
-            int shopNumber = 0;
-            String owner;
-
-            for (ShopObject shop : shopList) {
-
-                //use current file
-                if (shop.getOwnerPlayer().equals(lastOwner)) {
-                    if (!currentFile.exists()) // file doesn't exist
-                        currentFile.createNewFile();
-                    shopNumber++;
-                }
-                //change current file to next player
-                else {
-                    lastOwner = shop.getOwnerPlayer();
-                    if(lastOwner.getUniqueId().equals(adminUUID))
-                        currentFile = new File(fileDirectory + "/admin.yml");
-                    else
-                        currentFile = new File(fileDirectory + "/" + lastOwner.getName() + " (" + lastOwner.getUniqueId().toString() + ").yml");
-                    currentFile.delete();
-                    if (!currentFile.exists()) // file doesn't exist
-                        currentFile.createNewFile();
-                    shopNumber = 1;
-                }
-                YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
-
-                //don't save shops that are not initialized with items
-                if (shop.isInitialized()) {
-                    owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
-                    config.set("shops." + owner + "." + shopNumber + ".location", locationToString(shop.getSignLocation()));
-                    config.set("shops." + owner + "." + shopNumber + ".price", shop.getPrice());
-                    config.set("shops." + owner + "." + shopNumber + ".amount", shop.getAmount());
-                    String type = "";
-                    if (shop.isAdminShop())
-                        type = "admin ";
-                    type = type + shop.getType().toString();
-                    config.set("shops." + owner + "." + shopNumber + ".type", type);
-                    if(shop.getDisplay().getType() != null)
-                        config.set("shops." + owner + "." + shopNumber + ".displayType", shop.getDisplay().getType().toString());
-
-                    ItemStack itemStack = shop.getItemStack();
-                    itemStack.setAmount(1);
-                    config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
-
-                    if (shop.getType() == ShopType.BARTER) {
-                        ItemStack barterItemStack = shop.getBarterItemStack();
-                        barterItemStack.setAmount(1);
-                        config.set("shops." + owner + "." + shopNumber + ".itemBarter", barterItemStack);
-                    }
-                }
-                config.save(currentFile);
-            }
-        } catch (Exception e){
-            e.printStackTrace();
+        HashMap<UUID, Boolean> allPlayersWithShops = new HashMap<>();
+        for(ShopObject shop : allShops.values()){
+            allPlayersWithShops.put(shop.getOwnerUUID(), true);
         }
-        if(plugin.useEnderChests())
-            plugin.getEnderChestHandler().saveEnderChests();
+
+        for(UUID player : allPlayersWithShops.keySet()){
+            saveShops(player);
+        }
     }
 
     public void loadShops() {
@@ -418,7 +390,6 @@ public class ShopHandler {
                         ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
                         if(shopType == ShopType.GAMBLE){
                             itemStack = plugin.getGambleDisplayItem();
-                            price = plugin.getGamblePrice();
                         }
 
                         final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);

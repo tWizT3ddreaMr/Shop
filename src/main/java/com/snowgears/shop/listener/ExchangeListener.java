@@ -8,6 +8,7 @@ import com.snowgears.shop.event.PlayerExchangeShopEvent;
 import com.snowgears.shop.util.EconomyUtils;
 import com.snowgears.shop.util.InventoryUtils;
 import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -53,6 +54,13 @@ public class ExchangeListener implements Listener {
                 ShopObject shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
+
+                //check that player can use the shop if it is in a WorldGuard region
+                if(!WorldGuardHook.canUseShop(player, shop.getSignLocation())){
+                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
+                    event.setCancelled(true);
+                    return;
+                }
 
                 //delete shop if it does not have a chest attached to it
                 if(!(plugin.getShopHandler().isChest(shop.getChestLocation().getBlock()))){
@@ -146,7 +154,7 @@ public class ExchangeListener implements Listener {
         sendEffects(true, player, shop);
     }
 
-    public ExchangeIssue playerBuyFromShop(Player player, ShopObject shop, boolean isCheck){
+    private ExchangeIssue playerBuyFromShop(Player player, ShopObject shop, boolean isCheck){
 
         ItemStack shopItem;
         if(shop.getType() == ShopType.GAMBLE)
@@ -205,7 +213,7 @@ public class ExchangeListener implements Listener {
         return ExchangeIssue.NONE;
     }
 
-    public ExchangeIssue playerSellToShop(Player player, ShopObject shop, boolean isCheck){
+    private ExchangeIssue playerSellToShop(Player player, ShopObject shop, boolean isCheck){
 
         //check if player has enough items
         if(isCheck) {
@@ -258,7 +266,7 @@ public class ExchangeListener implements Listener {
         return ExchangeIssue.NONE;
     }
 
-    public ExchangeIssue playerBarterWithShop(Player player, ShopObject shop, boolean isCheck){
+    private ExchangeIssue playerBarterWithShop(Player player, ShopObject shop, boolean isCheck){
 
         //check if shop has enough items
         if (!shop.isAdminShop()) {

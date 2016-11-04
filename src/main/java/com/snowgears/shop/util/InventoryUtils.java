@@ -13,7 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Random;
 
 public class InventoryUtils {
 
@@ -78,7 +80,9 @@ public class InventoryUtils {
         int amount = 0;
         for (ItemStack addItem : itemStacksAdding) {
             HashMap<Integer, ItemStack> noAdd = inventory.addItem(addItem);
-            amount += noAdd.size();
+            for(ItemStack noAddItemstack : noAdd.values()) {
+                amount += noAddItemstack.getAmount();
+            }
         }
         if(inventory.getType() == InventoryType.ENDER_CHEST){
             Shop.getPlugin().getEnderChestHandler().updateInventory(inventoryOwner, inventory);
@@ -131,11 +135,15 @@ public class InventoryUtils {
         ItemMeta meta1 = i1.getItemMeta();
         ItemMeta meta2 = i2.getItemMeta();
 
-        if(meta1.hasDisplayName() && meta2.hasDisplayName()){
+        if(meta1.hasDisplayName() || meta2.hasDisplayName()){
+            if(meta1.getDisplayName() == null || meta2.getDisplayName() == null)
+                return false;
             if(!meta1.getDisplayName().equals(meta2.getDisplayName()))
                 return false;
         }
-        if(meta1.hasLore() && meta2.hasLore()){
+        if(meta1.hasLore() || meta2.hasLore()){
+            if(meta1.getLore() == null || meta2.getLore() == null)
+                return false;
             if(!meta1.getLore().equals(meta2.getLore()))
                 return false;
         }
@@ -178,5 +186,31 @@ public class InventoryUtils {
                 return false;
         }
         return true;
+    }
+
+    public static boolean isEmpty(Inventory inv){
+        for(ItemStack it : inv.getContents())
+        {
+            if(it != null)
+                return false;
+        }
+        return true;
+    }
+
+    public static ItemStack getRandomItem(Inventory inv){
+        ArrayList<ItemStack> contents = new ArrayList<>();
+        for(ItemStack it : inv.getContents())
+        {
+            if(it != null){
+                contents.add(it);
+            }
+
+        }
+        if(contents.size() == 0)
+            return null;
+        Collections.shuffle(contents);
+
+        int index = new Random().nextInt(contents.size());
+        return contents.get(index);
     }
 }

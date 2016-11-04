@@ -53,7 +53,6 @@ public class Shop extends JavaPlugin {
     private boolean playSounds;
     private boolean playEffects;
     private ItemStack gambleDisplayItem;
-    private double gamblePrice;
     private ItemStack itemCurrency = null;
     private String itemCurrencyName = "";
     private String vaultCurrencySymbol = "";
@@ -193,7 +192,6 @@ public class Shop extends JavaPlugin {
         }
         YamlConfiguration gambleItemConfig = YamlConfiguration.loadConfiguration(gambleDisplayFile);
         gambleDisplayItem = gambleItemConfig.getItemStack("GAMBLE_DISPLAY");
-        gamblePrice = config.getDouble("gambleShopPrice");
 
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencyName");
@@ -331,10 +329,6 @@ public class Shop extends JavaPlugin {
 
     public ItemStack getGambleDisplayItem(){
         return gambleDisplayItem;
-    }
-
-    public double getGamblePrice(){
-        return gamblePrice;
     }
 
     public ItemStack getItemCurrency() {

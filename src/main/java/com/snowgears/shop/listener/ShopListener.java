@@ -2,7 +2,9 @@ package com.snowgears.shop.listener;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -21,6 +23,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.HashMap;
@@ -117,6 +120,13 @@ public class ShopListener implements Listener {
                 if (shop == null)
                     return;
 
+                //check that player can use the shop if it is in a WorldGuard region
+                if(!WorldGuardHook.canUseShop(player, shop.getSignLocation())){
+                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
+                    event.setCancelled(true);
+                    return;
+                }
+
                 if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || shop.getSignLocation().getBlock().getType() != Material.WALL_SIGN){
                     shop.delete();
                     return;
@@ -132,8 +142,12 @@ public class ShopListener implements Listener {
 
                 //non-owner is trying to open shop
                 if (!shop.getOwnerName().equals(player.getName())) {
-                    if ((plugin.usePerms() && player.hasPermission("plugin.operator")) || player.isOp()) {
+                    if ((plugin.usePerms() && player.hasPermission("shop.operator")) || player.isOp()) {
                         if (shop.isAdminShop()) {
+                            if(shop.getType() == ShopType.GAMBLE) {
+                                //allow gamble shops to be opened by operators
+                                return;
+                            }
                             event.setCancelled(true);
                         } else
                             player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "opOpen", shop, player));
@@ -142,7 +156,9 @@ public class ShopListener implements Listener {
                         //player.sendMessage(ChatColor.RED + "You do not have access to open this shop.");
                     }
                     shop.printSalesInfo(player);
+                    event.setCancelled(true);
                 } else if (shop.isAdminShop() && !player.isSneaking()) {
+                    //do not allow admin shops to be opened
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "adminOpen", shop, player));
                     shop.printSalesInfo(player);
                     event.setCancelled(true);
@@ -154,6 +170,20 @@ public class ShopListener implements Listener {
                         event.setCancelled(true);
                     }
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onShopClose(InventoryCloseEvent event) {
+        InventoryHolder holder = event.getInventory().getHolder();
+        if(holder != null && holder instanceof Chest) {
+            Chest chest = (Chest) holder;
+            ShopObject shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
+            if(shop == null)
+                return;
+            if(shop.getType() == ShopType.GAMBLE){
+                shop.shuffleGambleItem();
             }
         }
     }
