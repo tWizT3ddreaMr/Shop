@@ -6,6 +6,7 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.UtilMethods;
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -369,56 +370,58 @@ public class ShopHandler {
             for (String shopNumber : allShopNumbers) {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
                 if(signLoc != null) {
-                    Block b = signLoc.getBlock();
-                    if (b.getType() == Material.WALL_SIGN) {
-                        org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                        //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
-                        UUID owner;
-                        if (shopOwner.equals("admin"))
-                            owner = this.getAdminUUID();
-                        else
-                            owner = uidFromString(shopOwner);
-                        String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
-                        double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
-                        int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
+                    try {
+                        Block b = signLoc.getBlock();
+                        if (b.getType() == Material.WALL_SIGN) {
+                            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
+                            //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                            UUID owner;
+                            if (shopOwner.equals("admin"))
+                                owner = this.getAdminUUID();
+                            else
+                                owner = uidFromString(shopOwner);
+                            String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
+                            double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
+                            int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
 
-                        boolean isAdmin = false;
-                        if (type.contains("admin"))
-                            isAdmin = true;
-                        ShopType shopType = typeFromString(type);
+                            boolean isAdmin = false;
+                            if (type.contains("admin"))
+                                isAdmin = true;
+                            ShopType shopType = typeFromString(type);
 
-                        ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
-                        if(shopType == ShopType.GAMBLE){
-                            itemStack = plugin.getGambleDisplayItem();
-                        }
-
-                        final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
-
-                        if (this.isChest(shop.getChestLocation().getBlock())) {
-                            this.addShop(shop);
-
-                            shop.setItemStack(itemStack);
-                            if (shop.getType() == ShopType.BARTER) {
-                                ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
-                                shop.setBarterItemStack(barterItemStack);
+                            ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
+                            if (shopType == ShopType.GAMBLE) {
+                                itemStack = plugin.getGambleDisplayItem();
                             }
 
-                            if (shop.isAdminShop()) {
-                                shop.setOwner(this.getAdminUUID());
-                            }
+                            final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
 
-                            final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
+                            if (this.isChest(shop.getChestLocation().getBlock())) {
+                                this.addShop(shop);
 
-                                    if(displayType != null){
-                                        shop.getDisplay().setType(DisplayType.valueOf(displayType));
-                                    }
+                                shop.setItemStack(itemStack);
+                                if (shop.getType() == ShopType.BARTER) {
+                                    ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
+                                    shop.setBarterItemStack(barterItemStack);
                                 }
-                            }.runTaskLater(this.plugin, 2);
+
+                                if (shop.isAdminShop()) {
+                                    shop.setOwner(this.getAdminUUID());
+                                }
+
+                                final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+
+                                        if (displayType != null) {
+                                            shop.getDisplay().setType(DisplayType.valueOf(displayType));
+                                        }
+                                    }
+                                }.runTaskLater(this.plugin, 2);
+                            }
                         }
-                    }
+                    } catch (NullPointerException e) {}
                 }
             }
         }

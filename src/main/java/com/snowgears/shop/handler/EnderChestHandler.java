@@ -25,9 +25,18 @@ public class EnderChestHandler {
         loadEnderChests();
     }
 
+    //TODO make this class similar to saving methods of ShopHandler
+    //save inventories async with UUID: saveInventory(UUID)
+    //get method to get current enderChestInventory: getInventory(UUID)
+    // - if none exist yet (null), if player is online save their enderchest to inventory and return
+    // - if none exist yet and player is offline, return null (this shouldn't happen)
+    //TODO gamble shop ender inventories should never be able to get contents of creator (fake admin UUID)
+
     public Inventory getInventory(OfflinePlayer player){
         if(enderChestInventories.get(player.getUniqueId()) != null)
             return enderChestInventories.get(player.getUniqueId());
+        if(player.getPlayer() != null)
+            return player.getPlayer().getEnderChest();
         return null;
     }
 

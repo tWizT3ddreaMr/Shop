@@ -3,6 +3,7 @@ package com.snowgears.shop.display;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.util.InventoryUtils;
+import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
@@ -44,8 +45,12 @@ public class DisplayListener implements Listener {
     }
 
     public ItemStack getRandomItem(ShopObject shop){
-        if(shop == null)
+        try {
+            if (shop == null || !plugin.getShopHandler().isChest(shop.getChestLocation().getBlock()))
+                return new ItemStack(Material.AIR);
+        } catch (NullPointerException e){
             return new ItemStack(Material.AIR);
+        }
 
         if(InventoryUtils.isEmpty(shop.getInventory())) {
             int index = new Random().nextInt(allServerRecipeResults.size());

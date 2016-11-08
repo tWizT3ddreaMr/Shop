@@ -189,6 +189,8 @@ public class InventoryUtils {
     }
 
     public static boolean isEmpty(Inventory inv){
+        if(inv == null)
+            return true;
         for(ItemStack it : inv.getContents())
         {
             if(it != null)
@@ -198,6 +200,8 @@ public class InventoryUtils {
     }
 
     public static ItemStack getRandomItem(Inventory inv){
+        if(inv == null)
+            return null;
         ArrayList<ItemStack> contents = new ArrayList<>();
         for(ItemStack it : inv.getContents())
         {
