@@ -6,7 +6,6 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.UtilMethods;
-import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -305,8 +304,6 @@ public class ShopHandler {
         } catch (Exception e){
             e.printStackTrace();
         }
-        if(plugin.useEnderChests())
-            plugin.getEnderChestHandler().saveEnderChests();
 
         if(playersSavingShops.contains(player)){
             playersSavingShops.remove(player);

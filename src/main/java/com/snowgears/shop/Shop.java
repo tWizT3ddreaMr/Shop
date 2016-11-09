@@ -246,8 +246,8 @@ public class Shop extends JavaPlugin {
 
     @Override
     public void onDisable(){
-        if(enderChestHandler != null)
-            enderChestHandler.saveEnderChests();
+//        if(useEnderChests())
+//            enderChestHandler.saveEnderChests();
         //shopHandler.saveAllShops();
     }
 

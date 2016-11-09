@@ -3,7 +3,6 @@ package com.snowgears.shop.display;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.util.InventoryUtils;
-import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;

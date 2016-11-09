@@ -149,6 +149,8 @@ public class ExchangeListener implements Listener {
             return;
         }
 
+        //TODO update enderchest shop inventory?
+
         //the transaction has finished and the exchange event has not been cancelled
         sendExchangeMessages(shop, player);
         sendEffects(true, player, shop);

@@ -49,7 +49,7 @@ public class InventoryUtils {
         }
         inventory.setContents(contents);
         if(inventory.getType() == InventoryType.ENDER_CHEST){
-            Shop.getPlugin().getEnderChestHandler().updateInventory(inventoryOwner, inventory);
+            Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
         }
         return amount;
     }
@@ -85,7 +85,7 @@ public class InventoryUtils {
             }
         }
         if(inventory.getType() == InventoryType.ENDER_CHEST){
-            Shop.getPlugin().getEnderChestHandler().updateInventory(inventoryOwner, inventory);
+            Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
         }
         return amount;
     }

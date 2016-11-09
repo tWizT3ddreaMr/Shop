@@ -243,8 +243,9 @@ public class ShopListener implements Listener {
         if(event.getPlayer() instanceof Player) {
             Player player = (Player)event.getPlayer();
             if (event.getInventory().getType() == InventoryType.ENDER_CHEST) {
-                if(plugin.useEnderChests())
-                    plugin.getEnderChestHandler().updateInventory(player, event.getInventory());
+                if(plugin.useEnderChests()) {
+                    plugin.getEnderChestHandler().saveInventory(player, event.getInventory());
+                }
             }
         }
     }
@@ -260,7 +261,8 @@ public class ShopListener implements Listener {
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             public void run() {
                 if(inv != null){
-                    plugin.getEnderChestHandler().updateInventory(player, inv);
+                    player.getEnderChest().setContents(inv.getContents());
+                    plugin.getEnderChestHandler().saveInventory(player, inv);
                 }
             }
         }, 2L);
