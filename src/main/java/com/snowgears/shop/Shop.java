@@ -45,6 +45,7 @@ public class Shop extends JavaPlugin {
     private PriceUtil priceUtil;
 
     private boolean usePerms;
+    private boolean enableMetrics;
     private boolean useVault;
     private boolean hookWorldGuard;
     private String commandAlias;
@@ -120,13 +121,6 @@ public class Shop extends JavaPlugin {
         }
 
         try {
-            Metrics metrics = new Metrics(this);
-            metrics.start();
-        } catch (IOException e) {
-            // Failed to submit the stats
-        }
-
-        try {
             displayType = DisplayType.valueOf(config.getString("displayType"));
         } catch (Exception e){ displayType = DisplayType.ITEM; }
 
@@ -144,6 +138,7 @@ public class Shop extends JavaPlugin {
         }
 
         usePerms = config.getBoolean("usePermissions");
+        enableMetrics = config.getBoolean("enableMetrics");
         hookWorldGuard = config.getBoolean("hookWorldGuard");
         commandAlias = config.getString("commandAlias");
         checkItemDurability = config.getBoolean("checkItemDurability");
@@ -165,6 +160,15 @@ public class Shop extends JavaPlugin {
 //
 //        itemCurrency = new ItemStack(itemCurrencyId);
 //        itemCurrency.setData(new MaterialData(itemCurrencyId, (byte) itemCurrencyData));
+
+        if(enableMetrics) {
+            try {
+                Metrics metrics = new Metrics(this);
+                metrics.start();
+            } catch (IOException e) {
+                // Failed to submit the stats
+            }
+        }
 
         //Loading the itemCurrency from a file makes it easier to allow servers to use detailed itemstacks as the server's economy item
         File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");

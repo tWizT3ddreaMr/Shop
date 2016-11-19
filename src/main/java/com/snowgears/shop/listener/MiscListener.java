@@ -113,7 +113,11 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                boolean canCreateShopInRegion = WorldGuardHook.canCreateShop(player, b.getLocation());
+                boolean canCreateShopInRegion = true;
+                try {
+                    canCreateShopInRegion = WorldGuardHook.canCreateShop(player, b.getLocation());
+                } catch(NoClassDefFoundError e) {}
+
                 if(!canCreateShopInRegion){
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
                     event.setCancelled(true);

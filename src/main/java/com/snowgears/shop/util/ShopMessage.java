@@ -157,26 +157,22 @@ public class ShopMessage {
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
     public static String[] getSignLines(ShopObject shop){
-        String[] lines;
 
         DisplayType displayType = shop.getDisplay().getType();
         if(displayType == null)
             displayType = Shop.getPlugin().getDisplayType();
 
-        if(shop.getType() == ShopType.GAMBLE){
-            if(displayType == DisplayType.NONE)
-                lines = getUnformattedShopSignLines(shop.getType(), "no_display");
-            else
-                lines = getUnformattedShopSignLines(shop.getType(), "normal");
+        String shopFormat = "";
+        if(shop.isAdminShop())
+            shopFormat = "admin";
+        else
+            shopFormat = "normal";
+
+        if(displayType == DisplayType.NONE){
+            shopFormat += "_no_display";
         }
-        else {
-            if (displayType == DisplayType.NONE)
-                lines = getUnformattedShopSignLines(shop.getType(), "no_display");
-            else if (shop.isAdminShop())
-                lines = getUnformattedShopSignLines(shop.getType(), "admin");
-            else
-                lines = getUnformattedShopSignLines(shop.getType(), "normal");
-        }
+
+        String[] lines = getUnformattedShopSignLines(shop.getType(), shopFormat);
 
         for(int i=0; i<lines.length; i++) {
             lines[i] = lines[i].replace("[amount]", "" + shop.getAmount());
@@ -264,27 +260,28 @@ public class ShopMessage {
             catch (IllegalArgumentException e){}
 
             if (type != null) {
-                String[] normalLines = new String[4];
-                Set<String> normalLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".normal").getKeys(false);
+                try {
+                    Set<String> normalLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".normal").getKeys(false);
+                    String[] normalLines = new String[4];
 
-                int i = 0;
-                for (String number : normalLineNumbers) {
-                    String message = signConfig.getString("sign_text." + typeString + ".normal." + number);
-                    if (message == null)
-                        normalLines[i] = "";
-                    else
-                        normalLines[i] = message;
-                    i++;
-                }
+                    int i = 0;
+                    for (String number : normalLineNumbers) {
+                        String message = signConfig.getString("sign_text." + typeString + ".normal." + number);
+                        if (message == null)
+                            normalLines[i] = "";
+                        else
+                            normalLines[i] = message;
+                        i++;
+                    }
 
-                this.shopSignTextMap.put(type.toString() + "_normal", normalLines);
+                    this.shopSignTextMap.put(type.toString() + "_normal", normalLines);
+                } catch (NullPointerException e) {}
 
-                //gambling shop sign text has no admin section
-                if(type != ShopType.GAMBLE) {
-                    String[] adminLines = new String[4];
+                try {
                     Set<String> adminLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".admin").getKeys(false);
+                    String[] adminLines = new String[4];
 
-                    i = 0;
+                    int i = 0;
                     for (String number : adminLineNumbers) {
                         String message = signConfig.getString("sign_text." + typeString + ".admin." + number);
                         if (message == null)
@@ -295,22 +292,41 @@ public class ShopMessage {
                     }
 
                     this.shopSignTextMap.put(type.toString() + "_admin", adminLines);
-                }
+                } catch (NullPointerException e) {}
 
-                String[] noDisplayLines = new String[4];
-                Set<String> noDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".no_display").getKeys(false);
+                try {
+                    Set<String> normalNoDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".normal_no_display").getKeys(false);
+                    String[] normalNoDisplayLines = new String[4];
 
-                i = 0;
-                for (String number : noDisplayLineNumbers) {
-                    String message = signConfig.getString("sign_text." + typeString + ".no_display." + number);
-                    if (message == null)
-                        noDisplayLines[i] = "";
-                    else
-                        noDisplayLines[i] = message;
-                    i++;
-                }
+                    int i = 0;
+                    for (String number : normalNoDisplayLineNumbers) {
+                        String message = signConfig.getString("sign_text." + typeString + ".normal_no_display." + number);
+                        if (message == null)
+                            normalNoDisplayLines[i] = "";
+                        else
+                            normalNoDisplayLines[i] = message;
+                        i++;
+                    }
 
-                this.shopSignTextMap.put(type.toString() + "_no_display", noDisplayLines);
+                    this.shopSignTextMap.put(type.toString() + "_normal_no_display", normalNoDisplayLines);
+                } catch (NullPointerException e) {}
+
+                try {
+                    Set<String> adminNoDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".admin_no_display").getKeys(false);
+                    String[] adminNoDisplayLines = new String[4];
+
+                    int i = 0;
+                    for (String number : adminNoDisplayLineNumbers) {
+                        String message = signConfig.getString("sign_text." + typeString + ".admin_no_display." + number);
+                        if (message == null)
+                            adminNoDisplayLines[i] = "";
+                        else
+                            adminNoDisplayLines[i] = message;
+                        i++;
+                    }
+
+                    this.shopSignTextMap.put(type.toString() + "_admin_no_display", adminNoDisplayLines);
+                } catch (NullPointerException e) {}
             }
         }
     }

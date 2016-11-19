@@ -12,6 +12,9 @@ import org.bukkit.entity.Player;
 public class WorldGuardHook {
 
     public static boolean canCreateShop(Player player, Location location){
+        if(!Shop.getPlugin().hookWorldGuard()) {
+            return true;
+        }
         try {
             LocalPlayer localPlayer = WGBukkit.getPlugin().wrapPlayer(player);
 
@@ -25,11 +28,15 @@ public class WorldGuardHook {
                 }
                 return false;
             }
-        } catch(NoClassDefFoundError e){}
+        } catch (Exception e) {}
+          catch (NoClassDefFoundError e) {}
+
         return true;
     }
 
     public static boolean canUseShop(Player player, Location location){
+        if(!Shop.getPlugin().hookWorldGuard())
+            return true;
         try {
             LocalPlayer localPlayer = WGBukkit.getPlugin().wrapPlayer(player);
 

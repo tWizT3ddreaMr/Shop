@@ -55,8 +55,13 @@ public class ExchangeListener implements Listener {
                 if (shop == null || !shop.isInitialized())
                     return;
 
+                boolean canUseShopInRegion = true;
+                try {
+                    canUseShopInRegion = WorldGuardHook.canUseShop(player, shop.getSignLocation());
+                } catch(NoClassDefFoundError e) {}
+
                 //check that player can use the shop if it is in a WorldGuard region
-                if(!WorldGuardHook.canUseShop(player, shop.getSignLocation())){
+                if(!canUseShopInRegion){
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
                     event.setCancelled(true);
                     return;
@@ -337,8 +342,11 @@ public class ExchangeListener implements Listener {
             //only send effects to player if server is above MC 1.8 (when OFF_HAND was introduced)
             if(EquipmentSlot.OFF_HAND == EquipmentSlot.OFF_HAND) {
                 if (success) {
-                    if (plugin.playSounds())
-                        player.playSound(shop.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_TOUCH, 1.0F, 1.0F);
+                    if (plugin.playSounds()) {
+                        try {
+                            player.playSound(shop.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+                        } catch (NoSuchFieldError e) {}
+                    }
                     if (plugin.playEffects())
                         player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK.getId());
                 } else {

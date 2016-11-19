@@ -18,7 +18,7 @@ public class DisplayUtil {
     //very specific case angles
     public static EulerAngle rodAngle = new EulerAngle(Math.toRadians(-80), Math.toRadians(-90), Math.toRadians(0));
     public static EulerAngle bowAngle = new EulerAngle(Math.toRadians(-90), Math.toRadians(5), Math.toRadians(-10));
-    public static EulerAngle shieldAngle = new EulerAngle(Math.toRadians(70), Math.toRadians(0), Math.toRadians(0));
+    public static EulerAngle shieldAngle = new EulerAngle(Math.toRadians(90), Math.toRadians(0), Math.toRadians(0));
 
     //this spawns an armorstand at a location, with the item on it
     public static ArmorStand createDisplay(ItemStack itemStack, Location blockLocation, BlockFace facing){
@@ -185,7 +185,7 @@ public class DisplayUtil {
                     }
                 }
                 if(material == Material.SHIELD){
-                    standLocation.add(0, 0.9, 0);
+                    standLocation.add(0, 1, 0);
                     switch (facing) {
                         case NORTH:
                             standLocation.add(0.17, 0, -0.2);
@@ -229,6 +229,16 @@ public class DisplayUtil {
             return rodAngle;
         }
         else if(material == Material.SHIELD){
+            //shield angles are different in MC 1.10 and MC 1.11+
+            try{
+                if(Material.SHULKER_SHELL != Material.AIR){
+                    //server is on MC 1.11+
+                    return shieldAngle;
+                }
+            } catch (NoSuchFieldError e) {
+                //server is below MC 1.10. (Use different shield angle)
+                return new EulerAngle(Math.toRadians(70), Math.toRadians(0), Math.toRadians(0));
+            }
             return shieldAngle;
         }
         return itemAngle;

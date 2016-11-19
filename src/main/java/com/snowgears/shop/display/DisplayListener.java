@@ -16,6 +16,7 @@ import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -120,6 +121,17 @@ public class DisplayListener implements Listener {
             else
                 event.getItem().remove();
         }
+    }
+
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onItemHook(PlayerFishEvent event){
+        //if(event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY){
+            if(event.getCaught() != null){
+                if(Display.isDisplay(event.getCaught())){
+                    event.setCancelled(true);
+                }
+            }
+        //}
     }
 
     //prevent hoppers from grabbing display items
