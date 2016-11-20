@@ -310,7 +310,7 @@ public class Display {
         try {
             if (entity.getType() == EntityType.DROPPED_ITEM) {
                 ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-                if (UtilMethods.containsLocation(itemMeta.getDisplayName())) {
+                if (itemMeta != null && UtilMethods.containsLocation(itemMeta.getDisplayName())) {
                     return true;
                 }
             } else if (entity.getType() == EntityType.ARMOR_STAND) {

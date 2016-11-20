@@ -225,6 +225,12 @@ public class MiscListener implements Listener {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
                         return;
                     }
+                } else {
+                    ShopObject existingShop = plugin.getShopHandler().getShopByChest(chest);
+                    if(existingShop != null){
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
+                        return;
+                    }
                 }
 
                 if (!sign.isWallSign()) {
@@ -281,7 +287,7 @@ public class MiscListener implements Listener {
                                 sign.setLine(2, "");
                                 sign.setLine(3, "");
                                 sign.update(true);
-                                plugin.getCreativeSelectionListener().returnPlayerData(player);
+                                plugin.getCreativeSelectionListener().removePlayerData(player);
                             }
                         }
                     }
@@ -468,8 +474,7 @@ public class MiscListener implements Listener {
             if (shop == null)
                 return;
 
-            Chest chest = (Chest) b.getState();
-            InventoryHolder ih = chest.getInventory().getHolder();
+            InventoryHolder ih = ((InventoryHolder)b.getState()).getInventory().getHolder();
 
             if (ih instanceof DoubleChest) {
                 if(shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))){

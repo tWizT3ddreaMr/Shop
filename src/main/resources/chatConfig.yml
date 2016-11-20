@@ -142,7 +142,6 @@ permission:
    destroy: "&cYou are not authorized to destroy shops."
    buildLimit: "&cYou have already reached your build limit of [build limit] shops."
 
-
 creativeSelection:
    enter:
       - "_____________________________________________________"
