@@ -141,3 +141,16 @@ permission:
    create: "&cYou are not authorized to create [shop type]ing shops."
    destroy: "&cYou are not authorized to destroy shops."
    buildLimit: "&cYou have already reached your build limit of [build limit] shops."
+
+
+creativeSelection:
+   enter:
+      - "_____________________________________________________"
+      - "&7You are now in locked creative mode so you can choose the item you want to receive."
+      - "&fTo select the item, pick it up and drop it outside of the inventory window."
+      - "&6Open your inventory and select the item you want to receive."
+      - "_____________________________________________________"
+   prompt:
+      - "&cYou cannot move in locked creative mode."
+      - "&6Open your inventory and select the item you want to receive."
+      - "&eTo select the item, pick it up and drop it outside of the inventory window."

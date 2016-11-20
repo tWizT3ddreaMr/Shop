@@ -7,10 +7,7 @@ import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
+import org.bukkit.block.*;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -48,6 +45,7 @@ public class ShopHandler {
         shopMaterials.add(Material.TRAPPED_CHEST);
         if(plugin.useEnderChests())
             shopMaterials.add(Material.ENDER_CHEST);
+
         adminUUID = UUID.randomUUID();
 
         new BukkitRunnable() {
@@ -63,6 +61,20 @@ public class ShopHandler {
     }
 
     public ShopObject getShopByChest(Block shopChest) {
+
+        try {
+            if(shopChest.getState() instanceof ShulkerBox){
+                BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+                ShopObject shop = null;
+                for(BlockFace direction : directions){
+                    shop = this.getShop(shopChest.getRelative(direction).getLocation());
+                    if(shop != null)
+                        return shop;
+                }
+                return null;
+            }
+        } catch (NoClassDefFoundError e) {}
+
         if (this.isChest(shopChest)) {
             BlockFace chestFacing = UtilMethods.getDirectionOfChest(shopChest);
 
@@ -290,6 +302,8 @@ public class ShopHandler {
 
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
+                    if(shop.getType() == ShopType.GAMBLE)
+                        itemStack = new ItemStack(Material.AIR);
                     config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
 
                     if (shop.getType() == ShopType.BARTER) {
@@ -568,6 +582,11 @@ public class ShopHandler {
     }
 
     public boolean isChest(Block b){
+        try{
+            if(b.getState() instanceof ShulkerBox){
+                return true;
+            }
+        } catch (NoClassDefFoundError e) {}
         return shopMaterials.contains(b.getType());
     }
 

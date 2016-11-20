@@ -26,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.DirectionalContainer;
 
 import java.util.ArrayList;
 
@@ -215,14 +216,15 @@ public class MiscListener implements Listener {
                         isAdmin = true;
                 }
 
-                //make sure that the sign is in front of the chest
-             //   DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
-                BlockFace chestFacing = UtilMethods.getDirectionOfChest(chest);
-                if (chestFacing == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
-                    chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
-                } else {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
-                    return;
+                //make sure that the sign is in front of the chest, unless it is a shulker box
+                if(chest.getState() instanceof DirectionalContainer) {
+                    DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
+                    if (container.getFacing() == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
+                        chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
+                    } else {
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
+                        return;
+                    }
                 }
 
                 if (!sign.isWallSign()) {

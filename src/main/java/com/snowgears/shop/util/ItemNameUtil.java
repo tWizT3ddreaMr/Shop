@@ -45,7 +45,7 @@ public class ItemNameUtil {
         if(item == null)
             return "";
 
-        if(item.getItemMeta().getDisplayName() != null)
+        if(item.getItemMeta() != null && item.getItemMeta().getDisplayName() != null)
             return item.getItemMeta().getDisplayName();
 
         String format = ""+item.getTypeId()+":"+item.getData().getData();

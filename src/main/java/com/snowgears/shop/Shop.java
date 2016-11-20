@@ -197,6 +197,11 @@ public class Shop extends JavaPlugin {
         YamlConfiguration gambleItemConfig = YamlConfiguration.loadConfiguration(gambleDisplayFile);
         gambleDisplayItem = gambleItemConfig.getItemStack("GAMBLE_DISPLAY");
 
+        //overwrite the gamble display item if the display-name is not set to FIXED
+        if(!gambleDisplayItem.getItemMeta().getDisplayName().equals("FIXED")){
+            UtilMethods.copy(getResource("GAMBLE_DISPLAY.yml"), gambleDisplayFile);
+        }
+
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencyName");
         currencyFormat = config.getString("currencyFormat");
@@ -243,7 +248,6 @@ public class Shop extends JavaPlugin {
                 getServer().getPluginManager().registerEvents(armorStandListener, this);
         } catch (NoClassDefFoundError e){
             //do not register armor stand listener in MC 1.7 or below
-            //also set the gamble display to a gold block
             gambleDisplayItem = new ItemStack(Material.GOLD_BLOCK);
         }
     }

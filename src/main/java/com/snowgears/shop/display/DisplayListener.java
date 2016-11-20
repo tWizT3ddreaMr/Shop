@@ -6,6 +6,7 @@ import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -15,6 +16,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -107,7 +109,27 @@ public class DisplayListener implements Listener {
             event.setCancelled(true);
     }
 
+    //refresh display when a shulker box is closed
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onShulkerBoxClose(InventoryCloseEvent event) {
+        try {
+            if (event.getInventory().getHolder() instanceof ShulkerBox) {
+                ShulkerBox box = ((ShulkerBox)event.getInventory().getHolder());
+                final ShopObject shop = plugin.getShopHandler().getShopByChest(box.getBlock());
+                if(shop != null){
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if(shop != null)
+                                shop.getDisplay().spawn();
+                        }
+                    }.runTaskLater(this.plugin, 10);
+                }
+            }
+        } catch (NoClassDefFoundError e) {}
+    }
 
+    //prevent picking up display items
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onPickup(PlayerPickupItemEvent event) {
         if(event.isCancelled())
@@ -123,6 +145,7 @@ public class DisplayListener implements Listener {
         }
     }
 
+    //prevent fishing hooks from grabbing display items
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onItemHook(PlayerFishEvent event){
         //if(event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY){

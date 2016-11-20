@@ -11,7 +11,9 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 
@@ -47,11 +49,16 @@ public class ShopMessage {
     }
 
     public static String getMessage(String key, String subKey, ShopObject shop, Player player) {
-        String message;
-        if (subKey != null)
-            message = messageMap.get(key + "_" + subKey);
+        String message = "";
+        String mainKey = key;
+        if (subKey != null) {
+            mainKey = key + "_" + subKey;
+        }
+
+        if(messageMap.containsKey(mainKey))
+            message = messageMap.get(mainKey);
         else
-            message = messageMap.get(key);
+            return message;
 
         message = formatMessage(message, shop, player, false);
         return message;
@@ -162,7 +169,7 @@ public class ShopMessage {
         if(displayType == null)
             displayType = Shop.getPlugin().getDisplayType();
 
-        String shopFormat = "";
+        String shopFormat;
         if(shop.isAdminShop())
             shopFormat = "admin";
         else
@@ -190,6 +197,24 @@ public class ShopMessage {
 //                lines[i]
         }
         return lines;
+    }
+
+    public static List<String> getCreativeSelectionLines(boolean prompt){
+        List<String> messages = new ArrayList<>();
+
+        String subKey = "enter";
+        if(prompt)
+            subKey = "prompt";
+
+        int count = 1;
+        String message = "-1";
+        while (!message.isEmpty()) {
+            message = getMessage("creativeSelection", subKey + count, null, null);
+            if (!message.isEmpty())
+                messages.add(message);
+            count++;
+        }
+        return messages;
     }
 
     private static String[] getUnformattedShopSignLines(ShopType type, String subtype) {
@@ -249,6 +274,17 @@ public class ShopMessage {
         messageMap.put("interactionIssue_adminOpen", chatConfig.getString("interaction_issue.adminOpen"));
         messageMap.put("interactionIssue_worldBlacklist", chatConfig.getString("interaction_issue.worldBlacklist"));
         messageMap.put("interactionIssue_regionRestriction", chatConfig.getString("interaction_issue.regionRestriction"));
+
+        int count = 1;
+        for(String s : chatConfig.getStringList("creativeSelection.enter")){
+            messageMap.put("creativeSelection_enter"+count, s);
+            count++;
+        }
+        count = 1;
+        for(String s : chatConfig.getStringList("creativeSelection.prompt")){
+            messageMap.put("creativeSelection_prompt"+count, s);
+            count++;
+        }
     }
 
     private void loadSignTextFromConfig() {

@@ -8,16 +8,17 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.pl3x.bukkit.chatapi.ComponentSender;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -71,10 +72,14 @@ public class ShopObject {
     }
 
     public Inventory getInventory() {
-        if(chestLocation.getBlock().getType() == Material.ENDER_CHEST) {
+        Block chestBlock = chestLocation.getBlock();
+        if(chestBlock.getType() == Material.ENDER_CHEST) {
             return Shop.getPlugin().getEnderChestHandler().getInventory(this.getOwnerPlayer());
         }
-        return ((Chest) chestLocation.getBlock().getState()).getInventory();
+        else if(chestBlock.getState() instanceof InventoryHolder){
+            return ((InventoryHolder)(chestBlock.getState())).getInventory();
+        }
+        return null;
     }
 
     public UUID getOwnerUUID() {
@@ -214,6 +219,8 @@ public class ShopObject {
     }
 
     public boolean isAdminShop() {
+        if(this.type == ShopType.GAMBLE)
+            return true;
         return isAdminShop;
     }
 
@@ -352,6 +359,14 @@ public class ShopObject {
                 fancyMessage.addExtra(b);
             }
         }
-        player.spigot().sendMessage(fancyMessage);
+
+        //use special ComponentSender for MC 1.8+ and regular way for MC 1.7
+        try {
+            if (Material.AIR != Material.ARMOR_STAND) {
+                ComponentSender.sendMessage(player, fancyMessage);
+            }
+        } catch (NoSuchFieldError e) {
+            player.spigot().sendMessage(fancyMessage);
+        }
     }
 }

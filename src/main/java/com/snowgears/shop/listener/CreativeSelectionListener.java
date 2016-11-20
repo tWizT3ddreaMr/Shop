@@ -7,9 +7,11 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.event.PlayerInitializeShopEvent;
 import com.snowgears.shop.util.PlayerData;
 import com.snowgears.shop.util.ShopMessage;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,37 +19,20 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.UUID;
 
 public class CreativeSelectionListener implements Listener {
 
     private Shop plugin = Shop.getPlugin();
-    private HashMap<UUID, PlayerData> gameModeHashMap = new HashMap<UUID, PlayerData>();
+    private HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
 
     public CreativeSelectionListener(Shop instance) {
         plugin = instance;
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-            public void run() {
-                loadPlayerData();
-            }
-        }, 1L);
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        if (gameModeHashMap.get(player.getUniqueId()) != null)
-            returnPlayerData(player);
     }
 
     //this method calls PlayerCreateShopEvent
@@ -98,15 +83,14 @@ public class CreativeSelectionListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (gameModeHashMap.get(player.getUniqueId()) != null) {
+        if (playerDataMap.get(player.getUniqueId()) != null) {
             if (event.getFrom().getBlockZ() != event.getTo().getBlockZ()
                     || event.getFrom().getBlockX() != event.getTo().getBlockX()
                     || event.getFrom().getBlockY() != event.getTo().getBlockY()) {
                 player.teleport(event.getFrom());
-                player.sendMessage(ChatColor.RED + "You cannot move in locked creative mode.");
-                player.sendMessage(ChatColor.GOLD + "Open your inventory and select the item you want to receive.");
-                player.sendMessage(ChatColor.YELLOW + "To select the item, pick it up and drop it outside of the inventory window.");
-
+                for(String message : ShopMessage.getCreativeSelectionLines(true)){
+                    player.sendMessage(message);
+                }
             }
         }
     }
@@ -114,13 +98,12 @@ public class CreativeSelectionListener implements Listener {
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event){
         Player player = event.getPlayer();
-        if (gameModeHashMap.get(player.getUniqueId()) != null) {
+        if (playerDataMap.get(player.getUniqueId()) != null) {
             if (event.getFrom().distanceSquared(event.getTo()) > 4) {
                 event.setCancelled(true);
-                player.sendMessage(ChatColor.RED + "You cannot move in locked creative mode.");
-                player.sendMessage(ChatColor.GOLD + "Open your inventory and select the item you want to receive.");
-                player.sendMessage(ChatColor.YELLOW + "To select the item, pick it up and drop it outside of the inventory window.");
-
+                for(String message : ShopMessage.getCreativeSelectionLines(true)){
+                    player.sendMessage(message);
+                }
             }
         }
     }
@@ -128,7 +111,7 @@ public class CreativeSelectionListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (gameModeHashMap.get(player.getUniqueId()) != null) {
+        if (playerDataMap.get(player.getUniqueId()) != null) {
             event.setCancelled(true);
         }
     }
@@ -138,8 +121,12 @@ public class CreativeSelectionListener implements Listener {
         if (!(event.getPlayer() instanceof Player))
             return;
         Player player = (Player) event.getPlayer();
+        removePlayerData(player);
+    }
 
-        returnPlayerData(player);
+    @EventHandler
+    public void onShopIntialize(PlayerInitializeShopEvent event){
+        removePlayerData(event.getPlayer());
     }
 
     @EventHandler
@@ -147,7 +134,7 @@ public class CreativeSelectionListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player))
             return;
         Player player = (Player) event.getWhoClicked();
-        PlayerData playerData = gameModeHashMap.get(player.getUniqueId());
+        PlayerData playerData = PlayerData.loadFromFile(player);
         if (playerData != null) {
             //player dropped item outside the inventory
             if (event.getSlot() == -999 && event.getCursor() != null) {
@@ -181,7 +168,7 @@ public class CreativeSelectionListener implements Listener {
                         plugin.getExchangeListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                     }
-                    returnPlayerData(player);
+                    removePlayerData(player);
                 }
             }
             event.setCancelled(true);
@@ -189,110 +176,40 @@ public class CreativeSelectionListener implements Listener {
     }
 
     public void addPlayerData(Player player, Location shopSignLocation) {
-        if (gameModeHashMap.get(player.getUniqueId()) != null)
+        System.out.println("Add Player Data called.");
+        if(playerDataMap.containsKey(player.getUniqueId()))
             return;
-        gameModeHashMap.put(player.getUniqueId(), new PlayerData(player.getUniqueId(), shopSignLocation, player.getGameMode()));
+        System.out.println("Creating new player data.");
+        PlayerData data = new PlayerData(player, shopSignLocation);
+        playerDataMap.put(player.getUniqueId(), data);
+
+        for(String message : ShopMessage.getCreativeSelectionLines(false)){
+            player.sendMessage(message);
+        }
         player.setGameMode(GameMode.CREATIVE);
-        player.sendMessage("_____________________________________________________");
-        player.sendMessage(ChatColor.GRAY + "You are now in locked creative mode so you can choose the item you want to receive.");
-        player.sendMessage(ChatColor.WHITE + "To select the item, pick it up and drop it outside of the inventory window.");
-        player.sendMessage(ChatColor.GOLD + "Open your inventory and select the item you want to receive.");
-        player.sendMessage("_____________________________________________________");
-        this.savePlayerData();
     }
 
-    private void addPlayerData(PlayerData playerData) {
-        if (gameModeHashMap.get(playerData.getPlayerUUID()) != null)
-            return;
-        gameModeHashMap.put(playerData.getPlayerUUID(), playerData);
-    }
-
-    public boolean returnPlayerData(Player player) {
-        PlayerData playerData = gameModeHashMap.get(player.getUniqueId());
-        if (playerData != null) {
-            player.setGameMode(playerData.getOldGameMode());
-            gameModeHashMap.remove(player.getUniqueId());
-            player.closeInventory();
-            player.sendMessage(ChatColor.GRAY + "You are no longer in locked creative-mode.");
-            this.savePlayerData();
-            return true;
+    public void removePlayerData(Player player){
+        PlayerData data = playerDataMap.get(player.getUniqueId());
+        if(data != null) {
+            playerDataMap.remove(player.getUniqueId());
+            data.apply();
         }
-        return false;
     }
 
-    public void savePlayerData() {
-        File fileDirectory = new File(plugin.getDataFolder(), "Data");
-        if (!fileDirectory.exists())
-            fileDirectory.mkdir();
-        File selectionFile = new File(fileDirectory + "/creativeSelectionData.yml");
-        if (!selectionFile.exists()) { // file doesn't exist
-            try {
-                selectionFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
+    //make sure that if player somehow quit without getting their old data back, return it to them when they login next
+    @EventHandler
+    public void onLogin(PlayerLoginEvent event){
+        final Player player = event.getPlayer();
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Shop.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                PlayerData data = PlayerData.loadFromFile(player);
+                if(data != null){
+                    playerDataMap.remove(player.getUniqueId());
+                    data.apply();
+                }
             }
-        } else { //does exist, clear it for future saving
-            PrintWriter writer = null;
-            try {
-                writer = new PrintWriter(selectionFile);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            writer.print("");
-            writer.close();
-        }
-
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(selectionFile);
-
-        String player;
-        for (PlayerData playerData : gameModeHashMap.values()) {
-            player = playerData.getPlayerName() + " (" + playerData.getPlayerUUID().toString() + ")";
-            config.set("players." + player + ".gameMode", playerData.getOldGameMode().toString());
-            config.set("players." + player + ".shopLocation", locationToString(playerData.getShopSignLocation()));
-        }
-
-        try {
-            config.save(selectionFile);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
-    public void loadPlayerData() {
-        File fileDirectory = new File(plugin.getDataFolder(), "Data");
-        if (!fileDirectory.exists())
-            return;
-        File selectionFile = new File(fileDirectory + "/creativeSelectionData.yml");
-        if (!selectionFile.exists())
-            return;
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(selectionFile);
-
-        if (config.getConfigurationSection("players") == null)
-            return;
-
-        Set<String> allPlayers = config.getConfigurationSection("players").getKeys(false);
-
-        for (String player : allPlayers) {
-            UUID playerUUID = uidFromString(player);
-            GameMode gameMode = GameMode.valueOf(config.getString("players." + player + ".gameMode"));
-            Location location = locationFromString(config.getString("players." + player + ".shopLocation"));
-            PlayerData playerData = new PlayerData(playerUUID, location, gameMode);
-            this.addPlayerData(playerData);
-        }
-    }
-
-    private String locationToString(Location loc) {
-        return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
-    }
-
-    private Location locationFromString(String locString) {
-        String[] parts = locString.split(",");
-        return new Location(plugin.getServer().getWorld(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
-    }
-
-    private UUID uidFromString(String playerString) {
-        int index = playerString.indexOf("(");
-        String uidString = playerString.substring(index + 1, playerString.length() - 1);
-        return UUID.fromString(uidString);
+        }, 10);
     }
 }

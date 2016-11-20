@@ -81,6 +81,15 @@ public class ShopListener implements Listener {
                     return;
                 Player player = event.getPlayer();
 
+//                //TESTING FOR ALL SHOP DISPLAYS
+//                for(int i=0 ; i<Material.values().length; i++){
+//                    if(shop.getItemStack().getType() == Material.values()[i]){
+//                        shop.setItemStack(new ItemStack(Material.values()[i+1]));
+//                        shop.getDisplay().spawn();
+//                        return;
+//                    }
+//                }
+
                 //player clicked another player's shop sign
                 if (!shop.getOwnerName().equals(player.getName())) {
                     if(!player.isSneaking())
@@ -145,34 +154,32 @@ public class ShopListener implements Listener {
                     return;
                 }
 
+                //player is sneaking and clicks a chest of a shop
+                if(player.isSneaking()){
+                    if(player.getItemInHand().getType() != Material.SIGN) {
+                        shop.printSalesInfo(player);
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
                 //non-owner is trying to open shop
                 if (!shop.getOwnerName().equals(player.getName())) {
                     if ((plugin.usePerms() && player.hasPermission("shop.operator")) || player.isOp()) {
                         if (shop.isAdminShop()) {
-                            if(shop.getType() == ShopType.GAMBLE) {
+                            if (shop.getType() == ShopType.GAMBLE) {
                                 //allow gamble shops to be opened by operators
                                 return;
                             }
                             event.setCancelled(true);
-                        } else
+                            shop.printSalesInfo(player);
+                        } else {
                             player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "opOpen", shop, player));
+
+                        }
                     } else {
                         event.setCancelled(true);
-                        //player.sendMessage(ChatColor.RED + "You do not have access to open this shop.");
-                    }
-                    shop.printSalesInfo(player);
-                    event.setCancelled(true);
-                } else if (shop.isAdminShop() && !player.isSneaking()) {
-                    //do not allow admin shops to be opened
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "adminOpen", shop, player));
-                    shop.printSalesInfo(player);
-                    event.setCancelled(true);
-                }
-                //player is sneaking and clicks own shop
-                else if(player.isSneaking()){
-                    if(player.getItemInHand().getType() != Material.SIGN) {
                         shop.printSalesInfo(player);
-                        event.setCancelled(true);
+                        //player.sendMessage(ChatColor.RED + "You do not have access to open this shop.");
                     }
                 }
             }

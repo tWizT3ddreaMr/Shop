@@ -4,6 +4,7 @@ package com.snowgears.shop.util;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -54,13 +55,17 @@ public class DisplayUtil {
                 stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
                 stand.setItemInHand(itemStack);
                 stand.setRightArmPose(getArmAngle(itemStack));
-                if(itemStack.getType() == Material.SHIELD)
-                    stand.setSmall(true);
+
+                try{
+                    if(itemStack.getType() == Material.SHIELD)
+                        stand.setSmall(true);
+                } catch (NoSuchFieldError e) {}
+
                 break;
         }
 
         if(stand != null) {
-            stand.setGravity(false);
+            stand.setGravity(false); //use to be false
             stand.setVisible(false);
             stand.setBasePlate(false);
         }
@@ -184,32 +189,46 @@ public class DisplayUtil {
                             break;
                     }
                 }
-                if(material == Material.SHIELD){
-                    standLocation.add(0, 1, 0);
-                    switch (facing) {
-                        case NORTH:
-                            standLocation.add(0.17, 0, -0.2);
-                            break;
-                        case EAST:
-                           standLocation.add(0.2, 0, 0.17);
-                            break;
-                        case SOUTH:
-                            standLocation.add(-0.17, 0, 0.2);
-                            break;
-                        case WEST:
-                            standLocation.add(-0.2, 0, -0.17);
-                            break;
+                try {
+                    if (material == Material.SHIELD) {
+                        standLocation.add(0, 1, 0);
+                        switch (facing) {
+                            case NORTH:
+                                standLocation.add(0.17, 0, -0.2);
+                                break;
+                            case EAST:
+                                standLocation.add(0.2, 0, 0.17);
+                                break;
+                            case SOUTH:
+                                standLocation.add(-0.17, 0, 0.2);
+                                break;
+                            case WEST:
+                                standLocation.add(-0.2, 0, -0.17);
+                                break;
+                        }
                     }
-                }
+                } catch (NoSuchFieldError e) {}
                 break;
         }
 
+        boolean isShield = false;
+        try{
+            if(material == Material.SHIELD)
+                isShield = true;
+        } catch (NoSuchFieldError e) {}
+
         //make the stand face the correct direction when it spawns
         standLocation.setYaw(blockfaceToYaw(facing));
-        //fences and bows are always 90 degrees off
-        if(isFence(material) || material == Material.BOW || material == Material.BANNER || material == Material.SHIELD){
+        //fences and bows and shields are always 90 degrees off
+        if(isFence(material) || material == Material.BOW || material == Material.BANNER || isShield){
             standLocation.setYaw(blockfaceToYaw(nextFace(facing)));
         }
+
+        try {
+            if (blockLocation.getBlock().getState() instanceof ShulkerBox || blockLocation.getBlock().getRelative(BlockFace.DOWN).getState() instanceof ShulkerBox) {
+                standLocation.add(0, 0.1, 0);
+            }
+        } catch (NoClassDefFoundError e) {}
 
         //material is an item
         return standLocation;
@@ -218,6 +237,12 @@ public class DisplayUtil {
     public static EulerAngle getArmAngle(ItemStack itemStack){
 
         Material material = itemStack.getType();
+
+        boolean isShield = false;
+        try{
+            if(material == Material.SHIELD)
+                isShield = true;
+        } catch (NoSuchFieldError e) {}
 
         if(isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_STICK)){
             return toolAngle;
@@ -228,7 +253,7 @@ public class DisplayUtil {
         else if(material == Material.FISHING_ROD || material == Material.CARROT_STICK){
             return rodAngle;
         }
-        else if(material == Material.SHIELD){
+        else if(isShield){
             //shield angles are different in MC 1.10 and MC 1.11+
             try{
                 if(Material.SHULKER_SHELL != Material.AIR){

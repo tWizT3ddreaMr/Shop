@@ -1,3 +1,7 @@
+# This file controls the item that is displayed on Gamble shops #
+# If you want to use a custom item that will not get overwritten on an update, set the display-name field to "FIXED" #
+# If the field is not set to "FIXED", any time the plugin is loaded, it will be overwrriten #
+
 GAMBLE_DISPLAY:
   ==: org.bukkit.inventory.ItemStack
   type: SKULL_ITEM
@@ -5,5 +9,5 @@ GAMBLE_DISPLAY:
   meta:
     ==: ItemMeta
     meta-type: SKULL
-    display-name: Random Item
-    internal: H4sIAAAAAAAAAE2PzWqDQBzE/y0UrPQxehXWjzV4yCFUIbtErYmarLeoK7rZtcFoE/tcfcB67GEYht/MYXQAHd4Ol0nKz+Gr6STX4JnU8I44slcetgzPq0rDcT1klDbCBm8s3LgVN00L66Avoysfxo7fXkEb+WOcBn7TAeBJg5f8LCcOv3ymqDi1qD5RWc3EXXJ6QDIm4roifT6XH8QlauHbjbubvX9dPJ6PWDKbtkWfTKXK0c7eS77dm5XKvpmIuugnuDOxcZjI5tCiHUtrWSjahn4tIkEwU8E99i8mOyZWmAZzpJJFoRMpKplY3M+s0I/aOK1QKApBetNrkvV6eQB/IuRRgxwBAAA=
+    display-name: "TEMP"
+    internal: "H4sIAAAAAAAAAE2OzU6DQBhFP01MkPgYbkn4G5CFi6ZoCumAtnRg2AEzFYaZ2rRgoE/lI8rS1c3NuSe5OoAOT/t+lPLj8n3sJNfgPmLw7DpuHTR+YzD7xTdc5llG7TaO4dfcYpUf1AFHOuiLdOaXoePXR9AGPg3jhV91ALjT4IFUcuTwy+fYLIvWZEUsmznylp7tTZlG4uxHJzLX68iL1MI3K287B/+2aKhyJKkTt+Xpc6wVMbfOTvLNzmrU4SfNminJqYVvTJUZa0tRqiR/bxNFujRr2zKkCIexwFnS45AoKrBNb2/2khPOSZ+GeKZihag4oDT8mtN1HBwL83V5D3/fuZ2PGAEAAA=="
