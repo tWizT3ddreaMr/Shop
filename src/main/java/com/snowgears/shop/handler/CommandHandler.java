@@ -1,15 +1,18 @@
 package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
+import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -42,6 +45,7 @@ public class CommandHandler extends BukkitCommand {
                 //these are commands only operators have access to
                 if (player.hasPermission("shop.operator") || player.isOp()) {
                     player.sendMessage(ChatColor.RED + "/" + this.getName() + " setcurrency" + ChatColor.GRAY + " - set the currency item to item in hand");
+                    player.sendMessage(ChatColor.RED + "/" + this.getName() + " setgamble" + ChatColor.GRAY + " - set the gamble item display to item in hand");
                     player.sendMessage(ChatColor.RED + "/" + this.getName() + " item refresh" + ChatColor.GRAY + " - refresh all display items on shops");
                     player.sendMessage(ChatColor.RED + "/" + this.getName() + " reload" + ChatColor.GRAY + " - reload Shop plugin");
                 }
@@ -68,7 +72,7 @@ public class CommandHandler extends BukkitCommand {
             else if (args[0].equalsIgnoreCase("reload")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
-                    if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || !player.isOp()) {
+                    if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }
@@ -121,11 +125,26 @@ public class CommandHandler extends BukkitCommand {
                     sender.sendMessage("The server is using "+plugin.getItemNameUtil().getName(plugin.getItemCurrency())+" as currency.");
                 }
             }
+            else if(args[0].equalsIgnoreCase("setgamble")){
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {
+                        player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
+                        return true;
+                    }
+                    if(player.getItemInHand() != null && player.getItemInHand().getType() != Material.AIR)
+                        plugin.setGambleDisplayItem(player.getItemInHand());
+                    else {
+                        player.sendMessage(ChatColor.RED + "You must have an item in your hand to use that command.");
+                        return true;
+                    }
+                }
+            }
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
-                    if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || !player.isOp()) {
+                    if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }

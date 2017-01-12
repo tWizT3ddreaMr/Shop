@@ -40,6 +40,9 @@ public class CreativeSelectionListener implements Listener {
     public void onPreShopSignClick(PlayerInteractEvent event) {
         final Player player = event.getPlayer();
 
+        if(!plugin.allowCreativeSelection())
+            return;
+
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
@@ -133,6 +136,8 @@ public class CreativeSelectionListener implements Listener {
     public void onCreativeClick(InventoryCreativeEvent event) {
         if (!(event.getWhoClicked() instanceof Player))
             return;
+        if(!plugin.allowCreativeSelection())
+            return;
         Player player = (Player) event.getWhoClicked();
         PlayerData playerData = PlayerData.loadFromFile(player);
         if (playerData != null) {
@@ -176,10 +181,10 @@ public class CreativeSelectionListener implements Listener {
     }
 
     public void addPlayerData(Player player, Location shopSignLocation) {
-        System.out.println("Add Player Data called.");
+        //System.out.println("Add Player Data called.");
         if(playerDataMap.containsKey(player.getUniqueId()))
             return;
-        System.out.println("Creating new player data.");
+        //System.out.println("Creating new player data.");
         PlayerData data = new PlayerData(player, shopSignLocation);
         playerDataMap.put(player.getUniqueId(), data);
 

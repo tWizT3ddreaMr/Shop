@@ -45,6 +45,9 @@ displayType: ITEM
 # This will make it so shops will only complete transactions if the item durabilities are the same #
 checkItemDurability: true
 
+# This will allow players to use the limited creative selection tool to choose shop items #
+allowCreativeSelection: true
+
 # These will play sounds and particle effects when creating and using shops #
 # These will need to be set to false if your server is running anything less than Minecraft 1.9 #
 playSounds: true

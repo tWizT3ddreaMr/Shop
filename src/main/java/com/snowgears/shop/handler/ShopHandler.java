@@ -25,6 +25,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.io.File;
 import java.util.*;
+import java.util.Comparator;
 
 
 public class ShopHandler {
@@ -68,8 +69,11 @@ public class ShopHandler {
                 ShopObject shop = null;
                 for(BlockFace direction : directions){
                     shop = this.getShop(shopChest.getRelative(direction).getLocation());
-                    if(shop != null)
-                        return shop;
+                    if(shop != null) {
+                        //make sure the shop sign you found is actually attached to the correct shop
+                        if(shop.getChestLocation().equals(shopChest.getLocation()))
+                            return shop;
+                    }
                 }
                 return null;
             }

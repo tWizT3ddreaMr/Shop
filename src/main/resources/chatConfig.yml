@@ -25,8 +25,10 @@
 
 # [item] : The name of the item in the transaction #
 # [item amount] : The amount of the item #
+# [item type] : The material type of the item in the transaction #
 # [barter item] : The name of the barter item in the transaction #
 # [barter item amount] : The amount of the barter item #
+# [barter item type] : The material type of the barter item in the transaction #
 # [price] : The price of the items (adjusted to match virtual or physical currency) #
 # [price per item] : The price of 1 individual item (calculated from total price and adjusted to match virtual or physical currency) #
 # [stock] : The number of stacks of items that a shop/shop owner is able to provide to other players (calculated)#

@@ -92,6 +92,7 @@ public class ShopMessage {
             if(!forSign)
                 unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
             unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent(false));
+            unformattedMessage = unformattedMessage.replace("[item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack().getType()));
 
             unformattedMessage = unformattedMessage.replace("[gamble item amount]", "" + shop.getGambleItemStack().getAmount());
             unformattedMessage = unformattedMessage.replace("[gamble item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getGambleItemStack()));
@@ -102,6 +103,7 @@ public class ShopMessage {
             if(!forSign)
                 unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
             unformattedMessage = unformattedMessage.replace("[barter item durability]", "" + shop.getItemDurabilityPercent(true));
+            unformattedMessage = unformattedMessage.replace("[barter item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack().getType()));
         }
         if(shop != null) {
             if(shop.isAdminShop())

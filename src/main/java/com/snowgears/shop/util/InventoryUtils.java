@@ -132,60 +132,18 @@ public class InventoryUtils {
         if(i1.getType() != i2.getType())
             return false;
 
-        ItemMeta meta1 = i1.getItemMeta();
-        ItemMeta meta2 = i2.getItemMeta();
+        //only have the option to ignore durability if the item can be damaged
+        if(i1.getType().getMaxDurability() != 0) {
+            if (!Shop.getPlugin().checkItemDurability() && i1.getDurability() != i2.getDurability()) {
+                ItemStack itemStack1 = i1.clone();
+                ItemStack itemStack2 = i2.clone();
 
-        if(meta1.hasDisplayName() || meta2.hasDisplayName()){
-            if(meta1.getDisplayName() == null || meta2.getDisplayName() == null)
-                return false;
-            if(!meta1.getDisplayName().equals(meta2.getDisplayName()))
-                return false;
-        }
-        if(meta1.hasLore() || meta2.hasLore()){
-            if(meta1.getLore() == null || meta2.getLore() == null)
-                return false;
-            if(!meta1.getLore().equals(meta2.getLore()))
-                return false;
-        }
-        try {
-            if (!meta1.getItemFlags().equals(meta2.getItemFlags()))
-                return false;
-        } catch(NoSuchMethodError e) {}
-
-        if(!meta1.getEnchants().equals(meta2.getEnchants()))
-            return false;
-
-        if(meta1 instanceof EnchantmentStorageMeta && meta2 instanceof EnchantmentStorageMeta){
-            if(!((EnchantmentStorageMeta)meta1).getStoredEnchants().equals(((EnchantmentStorageMeta)meta2).getStoredEnchants()))
-                return false;
-        }
-
-        if(meta1 instanceof PotionMeta && meta2 instanceof PotionMeta){
-            if(!((PotionMeta)meta1).getBasePotionData().equals(((PotionMeta)meta2).getBasePotionData()))
-                return false;
-        }
-
-        if (i1.getEnchantments().equals(i2.getEnchantments())) {
-            //only have the option to ignore durability if the item can be damaged
-            if(i1.getType().getMaxDurability() != 0) {
-                if (Shop.getPlugin().checkItemDurability() && i1.getDurability() != i2.getDurability()) {
-                    return false;
-                }
-            }
-            else{
-                if (i1.getDurability() != i2.getDurability()) {
-                    return false;
-                }
+                itemStack1.setDurability(i2.getDurability());
+                return itemStack1.isSimilar(itemStack2);
             }
         }
 
-        if(meta1 instanceof BookMeta && meta2 instanceof BookMeta){
-            if(((BookMeta)meta1).hasTitle() && !((BookMeta)meta1).getTitle().equals(((BookMeta)meta2).getTitle()))
-                return false;
-            if(((BookMeta)meta1).hasPages() && !((BookMeta)meta1).getPages().equals(((BookMeta)meta2).getPages()))
-                return false;
-        }
-        return true;
+        return i1.isSimilar(i2);
     }
 
     public static boolean isEmpty(Inventory inv){

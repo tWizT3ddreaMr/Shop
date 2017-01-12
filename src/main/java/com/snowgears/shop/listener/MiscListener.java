@@ -217,8 +217,9 @@ public class MiscListener implements Listener {
                 }
 
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if(chest.getState() instanceof DirectionalContainer) {
+                if(chest.getState().getData() instanceof DirectionalContainer) {
                     DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
+                    //System.out.println("Container facing: "+container.getFacing().toString() + ", Sign Facing: "+sign.getFacing().toString());
                     if (container.getFacing() == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
                         chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
                     } else {
@@ -228,8 +229,12 @@ public class MiscListener implements Listener {
                 } else {
                     ShopObject existingShop = plugin.getShopHandler().getShopByChest(chest);
                     if(existingShop != null){
+                        //System.out.println("OTHER -- shop facing: "+existingShop.getFacing().toString() + ", Sign Facing: "+sign.getFacing().toString());
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
                         return;
+                    }
+                    else{
+                        chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
                     }
                 }
 
@@ -270,7 +275,7 @@ public class MiscListener implements Listener {
                 shop.updateSign();
 
                 player.sendMessage(ShopMessage.getMessage(type.toString(), "initialize", shop, player));
-                if (type == ShopType.BUY) {
+                if (type == ShopType.BUY && plugin.allowCreativeSelection()){
                     player.sendMessage(ShopMessage.getMessage(type.toString(), "initializeAlt", shop, player));
                 }
 
@@ -368,7 +373,8 @@ public class MiscListener implements Listener {
                     if (shop.getType() == ShopType.BARTER) {
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeInfo", shop, player));
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeBarter", shop, player));
-                        player.sendMessage(ShopMessage.getMessage("BUY", "initializeAlt", shop, player));
+                        if(plugin.allowCreativeSelection())
+                            player.sendMessage(ShopMessage.getMessage("BUY", "initializeAlt", shop, player));
                     }
                     else {
                         shop.getDisplay().spawn();

@@ -366,7 +366,7 @@ public class ShopObject {
                 ComponentSender.sendMessage(player, fancyMessage);
             }
         } catch (NoSuchFieldError e) {
-            player.spigot().sendMessage(fancyMessage);
+            player.sendMessage(fancyMessage.getText());
         }
     }
 }

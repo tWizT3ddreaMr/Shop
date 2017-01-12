@@ -51,6 +51,7 @@ public class Shop extends JavaPlugin {
     private String commandAlias;
     private DisplayType displayType;
     private boolean checkItemDurability;
+    private boolean allowCreativeSelection;
     private boolean playSounds;
     private boolean playEffects;
     private ItemStack gambleDisplayItem;
@@ -142,6 +143,7 @@ public class Shop extends JavaPlugin {
         hookWorldGuard = config.getBoolean("hookWorldGuard");
         commandAlias = config.getString("commandAlias");
         checkItemDurability = config.getBoolean("checkItemDurability");
+        allowCreativeSelection = config.getBoolean("allowCreativeSelection");
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
@@ -196,11 +198,6 @@ public class Shop extends JavaPlugin {
         }
         YamlConfiguration gambleItemConfig = YamlConfiguration.loadConfiguration(gambleDisplayFile);
         gambleDisplayItem = gambleItemConfig.getItemStack("GAMBLE_DISPLAY");
-
-        //overwrite the gamble display item if the display-name is not set to FIXED
-        if(!gambleDisplayItem.getItemMeta().getDisplayName().equals("FIXED")){
-            UtilMethods.copy(getResource("GAMBLE_DISPLAY.yml"), gambleDisplayFile);
-        }
 
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencyName");
@@ -327,6 +324,10 @@ public class Shop extends JavaPlugin {
         return checkItemDurability;
     }
 
+    public boolean allowCreativeSelection(){
+        return allowCreativeSelection;
+    }
+
     public boolean playSounds(){
         return playSounds;
     }
@@ -352,6 +353,27 @@ public class Shop extends JavaPlugin {
             YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
             currencyConfig.set("item", plugin.getItemCurrency());
             currencyConfig.save(itemCurrencyFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setGambleDisplayItem(ItemStack is){
+        this.gambleDisplayItem = is;
+
+        try{
+            File fileDirectory = new File(plugin.getDataFolder(), "Data");
+            File gambleDisplayFile = new File(fileDirectory, "gambleDisplayItem.yml");
+            if (!gambleDisplayFile.exists()) {
+                gambleDisplayFile.getParentFile().mkdirs();
+                gambleDisplayFile.createNewFile();
+            }
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(gambleDisplayFile);
+
+            config.set("GAMBLE_DISPLAY", is);
+            config.save(gambleDisplayFile);
+
+            plugin.reload();
         } catch (Exception e) {
             e.printStackTrace();
         }
