@@ -139,11 +139,20 @@ public class ShopHandler {
     }
 
     public void addShop(ShopObject shop) {
+
+        //this is to remove a bug that caused one shop to be saved to multiple files at one point
+        ShopObject s = getShop(shop.getSignLocation());
+        if(s != null){
+            return;
+        }
+
         allShops.put(shop.getSignLocation(), shop);
 
         List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
-        shopLocations.add(shop.getSignLocation());
-        playerShops.put(shop.getOwnerUUID(), shopLocations);
+        if(!shopLocations.contains(shop.getSignLocation())) {
+            shopLocations.add(shop.getSignLocation());
+            playerShops.put(shop.getOwnerUUID(), shopLocations);
+        }
     }
 
     //This method should only be used by ShopObject to delete
@@ -169,13 +178,32 @@ public class ShopHandler {
             if(shop != null)
                 shops.add(shop);
         }
+
+        //TODO delete this
+        ArrayList<ShopObject> testList = new ArrayList<>();
+        for(Location loc : allShops.keySet()){
+            if(getShop(loc).getOwnerUUID().equals(player)) {
+                testList.add(getShop(loc));
+                //System.out.println("Shop at location: "+UtilMethods.getCleanLocation(loc, true));
+            }
+        }
+
+        //for(ShopObject shop : shops){
+            for(ShopObject shop : shops){
+                if(!testList.contains(shop)){
+                    System.out.println("Shop at location: "+UtilMethods.getCleanLocation(shop.getSignLocation(), true));
+                }
+            }
+        //}
+
         return shops;
     }
 
     private List<Location> getShopLocations(UUID player){
         List<Location> shopLocations;
-        if(playerShops.containsKey(player))
+        if(playerShops.containsKey(player)) {
             shopLocations = playerShops.get(player);
+        }
         else
             shopLocations = new ArrayList<>();
         return shopLocations;
@@ -196,12 +224,7 @@ public class ShopHandler {
     }
 
     public int getNumberOfShops(Player player) {
-        int size = 0;
-        for (ShopObject shop : allShops.values()) {
-            if (shop.getOwnerUUID().equals(player.getUniqueId()))
-                size++;
-        }
-        return size;
+        return getShopLocations(player.getUniqueId()).size();
     }
 
     private ArrayList<ShopObject> orderedShopList() {
@@ -273,6 +296,10 @@ public class ShopHandler {
 
             if (!currentFile.exists()) // file doesn't exist
                 currentFile.createNewFile();
+            else{
+                currentFile.delete();
+                currentFile.createNewFile();
+            }
             YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
 
             List<ShopObject> shopList = getShops(player);
@@ -286,6 +313,10 @@ public class ShopHandler {
 
             int shopNumber = 1;
             for (ShopObject shop : shopList) {
+
+                //this is to remove a bug that caused one shop to be saved to multiple files at one point
+                if(!shop.getOwnerUUID().equals(player))
+                    continue;
 
                 //don't save shops that are not initialized with items
                 if (shop.isInitialized()) {
@@ -371,10 +402,6 @@ public class ShopHandler {
     }
 
 
-    //==============================================================================//
-    //            OLD WAY OF LOADING SHOPS FROM ONE CONFIG FOR TRANSFERRING         //
-    //==============================================================================//
-
     private void loadShopsFromConfig(YamlConfiguration config) {
         if (config.getConfigurationSection("shops") == null)
             return;
@@ -412,7 +439,6 @@ public class ShopHandler {
                             final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
 
                             if (this.isChest(shop.getChestLocation().getBlock())) {
-                                this.addShop(shop);
 
                                 shop.setItemStack(itemStack);
                                 if (shop.getType() == ShopType.BARTER) {
@@ -420,16 +446,14 @@ public class ShopHandler {
                                     shop.setBarterItemStack(barterItemStack);
                                 }
 
-                                if (shop.isAdminShop()) {
-                                    shop.setOwner(this.getAdminUUID());
-                                }
+                                this.addShop(shop);
 
                                 final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
                                 new BukkitRunnable() {
                                     @Override
                                     public void run() {
 
-                                        if (displayType != null) {
+                                        if (shop != null && displayType != null) {
                                             shop.getDisplay().setType(DisplayType.valueOf(displayType));
                                         }
                                     }
@@ -441,6 +465,11 @@ public class ShopHandler {
             }
         }
     }
+
+    //==============================================================================//
+    //            OLD WAY OF LOADING SHOPS FROM ONE CONFIG FOR TRANSFERRING         //
+    //==============================================================================//
+
 
     private void backwardsCompatibleLoadShopsFromConfig(YamlConfiguration config){
         if (config.getConfigurationSection("shops") == null)

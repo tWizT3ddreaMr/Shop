@@ -352,7 +352,7 @@ public class Display {
 
     private String generateDisplayName(Random random){
         Location loc = this.shopSignLocation;
-        String name = "***{"+loc.getBlockX()+","+loc.getBlockY()+","+loc.getBlockZ()+"}"+random.nextInt(1000);
+        String name = "***{"+loc.getBlockX()+","+loc.getBlockY()+","+loc.getBlockZ()+"}"; //+random.nextInt(1000);
         return name;
     }
 }

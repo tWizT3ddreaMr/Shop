@@ -323,6 +323,9 @@ public class ShopObject {
     }
 
     private void formatAndSendFancyMessage(String message, Player player){
+        if(message == null)
+            return;
+
         String[] parts = message.split("(?=&[0-9A-FK-ORa-fk-or])");
         TextComponent fancyMessage = new TextComponent("");
 

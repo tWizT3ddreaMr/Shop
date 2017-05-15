@@ -1,6 +1,7 @@
 package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
+import com.snowgears.shop.ShopGUI;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -60,11 +61,12 @@ public class CommandHandler extends BukkitCommand {
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("list")) {
                 if (sender instanceof Player) {
-                    sender.sendMessage("There are " + ChatColor.GOLD + plugin.getShopHandler().getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
-                    if(plugin.usePerms())
-                        sender.sendMessage(ChatColor.GRAY+"You have built "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " out of your "+ plugin.getShopListener().getBuildLimit((Player)sender) +" allotted shops.");
-                    else
-                        sender.sendMessage(ChatColor.GRAY+"You own "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " of these shops.");
+//                    sender.sendMessage("There are " + ChatColor.GOLD + plugin.getShopHandler().getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
+//                    if(plugin.usePerms())
+//                        sender.sendMessage(ChatColor.GRAY+"You have built "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " out of your "+ plugin.getShopListener().getBuildLimit((Player)sender) +" allotted shops.");
+//                    else
+//                        sender.sendMessage(ChatColor.GRAY+"You own "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " of these shops.");
+                    ShopGUI guiTest = new ShopGUI((Player)sender, ShopGUI.ShopGUIType.LIST_OWN);
                 }
                 else
                     sender.sendMessage("[Shop] There are " + plugin.getShopHandler().getNumberOfShops() + " shops registered on the server.");

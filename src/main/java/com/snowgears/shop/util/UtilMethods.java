@@ -65,6 +65,14 @@ public class UtilMethods {
         return capped.substring(0, capped.length()-1);
     }
 
+    public static String getCleanLocation(Location loc, boolean includeWorld){
+        String text = "";
+        if(includeWorld)
+            text = loc.getWorld().getName() + " - ";
+        text = text + "("+ loc.getBlockX() + ", "+loc.getBlockY() + ", "+loc.getBlockZ() + ")";
+        return text;
+    }
+
     public static String convertDurationToString(int duration) {
         duration = duration / 20;
         if (duration < 10)
