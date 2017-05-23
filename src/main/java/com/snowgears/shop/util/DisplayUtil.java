@@ -217,6 +217,9 @@ public class DisplayUtil {
                 isShield = true;
         } catch (NoSuchFieldError e) {}
 
+        if(facing == null)
+            facing = BlockFace.NORTH;
+
         //make the stand face the correct direction when it spawns
         standLocation.setYaw(blockfaceToYaw(facing));
         //fences and bows and shields are always 90 degrees off

@@ -2,8 +2,10 @@ package com.snowgears.shop;
 
 import com.snowgears.shop.display.DisplayListener;
 import com.snowgears.shop.display.DisplayType;
+import com.snowgears.shop.gui.ShopGUIListener;
 import com.snowgears.shop.handler.CommandHandler;
 import com.snowgears.shop.handler.EnderChestHandler;
+import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.handler.ShopHandler;
 import com.snowgears.shop.listener.*;
 import com.snowgears.shop.util.*;
@@ -36,9 +38,11 @@ public class Shop extends JavaPlugin {
     private CreativeSelectionListener creativeSelectionListener;
     private ClearLaggListener clearLaggListener;
     private ArmorStandListener armorStandListener;
+    private ShopGUIListener guiListener;
 
     private ShopHandler shopHandler;
     private CommandHandler commandHandler;
+    private ShopGuiHandler guiHandler;
     private EnderChestHandler enderChestHandler;
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
@@ -115,6 +119,7 @@ public class Shop extends JavaPlugin {
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
         armorStandListener = new ArmorStandListener(this);
+        guiListener = new ShopGUIListener(this);
 
         if (getServer().getPluginManager().getPlugin("ClearLag") != null) {
             clearLaggListener = new ClearLaggListener(this);
@@ -232,6 +237,7 @@ public class Shop extends JavaPlugin {
 
         commandHandler = new CommandHandler(this, "shop.use", commandAlias, "Base command for the Shop plugin", "/shop", Arrays.asList(commandAlias));
         shopHandler = new ShopHandler(plugin);
+        guiHandler = new ShopGuiHandler(plugin);
         enderChestHandler = new EnderChestHandler(plugin);
 
         getServer().getPluginManager().registerEvents(displayListener, this);
@@ -239,6 +245,7 @@ public class Shop extends JavaPlugin {
         getServer().getPluginManager().registerEvents(exchangeListener, this);
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
+        getServer().getPluginManager().registerEvents(guiListener, this);
 
         try {
             if(PlayerInteractAtEntityEvent.class != null){} //throw error on MC 1.7 or below (when ArmorStands weren't in game yet)
@@ -262,6 +269,7 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(exchangeListener);
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
+        HandlerList.unregisterAll(guiListener);
         if(clearLaggListener != null)
             HandlerList.unregisterAll(clearLaggListener);
 
@@ -298,6 +306,10 @@ public class Shop extends JavaPlugin {
 
     public ShopHandler getShopHandler() {
         return shopHandler;
+    }
+
+    public ShopGuiHandler getGuiHandler(){
+        return guiHandler;
     }
 
     public EnderChestHandler getEnderChestHandler(){

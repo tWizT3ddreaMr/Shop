@@ -1,9 +1,7 @@
 package com.snowgears.shop.util;
 
 
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
@@ -71,6 +69,28 @@ public class UtilMethods {
             text = loc.getWorld().getName() + " - ";
         text = text + "("+ loc.getBlockX() + ", "+loc.getBlockY() + ", "+loc.getBlockZ() + ")";
         return text;
+    }
+
+    public static Location getLocation(String cleanLocation){
+        World world = null;
+
+        if(cleanLocation.contains(" - ")) {
+            int dashIndex = cleanLocation.indexOf(" - ");
+            world = Bukkit.getWorld(cleanLocation.substring(0, dashIndex));
+            cleanLocation = cleanLocation.substring(dashIndex+1, cleanLocation.length());
+        }
+        else {
+            world = Bukkit.getWorld("world");
+        }
+        cleanLocation = cleanLocation.replaceAll("[^\\d-]", " ");
+
+        String[] sp = cleanLocation.split("\\s+");
+
+        try {
+            return new Location(world, Integer.valueOf(sp[1]), Integer.valueOf(sp[2]), Integer.valueOf(sp[3]));
+        } catch (Exception e){
+            return null;
+        }
     }
 
     public static String convertDurationToString(int duration) {

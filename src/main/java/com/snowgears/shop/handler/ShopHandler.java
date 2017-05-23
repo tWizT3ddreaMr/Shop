@@ -199,6 +199,10 @@ public class ShopHandler {
         return shops;
     }
 
+    public Set<UUID> getShopOwners(){
+        return playerShops.keySet();
+    }
+
     private List<Location> getShopLocations(UUID player){
         List<Location> shopLocations;
         if(playerShops.containsKey(player)) {

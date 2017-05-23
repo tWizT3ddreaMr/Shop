@@ -1,19 +1,18 @@
 package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopGUI;
-import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.gui.HomeWindow;
+import com.snowgears.shop.gui.ListShopsWindow;
+import com.snowgears.shop.gui.ShopGuiWindow;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -61,12 +60,15 @@ public class CommandHandler extends BukkitCommand {
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("list")) {
                 if (sender instanceof Player) {
+                    Player player = (Player)sender;
 //                    sender.sendMessage("There are " + ChatColor.GOLD + plugin.getShopHandler().getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
 //                    if(plugin.usePerms())
 //                        sender.sendMessage(ChatColor.GRAY+"You have built "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " out of your "+ plugin.getShopListener().getBuildLimit((Player)sender) +" allotted shops.");
 //                    else
 //                        sender.sendMessage(ChatColor.GRAY+"You own "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " of these shops.");
-                    ShopGUI guiTest = new ShopGUI((Player)sender, ShopGUI.ShopGUIType.LIST_OWN);
+                    //ShopGUI guiTest = new ShopGUI((Player)sender, ShopGUI.ShopGUIType.LIST_OWN);
+                    ShopGuiWindow window = plugin.getGuiHandler().getWindow(player);
+                    window.open();
                 }
                 else
                     sender.sendMessage("[Shop] There are " + plugin.getShopHandler().getNumberOfShops() + " shops registered on the server.");
