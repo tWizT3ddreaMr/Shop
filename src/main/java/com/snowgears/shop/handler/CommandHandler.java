@@ -1,8 +1,6 @@
 package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.gui.HomeWindow;
-import com.snowgears.shop.gui.ListShopsWindow;
 import com.snowgears.shop.gui.ShopGuiWindow;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

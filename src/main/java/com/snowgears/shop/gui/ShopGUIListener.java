@@ -3,30 +3,15 @@ package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
-import com.snowgears.shop.ShopType;
-import com.snowgears.shop.event.PlayerInitializeShopEvent;
-import com.snowgears.shop.util.PlayerData;
-import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryCreativeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,11 +38,23 @@ public class ShopGUIListener implements Listener {
                     event.setCancelled(true);
 
                     //this is the case in all windows
-                    if(clicked.getType() == Material.STAINED_GLASS_PANE){
+                    if(event.getRawSlot() == 0 && clicked.getType() == Material.BARRIER){
                         if(window.hasPrevWindow()){
                             plugin.getGuiHandler().setWindow(player, window.prevWindow);
                             return;
                         }
+                    }
+
+                    //this is the case in all windows
+                    if(event.getRawSlot() == 45 && clicked.getType() == Material.STAINED_GLASS_PANE){
+                        window.scrollPagePrev();
+                        return;
+                    }
+
+                    //this is the case in all windows
+                    if(event.getRawSlot() == 53 && clicked.getType() == Material.STAINED_GLASS_PANE){
+                        window.scrollPageNext();
+                        return;
                     }
 
                     if(window instanceof HomeWindow){
@@ -102,16 +99,20 @@ public class ShopGUIListener implements Listener {
                                 if(line.startsWith("Location: ")){
                                     line = line.substring(10, line.length());
                                     Location loc = UtilMethods.getLocation(line);
-                                    player.teleport(loc);
-                                    return;
+                                    ShopObject shop = plugin.getShopHandler().getShop(loc);
+
+                                    if(shop != null){
+                                        shop.teleportPlayer(player);
+                                        return;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-//            System.out.println("Inventory slot: "+event.getSlot());
-//            System.out.println("Inventory raw slot: "+event.getRawSlot());
+            System.out.println("Inventory slot: "+event.getSlot());
+            System.out.println("Inventory raw slot: "+event.getRawSlot());
         }
     }
 }

@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,10 +20,16 @@ public class ListShopsWindow extends ShopGuiWindow {
 
     public ListShopsWindow(UUID player, UUID playerToList){
         super(player);
-        this.page = Bukkit.createInventory(null, INV_SIZE, "Shop List Menu");
+
+        String name;
+        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList))
+            name = "Admin";
+        else
+            name = Bukkit.getOfflinePlayer(playerToList).getName();
+
+        this.page = Bukkit.createInventory(null, INV_SIZE, name);
         this.playerToList = playerToList;
         initInvContents();
-        //this.open(); //TODO delete this after testing
     }
 
     @Override
@@ -46,13 +51,15 @@ public class ListShopsWindow extends ShopGuiWindow {
             List<String> lore = new ArrayList<>();
 
             //if (shop.getStock() != 0) {
-                icon = new ItemStack(shop.getItemStack());
+            icon = shop.getItemStack().clone();
+            icon.setAmount(1);
+
             //} else {
             //    icon = new ItemStack(Material.BARRIER);
             //}
 
             lore.add("Stock: " + shop.getStock());
-            lore.add("Location: " + UtilMethods.getCleanLocation(shop.getChestLocation(), true));
+            lore.add("Location: " + UtilMethods.getCleanLocation(shop.getSignLocation(), true));
 
             //TODO encorporate gambling shops and bartering shops
 
@@ -63,7 +70,11 @@ public class ListShopsWindow extends ShopGuiWindow {
 
             icon.setItemMeta(iconMeta);
 
-            this.addIcon(icon);
+            boolean added = this.addIcon(icon);
+
+            if(!added){
+                page.setItem(53, new ItemStack(Material.STAINED_GLASS_PANE));
+            }
         }
     }
 

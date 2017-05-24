@@ -2,7 +2,6 @@ package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.gui.HomeWindow;
-import com.snowgears.shop.gui.ShopGUI;
 import com.snowgears.shop.gui.ShopGuiWindow;
 import org.bukkit.entity.Player;
 

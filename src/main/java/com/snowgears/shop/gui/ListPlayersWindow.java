@@ -15,7 +15,7 @@ public class ListPlayersWindow extends ShopGuiWindow {
 
     public ListPlayersWindow(UUID player){
         super(player);
-        this.page = Bukkit.createInventory(null, INV_SIZE, "Shop Player Menu");
+        this.page = Bukkit.createInventory(null, INV_SIZE, "All Player Shops");
         initInvContents();
     }
 

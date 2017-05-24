@@ -1,7 +1,6 @@
 package com.snowgears.shop.util;
 
 import com.snowgears.shop.ShopObject;
-import org.bukkit.block.Block;
 
 import java.util.Comparator;
 

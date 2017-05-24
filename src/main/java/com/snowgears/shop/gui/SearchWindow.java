@@ -1,14 +1,7 @@
 package com.snowgears.shop.gui;
 
-import com.snowgears.shop.Shop;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class SearchWindow extends ShopGuiWindow {

@@ -50,6 +50,28 @@ public class UtilMethods {
         return axis[Math.round(yaw / 90f) & 0x3];
     }
 
+    public static float faceToYaw(BlockFace bf) {
+        switch(bf){
+            case NORTH:
+                return 180;
+            case NORTH_EAST:
+                return 225;
+            case EAST:
+                return 270;
+            case SOUTH_EAST:
+                return 315;
+            case SOUTH:
+                return 0;
+            case SOUTH_WEST:
+                return 45;
+            case WEST:
+                return 90;
+            case NORTH_WEST:
+                return 135;
+        }
+        return 180;
+    }
+
     public static String capitalize(String line) {
         String[] spaces = line.split("\\s+");
         String capped = "";

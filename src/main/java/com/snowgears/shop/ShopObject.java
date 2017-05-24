@@ -288,6 +288,18 @@ public class ShopObject {
             return (item != null);
     }
 
+    public void teleportPlayer(Player player){
+        if(player == null)
+            return;
+
+        BlockFace face = this.getFacing();
+        Location loc = this.getSignLocation().getBlock().getRelative(face).getLocation().add(0.5, 0, 0.5);
+        loc.setYaw(UtilMethods.faceToYaw(face.getOppositeFace()));
+        loc.setPitch(25.0f);
+
+        player.teleport(loc);
+    }
+
     public void printSalesInfo(Player player) {
         player.sendMessage("");
 
