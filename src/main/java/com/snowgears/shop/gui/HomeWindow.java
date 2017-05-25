@@ -22,7 +22,7 @@ public class HomeWindow extends ShopGuiWindow {
 
         ItemStack listShopsIcon = new ItemStack(Material.CHEST);
         ItemMeta im = listShopsIcon.getItemMeta();
-        im.setDisplayName("Your Shops");
+        im.setDisplayName("List Your Shops");
         listShopsIcon.setItemMeta(im);
 
         page.setItem(21, listShopsIcon);
@@ -30,7 +30,7 @@ public class HomeWindow extends ShopGuiWindow {
 
         ItemStack listPlayersIcon = new ItemStack(Material.SKULL_ITEM, 1, (short)3); //player skull
         im = listPlayersIcon.getItemMeta();
-        im.setDisplayName("Player Shops");
+        im.setDisplayName("List Players");
         listPlayersIcon.setItemMeta(im);
 
         page.setItem(22, listPlayersIcon);

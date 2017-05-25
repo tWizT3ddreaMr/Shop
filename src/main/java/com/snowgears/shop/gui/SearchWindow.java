@@ -1,6 +1,7 @@
 package com.snowgears.shop.gui;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.inventory.InventoryType;
 
 import java.util.UUID;
 
@@ -9,7 +10,7 @@ public class SearchWindow extends ShopGuiWindow {
     //TODO make this inventory of type anvil and do an acition on pressing enter after searching
     public SearchWindow(UUID player){
         super(player);
-        this.page = Bukkit.createInventory(null, INV_SIZE, "Search");
+        this.page = Bukkit.createInventory(null, InventoryType.ANVIL, "Search");
         initInvContents();
     }
 

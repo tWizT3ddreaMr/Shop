@@ -33,7 +33,7 @@ public class ShopGUIListener implements Listener {
             if(event.getInventory().getTitle().equals(window.getInventory().getTitle())){
 
                 ItemStack clicked = event.getCurrentItem();
-                if(clicked != null){
+                if(clicked != null && clicked.getType() != Material.AIR){
 
                     event.setCancelled(true);
 
@@ -43,6 +43,14 @@ public class ShopGUIListener implements Listener {
                             plugin.getGuiHandler().setWindow(player, window.prevWindow);
                             return;
                         }
+                    }
+
+                    //this is the case in all windows
+                    if(event.getRawSlot() == 8 && clicked.getType() == Material.COMPASS) {
+                        SearchWindow searchWindow = new SearchWindow(player.getUniqueId());
+                        searchWindow.setPrevWindow(window);
+                        plugin.getGuiHandler().setWindow(player, searchWindow);
+                        return;
                     }
 
                     //this is the case in all windows
@@ -109,10 +117,16 @@ public class ShopGUIListener implements Listener {
                             }
                         }
                     }
+                    else if(window instanceof SearchWindow){
+                        if(window.hasPrevWindow()){
+                            plugin.getGuiHandler().setWindow(player, window.prevWindow);
+                            return;
+                        }
+                    }
                 }
             }
-            System.out.println("Inventory slot: "+event.getSlot());
-            System.out.println("Inventory raw slot: "+event.getRawSlot());
+            //System.out.println("Inventory slot: "+event.getSlot());
+            //System.out.println("Inventory raw slot: "+event.getRawSlot());
         }
     }
 }

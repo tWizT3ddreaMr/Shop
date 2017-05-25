@@ -199,8 +199,10 @@ public class ShopHandler {
         return shops;
     }
 
-    public Set<UUID> getShopOwners(){
-        return playerShops.keySet();
+    public List<UUID> getShopOwners(){
+        ArrayList<UUID> owners = new ArrayList<>();
+        owners.addAll(playerShops.keySet());
+        return owners;
     }
 
     private List<Location> getShopLocations(UUID player){

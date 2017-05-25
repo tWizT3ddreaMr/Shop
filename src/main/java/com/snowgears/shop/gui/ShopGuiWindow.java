@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.UUID;
 
@@ -20,10 +21,10 @@ public abstract class ShopGuiWindow {
     protected ShopGuiWindow prevWindow;
     protected UUID player;
     private int currentSlot;
+    protected int pageIndex;
 
     //TODO FOR SORTING, HAVE AN ARRAY LIST OF SORT_OPTIONS HERE THAT YOU USE ALONG WITH PAGE INDEX TO GO TO NEXT PAGE
     //For example, sort by name_ascending, name_descending, keyword, number of stock, shop type, etc...
-    protected int pageIndex;
 
     public ShopGuiWindow(UUID player){
         this.player = player;
@@ -32,20 +33,16 @@ public abstract class ShopGuiWindow {
         currentSlot = 9;
     }
 
-    //TODO openNextPage will be implemented through what button is clicked and prevPage will be set from there
-    //TODO also set currentSlot to 9 again
-
     public boolean scrollPageNext(){
-
         ItemStack nextPageIcon = page.getItem(53);
 
         if(nextPageIcon != null && nextPageIcon.getType() == Material.STAINED_GLASS_PANE){
             //set the previous scroll page
-            page.setItem(45, new ItemStack(Material.STAINED_GLASS_PANE));
+            page.setItem(45, this.getPrevPageIcon());
 
             this.pageIndex++;
 
-            //TODO initMainContents again using page index and possibly remove the nextPageIcon in new page
+            initInvContents();
 
             return true;
         }
@@ -57,11 +54,15 @@ public abstract class ShopGuiWindow {
 
         if(nextPageIcon != null && nextPageIcon.getType() == Material.STAINED_GLASS_PANE){
             //set the next scroll page
-            page.setItem(53, new ItemStack(Material.STAINED_GLASS_PANE));
+            page.setItem(53, this.getNextPageIcon());
 
             this.pageIndex--;
 
-            //TODO initMainContents again using page index
+            if(pageIndex == 0){
+                page.setItem(45, null);
+            }
+
+            initInvContents();
 
             return true;
         }
@@ -79,7 +80,7 @@ public abstract class ShopGuiWindow {
 
     public void setPrevWindow(ShopGuiWindow prevWindow){
         this.prevWindow = prevWindow;
-        page.setItem(0, new ItemStack(Material.BARRIER));
+        page.setItem(0, this.getBackIcon());
     }
 
     public boolean hasPrevWindow(){
@@ -92,7 +93,7 @@ public abstract class ShopGuiWindow {
     protected boolean addIcon(ItemStack icon){
 
         //this page has been filled with icons
-        if(currentSlot == 44)
+        if(currentSlot == 45)
             return false;
 
         page.setItem(currentSlot, icon);
@@ -120,8 +121,15 @@ public abstract class ShopGuiWindow {
     }
 
 
+    //override in subclasses
     protected void initInvContents(){
-        //override in subclasses
+        currentSlot = 9;
+    }
+
+    protected void clearInvBody(){
+        for(int i=9; i<INV_SIZE-9; i++){
+            page.setItem(i, null);
+        }
     }
 
     //TODO search will always be in top right and will search anything all items in page or in list
@@ -139,5 +147,35 @@ public abstract class ShopGuiWindow {
 
     public Inventory getInventory(){
         return this.page;
+    }
+
+    protected ItemStack getPrevPageIcon(){
+        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)14); //red pane
+
+        ItemMeta meta = icon.getItemMeta();
+        meta.setDisplayName("Previous Page");
+        icon.setItemMeta(meta);
+
+        return icon;
+    }
+
+    protected ItemStack getNextPageIcon(){
+        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)13); //green pane
+
+        ItemMeta meta = icon.getItemMeta();
+        meta.setDisplayName("Next Page");
+        icon.setItemMeta(meta);
+
+        return icon;
+    }
+
+    protected ItemStack getBackIcon(){
+        ItemStack icon = new ItemStack(Material.BARRIER);
+
+        ItemMeta meta = icon.getItemMeta();
+        meta.setDisplayName("Back");
+        icon.setItemMeta(meta);
+
+        return icon;
     }
 }
