@@ -4,6 +4,7 @@ package com.snowgears.shop.gui;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.util.UtilMethods;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -78,6 +79,12 @@ public class ShopGUIListener implements Listener {
                             plugin.getGuiHandler().setWindow(player, playersWindow);
                             return;
                         }
+                        else if(clicked.getType() == Material.ENCHANTMENT_TABLE){
+                            CommandsWindow commandsWindow = new CommandsWindow(player.getUniqueId());
+                            commandsWindow.setPrevWindow(window);
+                            plugin.getGuiHandler().setWindow(player, commandsWindow);
+                            return;
+                        }
                     }
                     else if(window instanceof ListPlayersWindow){
                         if(clicked.getType() == Material.SKULL_ITEM || clicked.getType() == Material.CHEST){
@@ -116,6 +123,30 @@ public class ShopGUIListener implements Listener {
                                 }
                             }
                         }
+                    }
+                    else if(window instanceof CommandsWindow){
+                        String command = Shop.getPlugin().getCommandAlias() + " ";
+                        switch(clicked.getType()){
+                            case EMERALD:
+                                command += "currency";
+                                break;
+                            case GLOWSTONE_DUST:
+                                command += "setcurrency";
+                                break;
+                            case BONE:
+                                command += "item refresh";
+                                break;
+                            case WEB:
+                                command += "reload";
+                                break;
+                            default:
+                                break;
+                        }
+                        if(clicked.getType() == Shop.getPlugin().getGambleDisplayItem().getType()){
+                            command += "setgamble";
+                        }
+                        Bukkit.getServer().dispatchCommand(player, command);
+                        return;
                     }
                     else if(window instanceof SearchWindow){
                         if(window.hasPrevWindow()){

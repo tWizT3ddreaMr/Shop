@@ -1,7 +1,9 @@
 package com.snowgears.shop.gui;
 
+import com.snowgears.shop.Shop;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -36,11 +38,19 @@ public class HomeWindow extends ShopGuiWindow {
         page.setItem(22, listPlayersIcon);
 
 
-        ItemStack settingsIcon = new ItemStack(Material.GOLD_AXE);
-        im = settingsIcon.getItemMeta();
-        im.setDisplayName("Settings");
-        settingsIcon.setItemMeta(im);
+        //TODO implement player settings in a future update
+//        ItemStack settingsIcon = new ItemStack(Material.GOLD_AXE);
+//        im = settingsIcon.getItemMeta();
+//        im.setDisplayName("Settings");
+//        settingsIcon.setItemMeta(im);
+//
+//        page.setItem(23, settingsIcon);
 
-        page.setItem(23, settingsIcon);
+        ItemStack commandsIcon = new ItemStack(Material.ENCHANTMENT_TABLE);
+        im = commandsIcon.getItemMeta();
+        im.setDisplayName("Commands");
+        commandsIcon.setItemMeta(im);
+
+        page.setItem(53, commandsIcon);
     }
 }

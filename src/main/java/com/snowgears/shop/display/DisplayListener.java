@@ -76,12 +76,12 @@ public class DisplayListener implements Listener {
     @EventHandler
     public void onPistonExtend(BlockPistonExtendEvent event) {
         ShopObject shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(event.getDirection()).getRelative(BlockFace.DOWN));
-        if (shop != null)
+        if (shop != null && shop.getDisplay().getType() != DisplayType.NONE)
             event.setCancelled(true);
 
         for(Block pushedBlock : event.getBlocks()){
             shop = plugin.getShopHandler().getShopByChest(pushedBlock.getRelative(event.getDirection()).getRelative(BlockFace.DOWN));
-            if (shop != null) {
+            if (shop != null && shop.getDisplay().getType() != DisplayType.NONE) {
                 event.setCancelled(true);
                 return;
             }
@@ -105,7 +105,7 @@ public class DisplayListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
         ShopObject shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(BlockFace.DOWN));
-        if (shop != null)
+        if (shop != null && shop.getDisplay().getType() != DisplayType.NONE)
             event.setCancelled(true);
     }
 

@@ -42,14 +42,6 @@ public class MiscListener implements Listener {
         plugin = instance;
     }
 
-    //prevent placing block above shop chest (need display item there)
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onBlockPlace(BlockPlaceEvent event) {
-        ShopObject shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(BlockFace.DOWN));
-        if (shop != null)
-            event.setCancelled(true);
-    }
-
     //prevent emptying of bucket when player clicks on shop sign
     //also prevent when emptying on display item itself
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -341,13 +333,15 @@ public class MiscListener implements Listener {
                     return;
                 }
 
-                //make sure there is room above the shop for the display
-                Block aboveShop = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
-                if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "displayRoom", null, player));
-                    plugin.getExchangeListener().sendEffects(false, player, shop);
-                    event.setCancelled(true);
-                    return;
+                if(Shop.getPlugin().getDisplayType() != DisplayType.NONE) {
+                    //make sure there is room above the shop for the display
+                    Block aboveShop = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
+                    if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "displayRoom", null, player));
+                        plugin.getExchangeListener().sendEffects(false, player, shop);
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
 
                 //if players must pay to create shops, remove money first

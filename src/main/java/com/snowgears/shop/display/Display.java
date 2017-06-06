@@ -7,6 +7,7 @@ import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -191,6 +192,14 @@ public class Display {
         DisplayType displayType = this.type;
         if(displayType == null) {
             displayType = Shop.getPlugin().getDisplayType();
+        }
+
+        if(displayType == DisplayType.NONE){
+            //make sure there is room above the shop for the display
+            Block aboveShop = this.getShop().getChestLocation().getBlock().getRelative(BlockFace.UP);
+            if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
+                return;
+            }
         }
 
         int index = 0;

@@ -399,6 +399,10 @@ public class Shop extends JavaPlugin {
         return vaultCurrencySymbol;
     }
 
+    public String getCommandAlias(){
+        return commandAlias;
+    }
+
     public String getPriceString(double price, boolean pricePer){
         if(price == 0){
             return ShopMessage.getFreePriceWord();

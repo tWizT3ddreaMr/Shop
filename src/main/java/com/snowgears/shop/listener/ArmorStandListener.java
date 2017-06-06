@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 public class ArmorStandListener implements Listener {
 
@@ -17,6 +18,13 @@ public class ArmorStandListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onArmorStandInteract(PlayerInteractAtEntityEvent event) {
+        if (Display.isDisplay(event.getRightClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onArmorStandClick(PlayerInteractEntityEvent event) {
         if (Display.isDisplay(event.getRightClicked())) {
             event.setCancelled(true);
         }
