@@ -50,6 +50,7 @@ public class Shop extends JavaPlugin {
 
     private boolean usePerms;
     private boolean enableMetrics;
+    private boolean enableGUI;
     private boolean useVault;
     private boolean hookWorldGuard;
     private String commandAlias;
@@ -145,6 +146,7 @@ public class Shop extends JavaPlugin {
 
         usePerms = config.getBoolean("usePermissions");
         enableMetrics = config.getBoolean("enableMetrics");
+        enableGUI = config.getBoolean("enableGUI");
         hookWorldGuard = config.getBoolean("hookWorldGuard");
         commandAlias = config.getString("commandAlias");
         checkItemDurability = config.getBoolean("checkItemDurability");
@@ -346,6 +348,10 @@ public class Shop extends JavaPlugin {
 
     public boolean playEffects(){
         return playEffects;
+    }
+
+    public boolean useGUI(){
+        return enableGUI;
     }
 
     public ItemStack getGambleDisplayItem(){

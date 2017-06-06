@@ -2,10 +2,10 @@ package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopTypeComparator;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -80,6 +80,13 @@ public class ListShopsWindow extends ShopGuiWindow {
         //    icon = new ItemStack(Material.BARRIER);
         //}
 
+        lore.add("Type: " + shop.getType().toString().toUpperCase());
+        if(shop.getType() == ShopType.BARTER)
+            lore.add("Price: "+(int)shop.getPrice() + " "+Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
+        else if(shop.getType() == ShopType.BUY)
+            lore.add("Pays: " + shop.getPriceString());
+        else
+            lore.add("Price: " + shop.getPriceString());
         lore.add("Stock: " + shop.getStock());
         lore.add("Location: " + UtilMethods.getCleanLocation(shop.getSignLocation(), true));
 
@@ -99,12 +106,12 @@ public class ListShopsWindow extends ShopGuiWindow {
     protected void makeMenuBarUpper(){
         super.makeMenuBarUpper();
 
-        ItemStack searchIcon = new ItemStack(Material.COMPASS);
-        ItemMeta meta = searchIcon.getItemMeta();
-        meta.setDisplayName("Search");
-        searchIcon.setItemMeta(meta);
-
-        page.setItem(8, searchIcon);
+//        ItemStack searchIcon = new ItemStack(Material.COMPASS);
+//        ItemMeta meta = searchIcon.getItemMeta();
+//        meta.setDisplayName("Search");
+//        searchIcon.setItemMeta(meta);
+//
+//        page.setItem(8, searchIcon);
     }
 
     @Override

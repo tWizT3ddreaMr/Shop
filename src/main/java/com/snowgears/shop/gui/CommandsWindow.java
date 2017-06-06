@@ -20,12 +20,6 @@ public class CommandsWindow extends ShopGuiWindow {
     @Override
     protected void initInvContents(){
 
-        //TODO currency
-        //TODO setCurrency (OP)
-        //TODO setGamble (OP)
-        //TODO item refresh (OP)
-        //TODO refresh (OP)
-
         ItemStack currencyIcon = new ItemStack(Material.EMERALD);
         ItemMeta im = currencyIcon.getItemMeta();
         im.setDisplayName("Check Server Currency");

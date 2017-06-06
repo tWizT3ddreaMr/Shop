@@ -1,8 +1,10 @@
 package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
+import com.snowgears.shop.util.OfflinePlayerNameComparator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -27,15 +29,15 @@ public class ListPlayersWindow extends ShopGuiWindow {
         makeMenuBarUpper();
         makeMenuBarLower();
 
-        List<UUID> owners = Shop.getPlugin().getShopHandler().getShopOwners();
+        List<OfflinePlayer> owners = Shop.getPlugin().getShopHandler().getShopOwners();
+        owners.sort(new OfflinePlayerNameComparator());
 
         int startIndex = pageIndex * 36; //36 items is a full page in the inventory
         ItemStack icon;
         boolean added = true;
 
         for (int i=startIndex; i< owners.size(); i++) {
-            UUID owner = owners.get(i);
-            icon = createIcon(owner);
+            icon = createIcon(owners.get(i));
 
             if(!this.addIcon(icon)){
                 added = false;
@@ -51,15 +53,15 @@ public class ListPlayersWindow extends ShopGuiWindow {
         }
     }
 
-    private ItemStack createIcon(UUID owner){
+    private ItemStack createIcon(OfflinePlayer owner){
         ItemStack icon;
 
         List<String> lore = new ArrayList<>();
-        lore.add("Shops: "+Shop.getPlugin().getShopHandler().getShops(owner).size());
-        lore.add("UUID: "+ owner.toString());
+        lore.add("Shops: "+Shop.getPlugin().getShopHandler().getShops(owner.getUniqueId()).size());
+        lore.add("UUID: "+ owner.getUniqueId().toString());
 
         String name;
-        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(owner)) {
+        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(owner.getUniqueId())) {
             name = "Admin";
             icon = new ItemStack(Material.CHEST);
 
@@ -70,7 +72,7 @@ public class ListPlayersWindow extends ShopGuiWindow {
             icon.setItemMeta(meta);
         }
         else {
-            name = Bukkit.getOfflinePlayer(owner).getName();
+            name = owner.getName();
             icon = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
 
             SkullMeta meta = (SkullMeta) icon.getItemMeta();
@@ -87,12 +89,12 @@ public class ListPlayersWindow extends ShopGuiWindow {
     protected void makeMenuBarUpper(){
         super.makeMenuBarUpper();
 
-        ItemStack searchIcon = new ItemStack(Material.COMPASS);
-        ItemMeta meta = searchIcon.getItemMeta();
-        meta.setDisplayName("Search");
-        searchIcon.setItemMeta(meta);
-
-        page.setItem(8, searchIcon);
+//        ItemStack searchIcon = new ItemStack(Material.COMPASS);
+//        ItemMeta meta = searchIcon.getItemMeta();
+//        meta.setDisplayName("Search");
+//        searchIcon.setItemMeta(meta);
+//
+//        page.setItem(8, searchIcon);
     }
 
     @Override

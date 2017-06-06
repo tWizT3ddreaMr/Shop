@@ -36,16 +36,23 @@ public class CommandHandler extends BukkitCommand {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
 
-                //these are commands all players have access to
-                player.sendMessage(ChatColor.AQUA + "/" + this.getName() + " list" + ChatColor.GRAY + " - list your shops on the server");
-                player.sendMessage(ChatColor.AQUA + "/" + this.getName() + " currency" + ChatColor.GRAY + " - info about the currency shops use");
+                if(plugin.useGUI()) {
+                    ShopGuiWindow window = plugin.getGuiHandler().getWindow(player);
+                    window.open();
+                }
+                else {
 
-                //these are commands only operators have access to
-                if (player.hasPermission("shop.operator") || player.isOp()) {
-                    player.sendMessage(ChatColor.RED + "/" + this.getName() + " setcurrency" + ChatColor.GRAY + " - set the currency item to item in hand");
-                    player.sendMessage(ChatColor.RED + "/" + this.getName() + " setgamble" + ChatColor.GRAY + " - set the gamble item display to item in hand");
-                    player.sendMessage(ChatColor.RED + "/" + this.getName() + " item refresh" + ChatColor.GRAY + " - refresh all display items on shops");
-                    player.sendMessage(ChatColor.RED + "/" + this.getName() + " reload" + ChatColor.GRAY + " - reload Shop plugin");
+                    //these are commands all players have access to
+                    player.sendMessage(ChatColor.AQUA + "/" + this.getName() + " list" + ChatColor.GRAY + " - list your shops on the server");
+                    player.sendMessage(ChatColor.AQUA + "/" + this.getName() + " currency" + ChatColor.GRAY + " - info about the currency shops use");
+
+                    //these are commands only operators have access to
+                    if (player.hasPermission("shop.operator") || player.isOp()) {
+                        player.sendMessage(ChatColor.RED + "/" + this.getName() + " setcurrency" + ChatColor.GRAY + " - set the currency item to item in hand");
+                        player.sendMessage(ChatColor.RED + "/" + this.getName() + " setgamble" + ChatColor.GRAY + " - set the gamble item display to item in hand");
+                        player.sendMessage(ChatColor.RED + "/" + this.getName() + " item refresh" + ChatColor.GRAY + " - refresh all display items on shops");
+                        player.sendMessage(ChatColor.RED + "/" + this.getName() + " reload" + ChatColor.GRAY + " - reload Shop plugin");
+                    }
                 }
             }
             //these are commands that can be executed from the console
@@ -59,14 +66,11 @@ public class CommandHandler extends BukkitCommand {
             if (args[0].equalsIgnoreCase("list")) {
                 if (sender instanceof Player) {
                     Player player = (Player)sender;
-//                    sender.sendMessage("There are " + ChatColor.GOLD + plugin.getShopHandler().getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
-//                    if(plugin.usePerms())
-//                        sender.sendMessage(ChatColor.GRAY+"You have built "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " out of your "+ plugin.getShopListener().getBuildLimit((Player)sender) +" allotted shops.");
-//                    else
-//                        sender.sendMessage(ChatColor.GRAY+"You own "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " of these shops.");
-                    //ShopGUI guiTest = new ShopGUI((Player)sender, ShopGUI.ShopGUIType.LIST_OWN);
-                    ShopGuiWindow window = plugin.getGuiHandler().getWindow(player);
-                    window.open();
+                    sender.sendMessage("There are " + ChatColor.GOLD + plugin.getShopHandler().getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
+                    if(plugin.usePerms())
+                        sender.sendMessage(ChatColor.GRAY+"You have built "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " out of your "+ plugin.getShopListener().getBuildLimit((Player)sender) +" allotted shops.");
+                    else
+                        sender.sendMessage(ChatColor.GRAY+"You own "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " of these shops.");
                 }
                 else
                     sender.sendMessage("[Shop] There are " + plugin.getShopHandler().getNumberOfShops() + " shops registered on the server.");
@@ -84,6 +88,13 @@ public class CommandHandler extends BukkitCommand {
                     plugin.reload();
                     sender.sendMessage("[Shop] Reloaded plugin."); //TODO replace message
                 }
+
+                for(Player p : Bukkit.getOnlinePlayers()){
+                    if(p != null){
+                        p.closeInventory();
+                    }
+                }
+
             }
             else if (args[0].equalsIgnoreCase("currency")) {
                 if (sender instanceof Player) {

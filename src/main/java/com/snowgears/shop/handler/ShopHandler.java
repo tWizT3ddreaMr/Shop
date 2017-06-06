@@ -199,9 +199,11 @@ public class ShopHandler {
         return shops;
     }
 
-    public List<UUID> getShopOwners(){
-        ArrayList<UUID> owners = new ArrayList<>();
-        owners.addAll(playerShops.keySet());
+    public List<OfflinePlayer> getShopOwners(){
+        ArrayList<OfflinePlayer> owners = new ArrayList<>();
+        for(UUID player : playerShops.keySet()) {
+            owners.add(Bukkit.getOfflinePlayer(player));
+        }
         return owners;
     }
 

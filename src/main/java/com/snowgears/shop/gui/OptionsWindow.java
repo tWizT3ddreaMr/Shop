@@ -6,9 +6,6 @@ import java.util.UUID;
 
 public class OptionsWindow extends ShopGuiWindow {
 
-    //TODO this will have options for teleporting
-
-
     public OptionsWindow(UUID player){
         super(player);
         this.page = Bukkit.createInventory(null, INV_SIZE, "Options");
@@ -17,16 +14,6 @@ public class OptionsWindow extends ShopGuiWindow {
 
     @Override
     protected void initInvContents(){
-
-    }
-
-    @Override
-    protected void makeMenuBarUpper(){
-
-    }
-
-    @Override
-    protected void makeMenuBarLower(){
 
     }
 }

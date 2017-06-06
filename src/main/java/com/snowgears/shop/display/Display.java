@@ -172,8 +172,17 @@ public class Display {
     }
 
     public void setType(DisplayType type){
-
         DisplayType oldType = this.type;
+
+        if(oldType == DisplayType.NONE){
+            //make sure there is room above the shop for the display
+            Block aboveShop = this.getShop().getChestLocation().getBlock().getRelative(BlockFace.UP);
+            if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
+                return;
+            }
+        }
+
+
         this.type = type;
         if(!(type == DisplayType.NONE || type == DisplayType.ITEM)) {
             try {

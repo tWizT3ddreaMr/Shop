@@ -34,9 +34,5 @@ public class ShopGuiHandler {
 
     }
 
-    public void changeToWindow(ShopGuiWindow window){
-
-    }
-
     //TODO have a change window to type method here that can be called from the button listener?
 }

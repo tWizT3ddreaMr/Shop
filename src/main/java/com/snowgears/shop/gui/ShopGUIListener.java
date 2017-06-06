@@ -117,7 +117,9 @@ public class ShopGUIListener implements Listener {
                                     ShopObject shop = plugin.getShopHandler().getShop(loc);
 
                                     if(shop != null){
-                                        shop.teleportPlayer(player);
+                                        if ((Shop.getPlugin().usePerms() && player.hasPermission("shop.operator")) || player.isOp()) {
+                                            shop.teleportPlayer(player);
+                                        }
                                         return;
                                     }
                                 }
@@ -145,6 +147,7 @@ public class ShopGUIListener implements Listener {
                         if(clicked.getType() == Shop.getPlugin().getGambleDisplayItem().getType()){
                             command += "setgamble";
                         }
+                        player.closeInventory();
                         Bukkit.getServer().dispatchCommand(player, command);
                         return;
                     }

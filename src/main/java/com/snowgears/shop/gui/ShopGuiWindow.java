@@ -160,7 +160,7 @@ public abstract class ShopGuiWindow {
     }
 
     protected ItemStack getNextPageIcon(){
-        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)13); //green pane
+        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)14); //red pane
 
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName("Next Page");
