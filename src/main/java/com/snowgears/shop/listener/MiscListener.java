@@ -200,6 +200,14 @@ public class MiscListener implements Listener {
                     playerMessage = null;
                 }
 
+                //prevent players (even if they are OP) from creating a shop on a double chest with another player
+                ShopObject existingShop = plugin.getShopHandler().getShopByChest(chest);
+                if(existingShop != null && !existingShop.isAdminShop()){
+                    if(!existingShop.getOwnerUUID().equals(player.getUniqueId())){
+                        playerMessage = ShopMessage.getMessage("interactionIssue", "createOtherPlayer", null, player);
+                    }
+                }
+
                 if (playerMessage != null) {
                     player.sendMessage(playerMessage);
                     event.setCancelled(true);
@@ -222,7 +230,7 @@ public class MiscListener implements Listener {
                         return;
                     }
                 } else {
-                    ShopObject existingShop = plugin.getShopHandler().getShopByChest(chest);
+                    existingShop = plugin.getShopHandler().getShopByChest(chest);
                     if(existingShop != null){
                         //System.out.println("OTHER -- shop facing: "+existingShop.getFacing().toString() + ", Sign Facing: "+sign.getFacing().toString());
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));

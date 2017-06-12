@@ -12,7 +12,7 @@ import java.util.UUID;
 public class PlayerSettings {
 
     public enum Option{
-        SALE_NOTIFICATIONS, STOCK_NOTIFICATIONS;
+        SALE_OWNER_NOTIFICATIONS, SALE_USER_NOTIFICATIONS, STOCK_NOTIFICATIONS
     }
 
     private UUID player;
@@ -20,6 +20,11 @@ public class PlayerSettings {
 
     public PlayerSettings (Player player){
         this.player = player.getUniqueId();
+
+        this.optionsMap = new HashMap<>();
+        this.optionsMap.put(Option.SALE_OWNER_NOTIFICATIONS, true);
+        this.optionsMap.put(Option.SALE_USER_NOTIFICATIONS, true);
+        this.optionsMap.put(Option.STOCK_NOTIFICATIONS, true);
     }
 
     private PlayerSettings (UUID player, HashMap<Option, Boolean> optionsMap){
@@ -56,7 +61,7 @@ public class PlayerSettings {
 
             config.set("player.UUID", this.player.toString());
             for(Map.Entry<Option, Boolean> entry : optionsMap.entrySet()){
-                config.set(entry.getKey().toString(), entry.getValue().toString());
+                config.set("player."+entry.getKey().toString(), entry.getValue());
             }
 
             config.save(playerSettingsFile);
@@ -86,6 +91,7 @@ public class PlayerSettings {
             for(Option option : Option.values()){
                 boolean value = config.getBoolean("player."+option.toString());
                 optionsMap.put(option, value);
+                //System.out.println(""+value);
             }
 
             PlayerSettings settings = new PlayerSettings(uuid, optionsMap);

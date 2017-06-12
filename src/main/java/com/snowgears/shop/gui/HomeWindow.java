@@ -38,13 +38,12 @@ public class HomeWindow extends ShopGuiWindow {
         page.setItem(22, listPlayersIcon);
 
 
-        //TODO implement player settings in a future update
-//        ItemStack settingsIcon = new ItemStack(Material.GOLD_AXE);
-//        im = settingsIcon.getItemMeta();
-//        im.setDisplayName("Settings");
-//        settingsIcon.setItemMeta(im);
-//
-//        page.setItem(23, settingsIcon);
+        ItemStack settingsIcon = new ItemStack(Material.GOLD_AXE);
+        im = settingsIcon.getItemMeta();
+        im.setDisplayName("Settings");
+        settingsIcon.setItemMeta(im);
+
+        page.setItem(23, settingsIcon);
 
         //list the commands if they have operator permission
         Player p = this.getPlayer();

@@ -5,10 +5,7 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.event.PlayerExchangeShopEvent;
-import com.snowgears.shop.util.EconomyUtils;
-import com.snowgears.shop.util.InventoryUtils;
-import com.snowgears.shop.util.ShopMessage;
-import com.snowgears.shop.util.WorldGuardHook;
+import com.snowgears.shop.util.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -129,8 +126,10 @@ public class ExchangeListener implements Listener {
                     if(!shop.isAdminShop()){
                         Player owner = shop.getOwnerPlayer().getPlayer();
                         //the shop owner is online
-                        if(owner != null && notifyOwner(shop))
-                            owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoStock", shop, owner));
+                        if(owner != null && notifyOwner(shop)) {
+                            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
+                                owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoStock", shop, owner));
+                        }
                     }
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoStock", shop, player));
                     break;
@@ -141,8 +140,10 @@ public class ExchangeListener implements Listener {
                     if(!shop.isAdminShop()){
                         Player owner = shop.getOwnerPlayer().getPlayer();
                         //the shop owner is online
-                        if(owner != null && notifyOwner(shop))
-                            owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoSpace", shop, owner));
+                        if(owner != null && notifyOwner(shop)) {
+                            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
+                                owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoSpace", shop, owner));
+                        }
                     }
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoSpace", shop, player));
                     break;
@@ -328,11 +329,14 @@ public class ExchangeListener implements Listener {
     }
 
     private void sendExchangeMessages(ShopObject shop, Player player) {
-        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "user", shop, player));
+        if(plugin.getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS))
+            player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "user", shop, player));
 
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
-        if ((owner != null) && (!shop.isAdminShop()))
-            owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "owner", shop, player));
+        if ((owner != null) && (!shop.isAdminShop())) {
+            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS))
+                owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "owner", shop, player));
+        }
         if(shop.getType() == ShopType.GAMBLE)
             shop.shuffleGambleItem();
     }
@@ -388,6 +392,6 @@ public class ExchangeListener implements Listener {
         INSUFFICIENT_FUNDS_PLAYER,
         INVENTORY_FULL_SHOP,
         INVENTORY_FULL_PLAYER,
-        NONE;
+        NONE
     }
 }

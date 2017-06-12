@@ -109,6 +109,7 @@ interaction_issue:
    createDirection: "&cThe sign must be in front of the chest in order to create a shop."
    createSameItem: "&cYou cannot create a barter shop where both items are the same."
    createDisplayRoom: "&cThis shop could not created because there is no room for a display item."
+   createOtherShop: "&cYou may not create a shop on the same chest as another player."
    createInsufficientFunds: "&cYou do not have the funds required to create this shop."
    destroyInsufficientFunds: "&cYou do not have the funds required to destroy this shop."
    initializeOtherShop: "&cYou may not initialize another players shop with an item."

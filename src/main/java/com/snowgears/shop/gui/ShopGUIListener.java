@@ -3,6 +3,7 @@ package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -79,6 +80,12 @@ public class ShopGUIListener implements Listener {
                             plugin.getGuiHandler().setWindow(player, playersWindow);
                             return;
                         }
+                        else if(clicked.getType() == Material.GOLD_AXE){
+                            PlayerSettingsWindow settingsWindow = new PlayerSettingsWindow(player.getUniqueId());
+                            settingsWindow.setPrevWindow(window);
+                            plugin.getGuiHandler().setWindow(player, settingsWindow);
+                            return;
+                        }
                         else if(clicked.getType() == Material.ENCHANTMENT_TABLE){
                             CommandsWindow commandsWindow = new CommandsWindow(player.getUniqueId());
                             commandsWindow.setPrevWindow(window);
@@ -131,6 +138,32 @@ public class ShopGUIListener implements Listener {
                                     }
                                 }
                             }
+                        }
+                    }
+                    else if(window instanceof PlayerSettingsWindow){
+                        if(clicked.getType() == Material.WOOL){
+
+                            PlayerSettings.Option option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
+
+                            if(clicked.getItemMeta().getDisplayName().contains("User")){
+                                option = PlayerSettings.Option.SALE_USER_NOTIFICATIONS;
+                            }
+                            else if(clicked.getItemMeta().getDisplayName().contains("Stock")){
+                                option = PlayerSettings.Option.STOCK_NOTIFICATIONS;
+                            }
+                            Shop.getPlugin().getGuiHandler().toggleSettingsOption(player, option);
+
+                            //switch the color
+                            if(clicked.getDurability() == 5){
+                                clicked.setDurability((short)14);
+                            }
+                            else{
+                                clicked.setDurability((short)5);
+                            }
+
+                            window.getInventory().setItem(event.getRawSlot(), clicked);
+                            //player.updateInventory();
+                            return;
                         }
                     }
                     else if(window instanceof CommandsWindow){
