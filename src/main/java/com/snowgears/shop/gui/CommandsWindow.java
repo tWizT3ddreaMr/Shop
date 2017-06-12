@@ -27,43 +27,38 @@ public class CommandsWindow extends ShopGuiWindow {
 
         page.setItem(10, currencyIcon);
 
-        //list the operator commands if they have permission
-        Player p = this.getPlayer();
-        if(p != null){
-            if ((Shop.getPlugin().usePerms() && p.hasPermission("shop.operator")) || p.isOp()) {
-
-                ItemStack setCurrencyIcon = new ItemStack(Material.GLOWSTONE_DUST);
-                im = setCurrencyIcon.getItemMeta();
-                im.setDisplayName("Set Server Currency");
-                setCurrencyIcon.setItemMeta(im);
-
-                page.setItem(11, setCurrencyIcon);
 
 
-                ItemStack setGambleIcon = Shop.getPlugin().getGambleDisplayItem();
-                im = setGambleIcon.getItemMeta();
-                im.setDisplayName("Set Gamble Display");
-                setGambleIcon.setItemMeta(im);
+        ItemStack setCurrencyIcon = new ItemStack(Material.GLOWSTONE_DUST);
+        im = setCurrencyIcon.getItemMeta();
+        im.setDisplayName("Set Server Currency");
+        setCurrencyIcon.setItemMeta(im);
 
-                page.setItem(12, setGambleIcon);
-
-
-                ItemStack refreshDisplaysIcon = new ItemStack(Material.BONE);
-                im = refreshDisplaysIcon.getItemMeta();
-                im.setDisplayName("Refresh Shop Displays");
-                refreshDisplaysIcon.setItemMeta(im);
-
-                page.setItem(13, refreshDisplaysIcon);
+        page.setItem(11, setCurrencyIcon);
 
 
-                ItemStack reloadIcon = new ItemStack(Material.WEB);
-                im = reloadIcon.getItemMeta();
-                im.setDisplayName("Reload Plugin");
-                reloadIcon.setItemMeta(im);
+        ItemStack setGambleIcon = Shop.getPlugin().getGambleDisplayItem();
+        im = setGambleIcon.getItemMeta();
+        im.setDisplayName("Set Gamble Display");
+        setGambleIcon.setItemMeta(im);
 
-                page.setItem(14, reloadIcon);
+        page.setItem(12, setGambleIcon);
 
-            }
-        }
+
+        ItemStack refreshDisplaysIcon = new ItemStack(Material.BONE);
+        im = refreshDisplaysIcon.getItemMeta();
+        im.setDisplayName("Refresh Shop Displays");
+        refreshDisplaysIcon.setItemMeta(im);
+
+        page.setItem(13, refreshDisplaysIcon);
+
+
+        ItemStack reloadIcon = new ItemStack(Material.WEB);
+        im = reloadIcon.getItemMeta();
+        im.setDisplayName("Reload Plugin");
+        reloadIcon.setItemMeta(im);
+
+        page.setItem(14, reloadIcon);
+
     }
 }

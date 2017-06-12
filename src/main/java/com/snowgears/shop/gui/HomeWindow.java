@@ -1,7 +1,9 @@
 package com.snowgears.shop.gui;
 
+import com.snowgears.shop.Shop;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -44,11 +46,18 @@ public class HomeWindow extends ShopGuiWindow {
 //
 //        page.setItem(23, settingsIcon);
 
-        ItemStack commandsIcon = new ItemStack(Material.ENCHANTMENT_TABLE);
-        im = commandsIcon.getItemMeta();
-        im.setDisplayName("Commands");
-        commandsIcon.setItemMeta(im);
+        //list the commands if they have operator permission
+        Player p = this.getPlayer();
+        if(p != null) {
+            if ((Shop.getPlugin().usePerms() && p.hasPermission("shop.operator")) || p.isOp()) {
 
-        page.setItem(53, commandsIcon);
+                ItemStack commandsIcon = new ItemStack(Material.ENCHANTMENT_TABLE);
+                im = commandsIcon.getItemMeta();
+                im.setDisplayName("Commands");
+                commandsIcon.setItemMeta(im);
+
+                page.setItem(53, commandsIcon);
+            }
+        }
     }
 }

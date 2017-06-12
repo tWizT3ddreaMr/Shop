@@ -1,7 +1,7 @@
 name: Shop
 author: Tanner Embry (SnowGears)
 description: Easily create shops to buy or sell items!
-version: 1.7.3
+version: 1.7.3.1
 main: com.snowgears.shop.Shop
 softdepend: [Vault, WorldGuard]
 permissions:
@@ -40,6 +40,9 @@ permissions:
          default: op
     shop.setdisplay:
          description: Allows player to set the display type on their shop.
+         default: op
+    shop.gui.teleport:
+         description: Allows player to use teleport to shops by using the gui.
          default: op
     shop.operator:
         description: Allows access to operator actions.

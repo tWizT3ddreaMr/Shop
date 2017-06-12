@@ -87,7 +87,9 @@ public class ListShopsWindow extends ShopGuiWindow {
             lore.add("Pays: " + shop.getPriceString());
         else
             lore.add("Price: " + shop.getPriceString());
-        lore.add("Stock: " + shop.getStock());
+        if(!shop.isAdminShop()) {
+            lore.add("Stock: " + shop.getStock());
+        }
         lore.add("Location: " + UtilMethods.getCleanLocation(shop.getSignLocation(), true));
 
         //TODO encorporate gambling shops and bartering shops

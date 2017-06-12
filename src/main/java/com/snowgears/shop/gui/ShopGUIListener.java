@@ -117,8 +117,15 @@ public class ShopGUIListener implements Listener {
                                     ShopObject shop = plugin.getShopHandler().getShop(loc);
 
                                     if(shop != null){
-                                        if ((Shop.getPlugin().usePerms() && player.hasPermission("shop.operator")) || player.isOp()) {
-                                            shop.teleportPlayer(player);
+                                        if(Shop.getPlugin().usePerms()){
+                                            if(player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")){
+                                                shop.teleportPlayer(player);
+                                            }
+                                        }
+                                        else{
+                                            if(player.isOp()){
+                                                shop.teleportPlayer(player);
+                                            }
                                         }
                                         return;
                                     }
