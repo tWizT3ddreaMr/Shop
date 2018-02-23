@@ -3,11 +3,13 @@ package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -40,53 +42,59 @@ public class ShopGUIListener implements Listener {
                     event.setCancelled(true);
 
                     //this is the case in all windows
-                    if(event.getRawSlot() == 0 && clicked.getType() == Material.BARRIER){
-                        if(window.hasPrevWindow()){
+                    if(event.getRawSlot() == 0) {
+                        if (window.hasPrevWindow()) {
                             plugin.getGuiHandler().setWindow(player, window.prevWindow);
                             return;
                         }
                     }
 
+                    //TODO search window
                     //this is the case in all windows
-                    if(event.getRawSlot() == 8 && clicked.getType() == Material.COMPASS) {
-                        SearchWindow searchWindow = new SearchWindow(player.getUniqueId());
-                        searchWindow.setPrevWindow(window);
-                        plugin.getGuiHandler().setWindow(player, searchWindow);
-                        return;
-                    }
+//                    if(event.getRawSlot() == 8 && clicked.getType() == Material.COMPASS) {
+//                        SearchWindow searchWindow = new SearchWindow(player.getUniqueId());
+//                        searchWindow.setPrevWindow(window);
+//                        plugin.getGuiHandler().setWindow(player, searchWindow);
+//                        return;
+//                    }
 
                     //this is the case in all windows
-                    if(event.getRawSlot() == 45 && clicked.getType() == Material.STAINED_GLASS_PANE){
+                    if(event.getRawSlot() == 45){
                         window.scrollPagePrev();
                         return;
                     }
 
                     //this is the case in all windows
-                    if(event.getRawSlot() == 53 && clicked.getType() == Material.STAINED_GLASS_PANE){
+                    if(event.getRawSlot() == 53){
                         window.scrollPageNext();
                         return;
                     }
 
                     if(window instanceof HomeWindow){
-                        if(clicked.getType() == Material.CHEST){
+                        ItemStack listShopsIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_OWN_SHOPS, null, null);
+                        ItemStack listPlayersIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_PLAYERS, null, null);
+                        ItemStack settingsIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SETTINGS, null, null);
+                        ItemStack commandsIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_COMMANDS, null, null);
+
+                        if(clicked.getType() == listShopsIcon.getType()){
                             ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId(), player.getUniqueId());
                             shopsWindow.setPrevWindow(window);
                             plugin.getGuiHandler().setWindow(player, shopsWindow);
                             return;
                         }
-                        else if(clicked.getType() == Material.SKULL_ITEM){
+                        else if(clicked.getType() == listPlayersIcon.getType()){
                             ListPlayersWindow playersWindow = new ListPlayersWindow(player.getUniqueId());
                             playersWindow.setPrevWindow(window);
                             plugin.getGuiHandler().setWindow(player, playersWindow);
                             return;
                         }
-                        else if(clicked.getType() == Material.GOLD_AXE){
+                        else if(clicked.getType() == settingsIcon.getType()){
                             PlayerSettingsWindow settingsWindow = new PlayerSettingsWindow(player.getUniqueId());
                             settingsWindow.setPrevWindow(window);
                             plugin.getGuiHandler().setWindow(player, settingsWindow);
                             return;
                         }
-                        else if(clicked.getType() == Material.ENCHANTMENT_TABLE){
+                        else if(clicked.getType() == commandsIcon.getType()){
                             CommandsWindow commandsWindow = new CommandsWindow(player.getUniqueId());
                             commandsWindow.setPrevWindow(window);
                             plugin.getGuiHandler().setWindow(player, commandsWindow);
@@ -94,24 +102,28 @@ public class ShopGUIListener implements Listener {
                         }
                     }
                     else if(window instanceof ListPlayersWindow){
-                        if(clicked.getType() == Material.SKULL_ITEM || clicked.getType() == Material.CHEST){
-                            List<String> lore = clicked.getItemMeta().getLore();
-                            if(lore != null){
-                                for(String line : lore){
-                                    if(line.startsWith("UUID: ")){
-                                        line = line.substring(6, line.length());
-                                        UUID playerUUID = UUID.fromString(line);
+                        ItemStack playerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER, null, null);
+                        ItemStack adminPlayerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
 
-                                        ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId(), playerUUID);
-                                        shopsWindow.setPrevWindow(window);
-
-                                        plugin.getGuiHandler().setWindow(player, shopsWindow);
-
-
-                                        return;
-                                    }
-                                }
+                        if(clicked.getType() == playerIcon.getType() || clicked.getType() == adminPlayerIcon.getType()){
+                            String name = clicked.getItemMeta().getDisplayName();
+                            UUID uuid = null;
+                            if(name.equals(adminPlayerIcon.getItemMeta().getDisplayName())){
+                                uuid = Shop.getPlugin().getShopHandler().getAdminUUID();
                             }
+                            else {
+                                OfflinePlayer p = Bukkit.getOfflinePlayer(name);
+                                if(p != null)
+                                    uuid = p.getUniqueId();
+                            }
+
+                            if(uuid == null)
+                                return;
+
+                            ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId(), uuid);
+                            shopsWindow.setPrevWindow(window);
+                            plugin.getGuiHandler().setWindow(player, shopsWindow);
+                            return;
                         }
                     }
                     else if(window instanceof ListShopsWindow){
@@ -141,52 +153,83 @@ public class ShopGUIListener implements Listener {
                         }
                     }
                     else if(window instanceof PlayerSettingsWindow){
-                        if(clicked.getType() == Material.WOOL){
+                        ItemStack ownerIconOn = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_ON, null, null);
+                        ItemStack ownerIconOff = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_OFF, null, null);
 
-                            PlayerSettings.Option option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
+                        ItemStack userIconOn = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_ON, null, null);
+                        ItemStack userIconOff = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_OFF, null, null);
 
-                            if(clicked.getItemMeta().getDisplayName().contains("User")){
-                                option = PlayerSettings.Option.SALE_USER_NOTIFICATIONS;
-                            }
-                            else if(clicked.getItemMeta().getDisplayName().contains("Stock")){
-                                option = PlayerSettings.Option.STOCK_NOTIFICATIONS;
-                            }
-                            Shop.getPlugin().getGuiHandler().toggleSettingsOption(player, option);
+                        ItemStack stockIconOn = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_ON, null, null);
+                        ItemStack stockIconOff = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_OFF, null, null);
 
-                            //switch the color
-                            if(clicked.getDurability() == 5){
-                                clicked.setDurability((short)14);
-                            }
-                            else{
-                                clicked.setDurability((short)5);
-                            }
+                        PlayerSettings.Option option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
 
-                            window.getInventory().setItem(event.getRawSlot(), clicked);
-                            //player.updateInventory();
-                            return;
+                        if(clicked.isSimilar(ownerIconOn)){
+                            option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
+                            event.getInventory().setItem(event.getRawSlot(), ownerIconOff);
                         }
+                        else if(clicked.isSimilar(ownerIconOff)){
+                            option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
+                            event.getInventory().setItem(event.getRawSlot(), ownerIconOn);
+                        }
+
+                        else if(clicked.isSimilar(userIconOn)){
+                            option = PlayerSettings.Option.SALE_USER_NOTIFICATIONS;
+                            event.getInventory().setItem(event.getRawSlot(), userIconOff);
+                        }
+                        else if(clicked.isSimilar(userIconOff)){
+                            option = PlayerSettings.Option.SALE_USER_NOTIFICATIONS;
+                            event.getInventory().setItem(event.getRawSlot(), userIconOn);
+                        }
+
+                        else if(clicked.isSimilar(stockIconOn)){
+                            option = PlayerSettings.Option.STOCK_NOTIFICATIONS;
+                            event.getInventory().setItem(event.getRawSlot(), stockIconOff);
+                        }
+                        else if(clicked.isSimilar(stockIconOff)){
+                            option = PlayerSettings.Option.STOCK_NOTIFICATIONS;
+                            event.getInventory().setItem(event.getRawSlot(), stockIconOn);
+                        }
+
+                        Shop.getPlugin().getGuiHandler().toggleSettingsOption(player, option);
+
+                        //switch the color
+//                        if(clicked.getDurability() == 5){
+//                            clicked.setDurability((short)14);
+//                        }
+//                        else{
+//                            clicked.setDurability((short)5);
+//                        }
+
+                        player.updateInventory();
+                        return;
                     }
                     else if(window instanceof CommandsWindow){
                         String command = Shop.getPlugin().getCommandAlias() + " ";
-                        switch(clicked.getType()){
-                            case EMERALD:
-                                command += "currency";
-                                break;
-                            case GLOWSTONE_DUST:
-                                command += "setcurrency";
-                                break;
-                            case BONE:
-                                command += "item refresh";
-                                break;
-                            case WEB:
-                                command += "reload";
-                                break;
-                            default:
-                                break;
+
+                        ItemStack currencyIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_CURRENCY, null, null);
+                        ItemStack setCurrencyIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_SET_CURRENCY, null, null);
+                        ItemStack setGambleIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_SET_GAMBLE, null, null);
+                        ItemStack refreshIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_REFRESH_DISPLAYS, null, null);
+                        ItemStack reloadIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_RELOAD, null, null);
+
+
+                        if(clicked.isSimilar(currencyIcon)){
+                            command += "currency";
                         }
-                        if(clicked.getType() == Shop.getPlugin().getGambleDisplayItem().getType()){
+                        else if(clicked.isSimilar(setCurrencyIcon)){
+                            command += "setcurrency";
+                        }
+                        else if(clicked.isSimilar(setGambleIcon)){
                             command += "setgamble";
                         }
+                        else if(clicked.isSimilar(refreshIcon)){
+                            command += "item refresh";
+                        }
+                        else if(clicked.isSimilar(reloadIcon)){
+                            command += "reload";
+                        }
+
                         player.closeInventory();
                         Bukkit.getServer().dispatchCommand(player, command);
                         return;

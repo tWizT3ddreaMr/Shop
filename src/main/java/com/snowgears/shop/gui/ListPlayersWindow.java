@@ -1,15 +1,12 @@
 package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
+import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.util.OfflinePlayerNameComparator;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +14,8 @@ public class ListPlayersWindow extends ShopGuiWindow {
 
     public ListPlayersWindow(UUID player){
         super(player);
-        this.page = Bukkit.createInventory(null, INV_SIZE, "All Player Shops");
+        String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.LIST_PLAYERS);
+        this.page = Bukkit.createInventory(null, INV_SIZE, title);
         initInvContents();
     }
 
@@ -54,35 +52,10 @@ public class ListPlayersWindow extends ShopGuiWindow {
     }
 
     private ItemStack createIcon(OfflinePlayer owner){
-        ItemStack icon;
-
-        List<String> lore = new ArrayList<>();
-        lore.add("Shops: "+Shop.getPlugin().getShopHandler().getShops(owner.getUniqueId()).size());
-        lore.add("UUID: "+ owner.getUniqueId().toString());
-
-        String name;
         if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(owner.getUniqueId())) {
-            name = "Admin";
-            icon = new ItemStack(Material.CHEST);
-
-            ItemMeta meta = icon.getItemMeta();
-            meta.setDisplayName(name);
-            meta.setLore(lore);
-
-            icon.setItemMeta(meta);
+            return Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, owner, null);
         }
-        else {
-            name = owner.getName();
-            icon = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
-
-            SkullMeta meta = (SkullMeta) icon.getItemMeta();
-            meta.setOwner(name);
-            meta.setDisplayName(name);
-            meta.setLore(lore);
-
-            icon.setItemMeta(meta);
-        }
-        return icon;
+        return Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER, owner, null);
     }
 
     @Override

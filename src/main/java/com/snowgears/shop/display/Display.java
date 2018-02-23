@@ -29,8 +29,8 @@ public class Display {
     private ArrayList<Entity> entities;
     private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
 
-    public Display(ShopObject shop) {
-        this.shopSignLocation = shop.getSignLocation();
+    public Display(Location shopSignLocation) {
+        this.shopSignLocation = shopSignLocation;
         entities = new ArrayList<>();
     }
 

@@ -2,14 +2,11 @@ package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopObject;
-import com.snowgears.shop.ShopType;
+import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.util.ShopTypeComparator;
-import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +19,10 @@ public class ListShopsWindow extends ShopGuiWindow {
         super(player);
 
         String name;
-        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList))
-            name = "Admin";
+        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList)) {
+            ItemStack is = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
+            name = is.getItemMeta().getDisplayName();
+        }
         else
             name = Bukkit.getOfflinePlayer(playerToList).getName();
 
@@ -53,7 +52,7 @@ public class ListShopsWindow extends ShopGuiWindow {
 
         for (int i=startIndex; i< shops.size(); i++) {
             ShopObject shop = shops.get(i);
-            icon = createIcon(shop);
+            icon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_SHOP, null, shop);
 
             if(!this.addIcon(icon)){
                 added = false;
@@ -67,41 +66,6 @@ public class ListShopsWindow extends ShopGuiWindow {
         else{
             page.setItem(53, this.getNextPageIcon());
         }
-    }
-
-    private ItemStack createIcon(ShopObject shop){
-        List<String> lore = new ArrayList<>();
-
-        //if (shop.getStock() != 0) {
-        ItemStack icon = shop.getItemStack().clone();
-        icon.setAmount(1);
-
-        //} else {
-        //    icon = new ItemStack(Material.BARRIER);
-        //}
-
-        lore.add("Type: " + shop.getType().toString().toUpperCase());
-        if(shop.getType() == ShopType.BARTER)
-            lore.add("Price: "+(int)shop.getPrice() + " "+Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
-        else if(shop.getType() == ShopType.BUY)
-            lore.add("Pays: " + shop.getPriceString());
-        else
-            lore.add("Price: " + shop.getPriceString());
-        if(!shop.isAdminShop()) {
-            lore.add("Stock: " + shop.getStock());
-        }
-        lore.add("Location: " + UtilMethods.getCleanLocation(shop.getSignLocation(), true));
-
-        //TODO encorporate gambling shops and bartering shops
-
-        String name = UtilMethods.getItemName(shop.getItemStack()) + " (x" + shop.getAmount() + ")";
-        ItemMeta iconMeta = icon.getItemMeta();
-        iconMeta.setDisplayName(name);
-        iconMeta.setLore(lore);
-
-        icon.setItemMeta(iconMeta);
-
-        return icon;
     }
 
     @Override

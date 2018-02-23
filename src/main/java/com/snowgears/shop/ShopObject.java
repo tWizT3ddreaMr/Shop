@@ -8,7 +8,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.pl3x.bukkit.chatapi.ComponentSender;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -52,7 +51,7 @@ public class ShopObject {
         isAdminShop = admin;
         type = t;
         item = null;
-        display = new Display(this);
+        display = new Display(this.signLocation);
         signLines = ShopMessage.getSignLines(this);
 
         if(signLocation != null) {
@@ -89,8 +88,10 @@ public class ShopObject {
     public String getOwnerName() {
         if(this.isAdminShop())
             return "admin";
-        if (Bukkit.getOfflinePlayer(this.owner) != null)
-            return Bukkit.getOfflinePlayer(this.owner).getName();
+        OfflinePlayer p = Bukkit.getOfflinePlayer(this.owner);
+        if (p != null && p.getName() != null) {
+            return p.getName();
+        }
         return ChatColor.RED + "CLOSED";
     }
 
@@ -378,7 +379,7 @@ public class ShopObject {
         //use special ComponentSender for MC 1.8+ and regular way for MC 1.7
         try {
             if (Material.AIR != Material.ARMOR_STAND) {
-                ComponentSender.sendMessage(player, fancyMessage);
+                player.spigot().sendMessage(fancyMessage);
             }
         } catch (NoSuchFieldError e) {
             player.sendMessage(fancyMessage.getText());

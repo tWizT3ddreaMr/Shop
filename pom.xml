@@ -13,58 +13,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
-                <configuration>
-                    <filters>
-                        <filter>
-                            <!-- this filter will remove en_US.properties from your jar.
-                                    You want this filter if you dont use the TranslatableComponent
-                                    so you can keep your jar file size down. -->
-                            <artifact>net.md-5:bungeecord-chat</artifact>
-                            <excludes>
-                                <exclude>*/*en_US.properties</exclude>
-                                <exclude>META-INF/maven/**</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <relocations>
-                        <!-- Lets relocate the shaded API so we dont cause any conflicts with other plugins -->
-                        <relocation>
-                            <pattern>net.md_5.bungee</pattern>
-                            <shadedPattern>${groupId}</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>net.pl3x.bukkit.chatapi</pattern>
-                            <shadedPattern>${groupId}</shadedPattern>
-                        </relocation>
-                    </relocations>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <!-- Lets exclude google code, because the server already has this code in it (guava, etc) -->
-                                <excludes>
-                                    <exclude>com.google.*:*</exclude>
-                                </excludes>
-                            </artifactSet>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <repositories>
         <repository>
             <id>spigot-repo</id>
@@ -82,17 +30,13 @@
         	<id>sk89q-repo</id>
         	<url>http://maven.sk89q.com/repo/</url>
     	</repository>
-        <repository>
-            <id>dwd-repo</id>
-            <url>http://ci.dwdg.net/plugin/repository/everything/</url>
-        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.12-R0.1-SNAPSHOT</version>
+            <version>1.12.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -112,12 +56,13 @@
         	<version>6.1.1-SNAPSHOT</version>
             <scope>provided</scope>
     	</dependency>
-        <dependency>
-            <groupId>net.pl3x.bukkit.chatapi</groupId>
-            <artifactId>ChatComponentAPI</artifactId>
-            <version>1.2</version>
-            <scope>compile</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>net.pl3x.bukkit.chatapi</groupId>-->
+            <!--<artifactId>ChatComponentAPI</artifactId>-->
+            <!--<version>1.12</version>-->
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${project.basedir}/src/main/resources/ChatComponentAPI-v1_12_R1.jar</systemPath>-->
+        <!--</dependency>-->
     </dependencies>
 
 </project>

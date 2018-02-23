@@ -4,8 +4,11 @@ package com.snowgears.shop.util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.Sign;
+import org.bukkit.util.Vector;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,6 +118,48 @@ public class UtilMethods {
         }
     }
 
+    // Returns whether or not a player clicked the left or right side of a wall sign
+    // 1 - LEFT SIDE
+    // -1 - RIGHT SIDE
+    // 0 - EXACT CENTER
+    public static int calculateSideFromClickedSign(Player player, Block signBlock){
+        Sign s = (Sign)signBlock.getState().getData();
+        Location chest = signBlock.getRelative(s.getAttachedFace()).getLocation().add(0.5,0.5,0.5);
+        Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
+
+        Vector direction = head.subtract(chest).toVector().normalize();
+        Vector look = player.getLocation().getDirection().normalize();
+
+        Vector cp = direction.crossProduct(look);
+
+        //System.out.println("CROSS: "+cp);
+
+        double d = 0;
+        switch(s.getAttachedFace()){
+            case NORTH:
+                d = cp.getZ();
+                break;
+            case SOUTH:
+                d = cp.getZ() * -1;
+                break;
+            case EAST:
+                d = cp.getX() * -1;
+                break;
+            case WEST:
+                d = cp.getX();
+                break;
+            default:
+                break;
+        }
+
+        if(d > 0)
+            return 1;
+        else if(d < 0)
+            return -1;
+        else
+            return 0;
+    }
+
     public static String convertDurationToString(int duration) {
         duration = duration / 20;
         if (duration < 10)
@@ -140,6 +185,17 @@ public class UtilMethods {
             return (int) d;
         }
         return 0;
+    }
+
+    public static ItemStack getItemStack(String typeIdAndData){
+        int index = typeIdAndData.indexOf(':');
+        if(index == -1){
+            int id = Integer.parseInt(typeIdAndData);
+            return new ItemStack(id);
+        }
+        int id = Integer.parseInt(typeIdAndData.substring(0, index));
+        int data = Integer.parseInt(typeIdAndData.substring(index+1));
+        return new ItemStack(id, 1, (short)data);
     }
 
     public static String getItemName(ItemStack is){

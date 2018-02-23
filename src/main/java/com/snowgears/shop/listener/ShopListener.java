@@ -92,6 +92,9 @@ public class ShopListener implements Listener {
 //                    }
 //                }
 
+                System.out.println(shop.getType().toString());
+                System.out.println(shop.getOwnerName());
+
                 //player clicked another player's shop sign
                 if (!shop.getOwnerName().equals(player.getName())) {
                     if(!player.isSneaking())
