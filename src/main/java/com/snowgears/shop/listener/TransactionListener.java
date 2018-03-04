@@ -91,7 +91,9 @@ public class TransactionListener implements Listener {
                             executeTransaction(player, shop, ShopType.SELL);
                         }
                     }
-                    executeTransaction(player, shop, shop.getType());
+                    else {
+                        executeTransaction(player, shop, shop.getType());
+                    }
                 } else {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "useOwnShop", shop, player));
                     sendEffects(false, player, shop);
@@ -114,13 +116,13 @@ public class TransactionListener implements Listener {
                         //the shop owner is online
                         if(owner != null && notifyOwner(shop)) {
                             if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
-                                owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoStock", shop, owner));
+                                owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoStock", shop, owner));
                         }
                     }
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoStock", shop, player));
+                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "shopNoStock", shop, player));
                     break;
                 case INSUFFICIENT_FUNDS_PLAYER:
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoStock", shop, player));
+                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "playerNoStock", shop, player));
                     break;
                 case INVENTORY_FULL_SHOP:
                     if(!shop.isAdmin()){
@@ -128,13 +130,13 @@ public class TransactionListener implements Listener {
                         //the shop owner is online
                         if(owner != null && notifyOwner(shop)) {
                             if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
-                                owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "ownerNoSpace", shop, owner));
+                                owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoSpace", shop, owner));
                         }
                     }
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "shopNoSpace", shop, player));
+                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "shopNoSpace", shop, player));
                     break;
                 case INVENTORY_FULL_PLAYER:
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "playerNoSpace", shop, player));
+                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "playerNoSpace", shop, player));
                     break;
             }
             sendEffects(false, player, shop);
@@ -144,18 +146,39 @@ public class TransactionListener implements Listener {
         //TODO update enderchest shop inventory?
 
         //the transaction has finished and the exchange event has not been cancelled
-        sendExchangeMessages(shop, player);
+        sendExchangeMessages(shop, player, actionType);
         sendEffects(true, player, shop);
     }
 
-    private void sendExchangeMessages(AbstractShop shop, Player player) {
+    private void sendExchangeMessages(AbstractShop shop, Player player, ShopType shopType) {
+
+        String message;
+        if(shop.getType() == ShopType.COMBO && shopType == ShopType.SELL){
+            message = ShopMessage.getUnformattedMessage(shopType.toString(), "user");
+            message = message.replaceAll("price]", "priceSell]");
+            message = ShopMessage.formatMessage(message, shop, player, false);
+        }
+        else{
+            message = ShopMessage.getMessage(shopType.toString(), "user", shop, player);
+        }
+
         if(plugin.getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS))
-            player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "user", shop, player));
+            player.sendMessage(message);
 
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
         if ((owner != null) && (!shop.isAdmin())) {
+
+            if(shop.getType() == ShopType.COMBO && shopType == ShopType.SELL){
+                message = ShopMessage.getUnformattedMessage(shopType.toString(), "owner");
+                message = message.replaceAll("price]", "priceSell]");
+                message = ShopMessage.formatMessage(message, shop, player, false);
+            }
+            else {
+                message = ShopMessage.getMessage(shopType.toString(), "owner", shop, player);
+            }
+
             if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS))
-                owner.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "owner", shop, player));
+                owner.sendMessage(message);
         }
 //        if(shop.getType() == ShopType.GAMBLE)
 //            shop.shuffleGambleItem();

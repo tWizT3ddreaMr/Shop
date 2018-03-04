@@ -7,6 +7,7 @@ import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
@@ -24,16 +25,17 @@ public class BuyShop extends AbstractShop {
     public TransactionError executeTransaction(int orders, Player player, boolean isCheck, ShopType transactionType) {
 
         TransactionError issue = null;
+        ItemStack is = this.getItemStack();
 
         //check if player has enough items
         if(isCheck) {
-            int playerItems = InventoryUtils.getAmount(player.getInventory(), this.getItemStack());
-            if (playerItems < this.getItemStack().getAmount())
+            int playerItems = InventoryUtils.getAmount(player.getInventory(), is);
+            if (playerItems < is.getAmount())
                 return TransactionError.INSUFFICIENT_FUNDS_PLAYER;
         }
         else {
             //remove items from player
-            InventoryUtils.removeItem(player.getInventory(), this.getItemStack(), player);
+            InventoryUtils.removeItem(player.getInventory(), is, player);
         }
 
         if(issue == null) {
@@ -67,18 +69,22 @@ public class BuyShop extends AbstractShop {
             //check if shop has enough room to accept items
             if(!this.isAdmin()) {
                 if(isCheck) {
-                    boolean shopHasRoom = InventoryUtils.hasRoom(this.getInventory(), this.getItemStack(), this.getOwner());
+                    boolean shopHasRoom = InventoryUtils.hasRoom(this.getInventory(), is, this.getOwner());
                     if (!shopHasRoom)
                         return TransactionError.INVENTORY_FULL_SHOP;
                 }
                 else{
                     //add items to shop's inventory
-                    InventoryUtils.addItem(this.getInventory(), this.getItemStack(), this.getOwner());
+                    InventoryUtils.addItem(this.getInventory(), is, this.getOwner());
                 }
             }
         }
 
         player.updateInventory();
+
+        if(issue != null){
+            return issue;
+        }
 
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){

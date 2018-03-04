@@ -6,6 +6,7 @@ import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
@@ -24,29 +25,32 @@ public class BarterShop extends AbstractShop {
 
         TransactionError issue = null;
 
+        ItemStack is = this.getItemStack();
+        ItemStack is2 = this.getSecondaryItemStack();
+
         //check if shop has enough items
         if (!this.isAdmin()) {
             if(isCheck) {
-                int shopItems = InventoryUtils.getAmount(this.getInventory(), this.getItemStack());
-                if (shopItems < this.getItemStack().getAmount())
+                int shopItems = InventoryUtils.getAmount(this.getInventory(), is);
+                if (shopItems < is.getAmount())
                     return TransactionError.INSUFFICIENT_FUNDS_SHOP;
             }
             else {
                 //remove items from shop
-                InventoryUtils.removeItem(this.getInventory(), this.getItemStack(), this.getOwner());
+                InventoryUtils.removeItem(this.getInventory(), is, this.getOwner());
             }
         }
 
         if(issue == null) {
             if(isCheck) {
                 //check if player has enough barter items
-                int playerItems = InventoryUtils.getAmount(player.getInventory(), this.getSecondaryItemStack());
-                if (playerItems < this.getSecondaryItemStack().getAmount())
+                int playerItems = InventoryUtils.getAmount(player.getInventory(), is2);
+                if (playerItems < is2.getAmount())
                     return TransactionError.INSUFFICIENT_FUNDS_PLAYER;
             }
             else {
                 //remove barter items from player
-                InventoryUtils.removeItem(player.getInventory(), this.getSecondaryItemStack(), player);
+                InventoryUtils.removeItem(player.getInventory(), is2, player);
             }
         }
 
@@ -54,13 +58,13 @@ public class BarterShop extends AbstractShop {
             //check if shop has enough room to accept barter items
             if (!this.isAdmin()) {
                 if(isCheck) {
-                    boolean hasRoom = InventoryUtils.hasRoom(this.getInventory(), this.getSecondaryItemStack(), this.getOwner());
+                    boolean hasRoom = InventoryUtils.hasRoom(this.getInventory(), is2, this.getOwner());
                     if (!hasRoom)
                         return TransactionError.INVENTORY_FULL_SHOP;
                 }
                 else {
                     //add barter items to shop
-                    InventoryUtils.addItem(this.getInventory(), this.getSecondaryItemStack(), this.getOwner());
+                    InventoryUtils.addItem(this.getInventory(), is2, this.getOwner());
                 }
             }
         }
@@ -68,17 +72,21 @@ public class BarterShop extends AbstractShop {
         if(issue == null) {
             if(isCheck) {
                 //check if player has enough room to accept items
-                boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), this.getItemStack(), player);
+                boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), is, player);
                 if (!hasRoom)
                     return TransactionError.INVENTORY_FULL_PLAYER;
             }
             else {
                 //add items to player's inventory
-                InventoryUtils.addItem(player.getInventory(), this.getItemStack(), player);
+                InventoryUtils.addItem(player.getInventory(), is, player);
             }
         }
 
         player.updateInventory();
+
+        if(issue != null){
+            return issue;
+        }
 
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){

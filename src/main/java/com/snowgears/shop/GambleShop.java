@@ -84,6 +84,10 @@ public class GambleShop extends AbstractShop {
 
         player.updateInventory();
 
+        if(issue != null){
+            return issue;
+        }
+
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){
 

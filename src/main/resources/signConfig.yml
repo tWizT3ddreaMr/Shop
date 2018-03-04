@@ -117,7 +117,7 @@ sign_text:
    COMBO:
       normal:
          1: "&l[shop]"
-         2: "Buy/Sell; &l[amount]"
+         2: "Buys or Sells; &l[amount]"
          3: "&a[priceCombo]"
          4: "[owner]"
       normal_no_display:
@@ -127,7 +127,7 @@ sign_text:
          4: "[owner]"
       admin:
          1: "&l[shop]"
-         2: "Buy/Sell; &l[amount]"
+         2: "Buys or Sells; &l[amount]"
          3: "&a[priceCombo]"
          4: "&d[server name]"
       admin_no_display:

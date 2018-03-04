@@ -7,6 +7,7 @@ import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
@@ -24,17 +25,18 @@ public class SellShop extends AbstractShop {
     public TransactionError executeTransaction(int orders, Player player, boolean isCheck, ShopType transactionType) {
 
         TransactionError issue = null;
+        ItemStack is = this.getItemStack();
 
         //check if shop has enough items
         if (!isAdmin()) {
             if(isCheck) {
-                int shopItems = InventoryUtils.getAmount(this.getInventory(), item);
-                if (shopItems < item.getAmount())
+                int shopItems = InventoryUtils.getAmount(this.getInventory(), is);
+                if (shopItems < is.getAmount())
                     issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
             }
             else {
                 //remove items from shop
-                InventoryUtils.removeItem(this.getInventory(), item, this.getOwner());
+                InventoryUtils.removeItem(this.getInventory(), is, this.getOwner());
             }
         }
 
@@ -67,16 +69,20 @@ public class SellShop extends AbstractShop {
         if(issue == null) {
             if (isCheck) {
                 //check if player has enough room to accept items
-                boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), item, player);
+                boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), is, player);
                 if (!hasRoom)
                     issue = TransactionError.INVENTORY_FULL_PLAYER;
             } else {
                 //add items to player's inventory
-                InventoryUtils.addItem(player.getInventory(), item, player);
+                InventoryUtils.addItem(player.getInventory(), is, player);
             }
         }
 
         player.updateInventory();
+
+        if(issue != null){
+            return issue;
+        }
 
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){
@@ -90,6 +96,7 @@ public class SellShop extends AbstractShop {
             //run the transaction again without the check clause
             return executeTransaction(orders, player, false, transactionType);
         }
+
         return TransactionError.NONE;
     }
 }
