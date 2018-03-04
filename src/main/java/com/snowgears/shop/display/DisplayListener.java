@@ -1,7 +1,7 @@
 package com.snowgears.shop.display;
 
+import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -48,7 +48,7 @@ public class DisplayListener implements Listener {
         }.runTaskLater(this.plugin, 1); //load all recipes on server once all other plugins are loaded
     }
 
-    public ItemStack getRandomItem(ShopObject shop){
+    public ItemStack getRandomItem(AbstractShop shop){
         try {
             if (shop == null || !plugin.getShopHandler().isChest(shop.getChestLocation().getBlock()))
                 return new ItemStack(Material.AIR);
@@ -68,14 +68,14 @@ public class DisplayListener implements Listener {
 
     @EventHandler
     public void onWaterFlow(BlockFromToEvent event) {
-        ShopObject shop = plugin.getShopHandler().getShopByChest(event.getToBlock().getRelative(BlockFace.DOWN));
+        AbstractShop shop = plugin.getShopHandler().getShopByChest(event.getToBlock().getRelative(BlockFace.DOWN));
         if (shop != null)
             event.setCancelled(true);
     }
 
     @EventHandler
     public void onPistonExtend(BlockPistonExtendEvent event) {
-        ShopObject shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(event.getDirection()).getRelative(BlockFace.DOWN));
+        AbstractShop shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(event.getDirection()).getRelative(BlockFace.DOWN));
         if (shop != null && shop.getDisplay().getType() != DisplayType.NONE)
             event.setCancelled(true);
 
@@ -104,7 +104,7 @@ public class DisplayListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
-        ShopObject shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(BlockFace.DOWN));
+        AbstractShop shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(BlockFace.DOWN));
         if (shop != null && shop.getDisplay().getType() != DisplayType.NONE)
             event.setCancelled(true);
     }
@@ -115,7 +115,7 @@ public class DisplayListener implements Listener {
         try {
             if (event.getInventory().getHolder() instanceof ShulkerBox) {
                 ShulkerBox box = ((ShulkerBox)event.getInventory().getHolder());
-                final ShopObject shop = plugin.getShopHandler().getShopByChest(box.getBlock());
+                final AbstractShop shop = plugin.getShopHandler().getShopByChest(box.getBlock());
                 if(shop != null){
                     new BukkitRunnable() {
                         @Override
@@ -137,7 +137,7 @@ public class DisplayListener implements Listener {
 
         if(Display.isDisplay(event.getItem())){
             event.setCancelled(true);
-            ShopObject shop = Display.getShop(event.getItem());
+            AbstractShop shop = Display.getShop(event.getItem());
             if(shop != null)
                 shop.getDisplay().spawn();
             else

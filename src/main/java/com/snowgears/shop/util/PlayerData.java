@@ -1,8 +1,8 @@
 package com.snowgears.shop.util;
 
 
+import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -120,7 +120,7 @@ public class PlayerData {
         return shopSignLocation;
     }
 
-    public ShopObject getShop() {
+    public AbstractShop getShop() {
         return Shop.getPlugin().getShopHandler().getShop(shopSignLocation);
     }
 

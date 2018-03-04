@@ -1,7 +1,7 @@
 package com.snowgears.shop.handler;
 
+import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.gui.*;
 import com.snowgears.shop.util.PlayerSettings;
@@ -94,7 +94,7 @@ public class ShopGuiHandler {
         playerSettings.put(player.getUniqueId(), settings);
     }
 
-    public ItemStack getIcon(GuiIcon iconEnum, OfflinePlayer player, ShopObject shop){
+    public ItemStack getIcon(GuiIcon iconEnum, OfflinePlayer player, AbstractShop shop){
         ItemStack icon;
         if(iconEnum == GuiIcon.LIST_SHOP){
             icon = shop.getItemStack().clone();
@@ -103,12 +103,12 @@ public class ShopGuiHandler {
             List<String> lore = new ArrayList<>();
             lore.add("Type: " + shop.getType().toString().toUpperCase());
             if(shop.getType() == ShopType.BARTER)
-                lore.add("Price: "+(int)shop.getPrice() + " "+Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
+                lore.add("Price: "+(int)shop.getPrice() + " "+Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
             else if(shop.getType() == ShopType.BUY)
                 lore.add("Pays: " + shop.getPriceString());
             else
                 lore.add("Price: " + shop.getPriceString());
-            if(!shop.isAdminShop()) {
+            if(!shop.isAdmin()) {
                 lore.add("Stock: " + shop.getStock());
             }
             lore.add("Location: " + UtilMethods.getCleanLocation(shop.getSignLocation(), true));

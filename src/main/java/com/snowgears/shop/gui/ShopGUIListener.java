@@ -1,8 +1,8 @@
 package com.snowgears.shop.gui;
 
 
+import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.UtilMethods;
@@ -133,7 +133,7 @@ public class ShopGUIListener implements Listener {
                                 if(line.startsWith("Location: ")){
                                     line = line.substring(10, line.length());
                                     Location loc = UtilMethods.getLocation(line);
-                                    ShopObject shop = plugin.getShopHandler().getShop(loc);
+                                    AbstractShop shop = plugin.getShopHandler().getShop(loc);
 
                                     if(shop != null){
                                         if(Shop.getPlugin().usePerms()){

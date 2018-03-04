@@ -1,7 +1,8 @@
 package com.snowgears.shop.handler;
 
+import com.snowgears.shop.AbstractShop;
+import com.snowgears.shop.ComboShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
@@ -33,7 +34,7 @@ public class ShopHandler {
     public Shop plugin = Shop.getPlugin();
 
     private HashMap<UUID, List<Location>> playerShops = new HashMap<>();
-    private HashMap<Location, ShopObject> allShops = new HashMap<Location, ShopObject>();
+    private HashMap<Location, AbstractShop> allShops = new HashMap<>();
     private ArrayList<Material> shopMaterials = new ArrayList<Material>();
     private UUID adminUUID;
 
@@ -57,16 +58,16 @@ public class ShopHandler {
         }.runTaskLater(this.plugin, 10);
     }
 
-    public ShopObject getShop(Location loc) {
+    public AbstractShop getShop(Location loc) {
         return allShops.get(loc);
     }
 
-    public ShopObject getShopByChest(Block shopChest) {
+    public AbstractShop getShopByChest(Block shopChest) {
 
         try {
             if(shopChest.getState() instanceof ShulkerBox){
                 BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
-                ShopObject shop = null;
+                AbstractShop shop = null;
                 for(BlockFace direction : directions){
                     shop = this.getShop(shopChest.getRelative(direction).getLocation());
                     if(shop != null) {
@@ -106,12 +107,12 @@ public class ShopHandler {
                 if (signBlock.getType() == Material.WALL_SIGN) {
                     Sign sign = (Sign) signBlock.getState().getData();
                     if (chestFacing == sign.getFacing()) {
-                        ShopObject shop = this.getShop(signBlock.getLocation());
+                        AbstractShop shop = this.getShop(signBlock.getLocation());
                         if (shop != null)
                             return shop;
                     }
                 } else if(!(ih instanceof DoubleChest)){
-                    ShopObject shop = this.getShop(signBlock.getLocation());
+                    AbstractShop shop = this.getShop(signBlock.getLocation());
                     //delete the shop if it doesn't have a sign
                     if (shop != null)
                         shop.delete();
@@ -121,14 +122,14 @@ public class ShopHandler {
         return null;
     }
 
-    public ShopObject getShopNearBlock(Block block){
+    public AbstractShop getShopNearBlock(Block block){
         BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
         for(BlockFace face : faces){
             if(this.isChest(block.getRelative(face))){
                 Block shopChest = block.getRelative(face);
                 for(BlockFace newFace : faces){
                     if(shopChest.getRelative(newFace).getType() == Material.WALL_SIGN){
-                        ShopObject shop = getShop(shopChest.getRelative(newFace).getLocation());
+                        AbstractShop shop = getShop(shopChest.getRelative(newFace).getLocation());
                         if(shop != null)
                             return shop;
                     }
@@ -138,14 +139,13 @@ public class ShopHandler {
         return null;
     }
 
-    public void addShop(ShopObject shop) {
+    public void addShop(AbstractShop shop) {
 
         //this is to remove a bug that caused one shop to be saved to multiple files at one point
-        ShopObject s = getShop(shop.getSignLocation());
-        if(s != null){
+        AbstractShop s = getShop(shop.getSignLocation());
+        if(s != null) {
             return;
         }
-
         allShops.put(shop.getSignLocation(), shop);
 
         List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
@@ -155,8 +155,8 @@ public class ShopHandler {
         }
     }
 
-    //This method should only be used by ShopObject to delete
-    public boolean removeShop(ShopObject shop) {
+    //This method should only be used by AbstractShop object to delete
+    public boolean removeShop(AbstractShop shop) {
         if (allShops.containsKey(shop.getSignLocation())) {
             allShops.remove(shop.getSignLocation());
         }
@@ -171,31 +171,13 @@ public class ShopHandler {
         return false;
     }
 
-    public List<ShopObject> getShops(UUID player){
-        List<ShopObject> shops = new ArrayList<>();
+    public List<AbstractShop> getShops(UUID player){
+        List<AbstractShop> shops = new ArrayList<>();
         for(Location shopSign : getShopLocations(player)){
-            ShopObject shop = getShop(shopSign);
+            AbstractShop shop = getShop(shopSign);
             if(shop != null)
                 shops.add(shop);
         }
-
-        //TODO delete this
-        ArrayList<ShopObject> testList = new ArrayList<>();
-        for(Location loc : allShops.keySet()){
-            if(getShop(loc).getOwnerUUID().equals(player)) {
-                testList.add(getShop(loc));
-                //System.out.println("Shop at location: "+UtilMethods.getCleanLocation(loc, true));
-            }
-        }
-
-        //for(ShopObject shop : shops){
-            for(ShopObject shop : shops){
-                if(!testList.contains(shop)){
-                    System.out.println("Shop at location: "+UtilMethods.getCleanLocation(shop.getSignLocation(), true));
-                }
-            }
-        //}
-
         return shops;
     }
 
@@ -217,16 +199,6 @@ public class ShopHandler {
         return shopLocations;
     }
 
-    public boolean attemptToRecoverShop(Block b){
-        if(b.getType() == Material.WALL_SIGN){
-            if(this.getShop(b.getLocation()) == null){
-                org.bukkit.block.Sign sign = (org.bukkit.block.Sign)b.getState();
-                //TODO match sign lines to key elements and create shop from them (if possible)
-            }
-        }
-        return false;
-    }
-
     public int getNumberOfShops() {
         return allShops.size();
     }
@@ -235,11 +207,11 @@ public class ShopHandler {
         return getShopLocations(player.getUniqueId()).size();
     }
 
-    private ArrayList<ShopObject> orderedShopList() {
-        ArrayList<ShopObject> list = new ArrayList<ShopObject>(allShops.values());
-        Collections.sort(list, new Comparator<ShopObject>() {
+    private ArrayList<AbstractShop> orderedShopList() {
+        ArrayList<AbstractShop> list = new ArrayList<AbstractShop>(allShops.values());
+        Collections.sort(list, new Comparator<AbstractShop>() {
             @Override
-            public int compare(ShopObject o1, ShopObject o2) {
+            public int compare(AbstractShop o1, AbstractShop o2) {
                 if(o1 == null || o2 == null)
                     return 0;
                 //could have something to do with switching between online and offline mode
@@ -264,7 +236,7 @@ public class ShopHandler {
                 }
             }
         }
-        for (ShopObject shop : allShops.values()) {
+        for (AbstractShop shop : allShops.values()) {
             shop.getDisplay().spawn();
         }
     }
@@ -310,7 +282,7 @@ public class ShopHandler {
             }
             YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
 
-            List<ShopObject> shopList = getShops(player);
+            List<AbstractShop> shopList = getShops(player);
             if (shopList.isEmpty()) {
                 currentFile.delete();
                 if(playersSavingShops.contains(player)){
@@ -320,7 +292,7 @@ public class ShopHandler {
             }
 
             int shopNumber = 1;
-            for (ShopObject shop : shopList) {
+            for (AbstractShop shop : shopList) {
 
                 //this is to remove a bug that caused one shop to be saved to multiple files at one point
                 if(!shop.getOwnerUUID().equals(player))
@@ -330,9 +302,12 @@ public class ShopHandler {
                 if (shop.isInitialized()) {
                     config.set("shops." + owner + "." + shopNumber + ".location", locationToString(shop.getSignLocation()));
                     config.set("shops." + owner + "." + shopNumber + ".price", shop.getPrice());
+                    if(shop.getType() == ShopType.COMBO){
+                        config.set("shops." + owner + "." + shopNumber + ".priceSell", ((ComboShop)shop).getPriceSell());
+                    }
                     config.set("shops." + owner + "." + shopNumber + ".amount", shop.getAmount());
                     String type = "";
-                    if (shop.isAdminShop())
+                    if (shop.isAdmin())
                         type = "admin ";
                     type = type + shop.getType().toString();
                     config.set("shops." + owner + "." + shopNumber + ".type", type);
@@ -350,7 +325,7 @@ public class ShopHandler {
                     config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
 
                     if (shop.getType() == ShopType.BARTER) {
-                        ItemStack barterItemStack = shop.getBarterItemStack();
+                        ItemStack barterItemStack = shop.getSecondaryItemStack();
                         barterItemStack.setAmount(1);
                         config.set("shops." + owner + "." + shopNumber + ".itemBarter", barterItemStack);
                     }
@@ -369,7 +344,7 @@ public class ShopHandler {
 
     public void saveAllShops() {
         HashMap<UUID, Boolean> allPlayersWithShops = new HashMap<>();
-        for(ShopObject shop : allShops.values()){
+        for(AbstractShop shop : allShops.values()){
             allPlayersWithShops.put(shop.getOwnerUUID(), true);
         }
 
@@ -425,13 +400,19 @@ public class ShopHandler {
                         if (b.getType() == Material.WALL_SIGN) {
                             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
                             //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+
                             UUID owner;
                             if (shopOwner.equals("admin"))
                                 owner = this.getAdminUUID();
                             else
                                 owner = uidFromString(shopOwner);
+
                             String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
                             double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
+                            double priceSell = 0;
+                            if (config.getString("shops." + shopOwner + "." + shopNumber + ".priceSell") != null) {
+                                priceSell = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".priceSell"));
+                            }
                             int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
 
                             boolean isAdmin = false;
@@ -444,25 +425,28 @@ public class ShopHandler {
                                 itemStack = plugin.getGambleDisplayItem();
                             }
 
-                            final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
+                            AbstractShop shop = AbstractShop.create(signLoc, owner, price, priceSell, amount, isAdmin, shopType);
 
                             if (this.isChest(shop.getChestLocation().getBlock())) {
 
                                 shop.setItemStack(itemStack);
                                 if (shop.getType() == ShopType.BARTER) {
                                     ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
-                                    shop.setBarterItemStack(barterItemStack);
+                                    shop.setSecondaryItemStack(barterItemStack);
                                 }
 
                                 this.addShop(shop);
+
+                                //final is necessary for use inside the BukkitRunnable class
+                                final AbstractShop finalShop = shop;
 
                                 final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
                                 new BukkitRunnable() {
                                     @Override
                                     public void run() {
 
-                                        if (shop != null && displayType != null) {
-                                            shop.getDisplay().setType(DisplayType.valueOf(displayType));
+                                        if (finalShop != null && displayType != null) {
+                                            finalShop.getDisplay().setType(DisplayType.valueOf(displayType));
                                         }
                                     }
                                 }.runTaskLater(this.plugin, 2);
@@ -580,12 +564,10 @@ public class ShopHandler {
                         barterItemStack.addUnsafeEnchantments(enchantmentsFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.enchantments")));
                     }
 
-                    ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
+                    AbstractShop shop = AbstractShop.create(signLoc, owner, price, 0, amount, isAdmin, shopType);
                     shop.setItemStack(itemStack);
-                    if (shop.getType() == ShopType.BARTER)
-                        shop.setBarterItemStack(barterItemStack);
 
-                    if(shop.isAdminShop()){
+                    if(shop.isAdmin()){
                         shop.setOwner(plugin.getShopHandler().getAdminUUID());
                     }
 
@@ -618,6 +600,8 @@ public class ShopHandler {
             return ShopType.BUY;
         else if(typeString.contains("barter"))
             return ShopType.BARTER;
+        else if(typeString.contains("combo"))
+            return ShopType.COMBO;
         else
             return ShopType.GAMBLE;
     }
@@ -652,8 +636,6 @@ public class ShopHandler {
 
     private MaterialData dataFromString(String dataString) {
         int index = dataString.indexOf("(");
-//		System.out.println(dataString.substring(0, index));
-//		System.out.println(dataString.substring(index+1, dataString.length()-1));
         String materialString = dataString.substring(0, index);
         Material m = Material.getMaterial(materialString);
         int data = Integer.parseInt(dataString.substring(index + 1, dataString.length() - 1));

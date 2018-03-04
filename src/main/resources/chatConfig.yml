@@ -98,6 +98,13 @@ interaction:
       destroy: "&7You have destroyed your bartering shop."
       opDestroy: "&7You have destroyed a bartering shop owned by [owner]."
       opOpen: "&7You are opening a bartering shop owned by [owner]."
+   COMBO:
+      initialize: "&6[Shop] Now just hit the sign with the item you want to buy or sell from other players!"
+      initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
+      create: "&eYou have created a shop that buys and sells &6[item](s)&e."
+      destroy: "&7You have destroyed your combo shop (buying and selling)."
+      opDestroy: "&7You have destroyed a combo shop owned by [owner]."
+      opOpen: "&7You are opening a combo shop owned by [owner]."
    GAMBLE:
       create: "&eYou have created a gambling shop."
       opDestroy: "&7You have destroyed a gambling shop owned by [server name]."

@@ -1,7 +1,8 @@
 package com.snowgears.shop.util;
 
+import com.snowgears.shop.AbstractShop;
+import com.snowgears.shop.ComboShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.DisplayType;
 import org.bukkit.Bukkit;
@@ -48,7 +49,7 @@ public class ShopMessage {
         return freePriceWord;
     }
 
-    public static String getMessage(String key, String subKey, ShopObject shop, Player player) {
+    public static String getMessage(String key, String subKey, AbstractShop shop, Player player) {
         String message = "";
         String mainKey = key;
         if (subKey != null) {
@@ -80,7 +81,7 @@ public class ShopMessage {
     //      # [user] : The name of the player who used the shop #
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
-    public static String formatMessage(String unformattedMessage, ShopObject shop, Player player, boolean forSign){
+    public static String formatMessage(String unformattedMessage, AbstractShop shop, Player player, boolean forSign){
         if(unformattedMessage == null) {
             loadMessagesFromConfig();
             return "";
@@ -91,29 +92,38 @@ public class ShopMessage {
             //dont replace [item] tag on first run through if its for a sign
             if(!forSign)
                 unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
-            unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent(false));
+            unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent());
             unformattedMessage = unformattedMessage.replace("[item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack().getType()));
 
-            unformattedMessage = unformattedMessage.replace("[gamble item amount]", "" + shop.getGambleItemStack().getAmount());
-            unformattedMessage = unformattedMessage.replace("[gamble item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getGambleItemStack()));
+            if(shop.getType() == ShopType.GAMBLE) {
+                unformattedMessage = unformattedMessage.replace("[gamble item amount]", "" + shop.getItemStack().getAmount());
+                unformattedMessage = unformattedMessage.replace("[gamble item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+            }
         }
-        if(shop != null && shop.getBarterItemStack() != null) {
-            unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getBarterItemStack().getAmount());
-            //dont replace [barter item] tag on first run through if its for a sign
-            if(!forSign)
-                unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
-            unformattedMessage = unformattedMessage.replace("[barter item durability]", "" + shop.getItemDurabilityPercent(true));
-            unformattedMessage = unformattedMessage.replace("[barter item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack().getType()));
+        if(shop != null && shop.getSecondaryItemStack() != null) {
+            if(shop.getType() == ShopType.BARTER) {
+                unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getSecondaryItemStack().getAmount());
+                //dont replace [barter item] tag on first run through if its for a sign
+                if (!forSign)
+                    unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
+                unformattedMessage = unformattedMessage.replace("[barter item durability]", "" + shop.getSecondaryItemDurabilityPercent());
+                unformattedMessage = unformattedMessage.replace("[barter item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack().getType()));
+            }
         }
         if(shop != null) {
-            if(shop.isAdminShop())
+            if(shop.isAdmin())
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getServer().getServerName());
             else
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
-            if(shop.getType() == ShopType.BARTER){
+            if(shop.getType() == ShopType.COMBO) {
+                unformattedMessage = unformattedMessage.replace("[priceSell]", "" + ((ComboShop)shop).getPriceSellString());
+                unformattedMessage = unformattedMessage.replace("[price sell per item]", "" + ((ComboShop)shop).getPriceSellPerItemString());
+                unformattedMessage = unformattedMessage.replace("[priceCombo]", "" + ((ComboShop)shop).getPriceComboString());
+            }
+            if(shop.getType() == ShopType.BARTER) {
                 String amountPerString = new DecimalFormat("#.##").format(shop.getPrice() / shop.getAmount()).toString();
-                amountPerString = amountPerString + " " + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack());
+                amountPerString = amountPerString + " " + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack());
                 unformattedMessage = unformattedMessage.replace("[price per item]", "" + amountPerString);
             }
             else
@@ -142,17 +152,18 @@ public class ShopMessage {
                     unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
                 }
             }
-            if(unformattedMessage.contains("[barter item]") && shop != null && shop.getBarterItemStack() != null){
-                int tagLength = "[barter item]".length();
-                String itemName = Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack());
-                int itemNameLength = itemName.length();
-                int totalLength = unformattedMessage.length() - tagLength + itemNameLength;
-                if(totalLength > 17){
-                    String cutItemName = itemName.substring(0, (itemName.length()-(Math.abs(17 - totalLength))));
-                    unformattedMessage = unformattedMessage.replace("[barter item]", cutItemName);
-                }
-                else{
-                    unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getBarterItemStack()));
+            if(unformattedMessage.contains("[barter item]") && shop != null && shop.getSecondaryItemStack() != null){
+                if(shop.getType() == ShopType.BARTER) {
+                    int tagLength = "[barter item]".length();
+                    String itemName = Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack());
+                    int itemNameLength = itemName.length();
+                    int totalLength = unformattedMessage.length() - tagLength + itemNameLength;
+                    if (totalLength > 17) {
+                        String cutItemName = itemName.substring(0, (itemName.length() - (Math.abs(17 - totalLength))));
+                        unformattedMessage = unformattedMessage.replace("[barter item]", cutItemName);
+                    } else {
+                        unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
+                    }
                 }
             }
         }
@@ -165,14 +176,14 @@ public class ShopMessage {
     //      # [price] : The price of the items the shop is selling (adjusted to match virtual or physical currency) #
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
-    public static String[] getSignLines(ShopObject shop){
+    public static String[] getSignLines(AbstractShop shop, ShopType shopType){
 
         DisplayType displayType = shop.getDisplay().getType();
         if(displayType == null)
             displayType = Shop.getPlugin().getDisplayType();
 
         String shopFormat;
-        if(shop.isAdminShop())
+        if(shop.isAdmin())
             shopFormat = "admin";
         else
             shopFormat = "normal";
@@ -181,7 +192,7 @@ public class ShopMessage {
             shopFormat += "_no_display";
         }
 
-        String[] lines = getUnformattedShopSignLines(shop.getType(), shopFormat);
+        String[] lines = getUnformattedShopSignLines(shopType, shopFormat);
 
         for(int i=0; i<lines.length; i++) {
             lines[i] = lines[i].replace("[amount]", "" + shop.getAmount());
@@ -406,5 +417,11 @@ public class ShopMessage {
             creationWords.put("ADMIN", adminString.toLowerCase());
         else
             creationWords.put("ADMIN", "admin");
+
+        String comboString = signConfig.getString("sign_creation.COMBO");
+        if(comboString != null)
+            creationWords.put("COMBO", comboString.toLowerCase());
+        else
+            creationWords.put("COMBO", "combo");
     }
 }

@@ -1,8 +1,8 @@
 package com.snowgears.shop.listener;
 
 
+import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.event.PlayerInitializeShopEvent;
 import com.snowgears.shop.util.PlayerData;
@@ -47,7 +47,7 @@ public class CreativeSelectionListener implements Listener {
             final Block clicked = event.getClickedBlock();
 
             if (clicked.getType() == Material.WALL_SIGN) {
-                ShopObject shop = plugin.getShopHandler().getShop(clicked.getLocation());
+                AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;
                 } else if (shop.isInitialized()) {
@@ -56,7 +56,7 @@ public class CreativeSelectionListener implements Listener {
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
                     if((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", shop, player));
-                        plugin.getExchangeListener().sendEffects(false, player, shop);
+                        plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
                         return;
                     }
@@ -71,7 +71,7 @@ public class CreativeSelectionListener implements Listener {
                     if (shop.getType() == ShopType.SELL) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "noItem", shop, player));
                     } else {
-                        if ((shop.getType() == ShopType.BARTER && shop.getItemStack() != null && shop.getBarterItemStack() == null)
+                        if ((shop.getType() == ShopType.BARTER && shop.getItemStack() != null && shop.getSecondaryItemStack() == null)
                                 || shop.getType() == ShopType.BUY) {
                             this.addPlayerData(player, clicked.getLocation());
                         }
@@ -143,7 +143,7 @@ public class CreativeSelectionListener implements Listener {
         if (playerData != null) {
             //player dropped item outside the inventory
             if (event.getSlot() == -999 && event.getCursor() != null) {
-                ShopObject shop = playerData.getShop();
+                AbstractShop shop = playerData.getShop();
                 if (shop != null) {
                     if (shop.getType() == ShopType.BUY) {
 
@@ -156,7 +156,7 @@ public class CreativeSelectionListener implements Listener {
                         shop.setItemStack(event.getCursor());
                         shop.getDisplay().spawn();
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
-                        plugin.getExchangeListener().sendEffects(true, player, shop);
+                        plugin.getTransactionListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
 
                     } else if (shop.getType() == ShopType.BARTER) {
@@ -167,10 +167,10 @@ public class CreativeSelectionListener implements Listener {
                         if(e.isCancelled())
                             return;
 
-                        shop.setBarterItemStack(event.getCursor());
+                        shop.setSecondaryItemStack(event.getCursor());
                         shop.getDisplay().spawn();
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
-                        plugin.getExchangeListener().sendEffects(true, player, shop);
+                        plugin.getTransactionListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                     }
                     removePlayerData(player);

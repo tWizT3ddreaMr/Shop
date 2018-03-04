@@ -20,15 +20,17 @@ public enum ShopType {
 
     @Override
     public String toString() {
-        if (this == ShopType.SELL)
-            return "sell";
-        else if (this == ShopType.BUY)
-            return "buy";
-        else if(this == ShopType.BARTER)
-            return "barter";
-        else if(this == ShopType.COMBO)
-            return "combo";
-        else
-            return "gamble";
+        switch (this) {
+            case SELL:
+                return "sell";
+            case BUY:
+                return "buy";
+            case BARTER:
+                return "barter";
+            case COMBO:
+                return "combo";
+            default:
+                return "gamble";
+        }
     }
 }

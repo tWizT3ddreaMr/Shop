@@ -1,6 +1,6 @@
 package com.snowgears.shop.event;
 
-import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.AbstractShop;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -11,12 +11,12 @@ public class PlayerResizeShopEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private Player player;
-    private ShopObject shop;
+    private AbstractShop shop;
     private Location location;
     private boolean isExpansion;
     private boolean cancelled;
 
-    public PlayerResizeShopEvent(Player p, ShopObject s, Location location, boolean isExpansion) {
+    public PlayerResizeShopEvent(Player p, AbstractShop s, Location location, boolean isExpansion) {
         player = p;
         shop = s;
         this.location = location;
@@ -31,7 +31,7 @@ public class PlayerResizeShopEvent extends Event implements Cancellable {
         return player;
     }
 
-    public ShopObject getShop() {
+    public AbstractShop getShop() {
         return shop;
     }
 

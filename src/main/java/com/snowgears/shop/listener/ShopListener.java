@@ -1,7 +1,8 @@
 package com.snowgears.shop.listener;
 
+import com.snowgears.shop.AbstractShop;
+import com.snowgears.shop.GambleShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.WorldGuardHook;
@@ -78,22 +79,10 @@ public class ShopListener implements Listener {
 
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
             if(event.getClickedBlock().getType() == Material.WALL_SIGN){
-                ShopObject shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
+                AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
                 Player player = event.getPlayer();
-
-//                //TESTING FOR ALL SHOP DISPLAYS
-//                for(int i=0 ; i<Material.values().length; i++){
-//                    if(shop.getItemStack().getType() == Material.values()[i]){
-//                        shop.setItemStack(new ItemStack(Material.values()[i+1]));
-//                        shop.getDisplay().spawn();
-//                        return;
-//                    }
-//                }
-
-                System.out.println(shop.getType().toString());
-                System.out.println(shop.getOwnerName());
 
                 //player clicked another player's shop sign
                 if (!shop.getOwnerName().equals(player.getName())) {
@@ -130,7 +119,7 @@ public class ShopListener implements Listener {
                 } catch (NoSuchMethodError error) {}
 
                 Player player = event.getPlayer();
-                ShopObject shop = plugin.getShopHandler().getShopByChest(event.getClickedBlock());
+                AbstractShop shop = plugin.getShopHandler().getShopByChest(event.getClickedBlock());
                 if (shop == null)
                     return;
 
@@ -170,7 +159,7 @@ public class ShopListener implements Listener {
                 //non-owner is trying to open shop
                 if (!shop.getOwnerName().equals(player.getName())) {
                     if ((plugin.usePerms() && player.hasPermission("shop.operator")) || player.isOp()) {
-                        if (shop.isAdminShop()) {
+                        if (shop.isAdmin()) {
                             if (shop.getType() == ShopType.GAMBLE) {
                                 //allow gamble shops to be opened by operators
                                 return;
@@ -196,11 +185,11 @@ public class ShopListener implements Listener {
         InventoryHolder holder = event.getInventory().getHolder();
         if(holder != null && holder instanceof Chest) {
             Chest chest = (Chest) holder;
-            ShopObject shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
+            AbstractShop shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
             if(shop == null)
                 return;
             if(shop.getType() == ShopType.GAMBLE){
-                shop.shuffleGambleItem();
+                ((GambleShop)shop).shuffleGambleItem();
             }
         }
     }
@@ -209,7 +198,7 @@ public class ShopListener implements Listener {
     public void onExplosion(EntityExplodeEvent event) {
         //save all potential shop blocks (for sake of time during explosion)
         Iterator<Block> blockIterator = event.blockList().iterator();
-        ShopObject shop = null;
+        AbstractShop shop = null;
         while (blockIterator.hasNext()) {
 
             Block block = blockIterator.next();
@@ -230,7 +219,7 @@ public class ShopListener implements Listener {
         Block b = event.getBlock();
         if (b.getType() == Material.WALL_SIGN) {
             if(plugin.getShopHandler() != null) {
-                ShopObject shop = plugin.getShopHandler().getShop(b.getLocation());
+                AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
                 if (shop != null) {
                     event.setCancelled(true);
                 }
@@ -241,7 +230,7 @@ public class ShopListener implements Listener {
     //prevent hoppers from stealing inventory from shops
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-        ShopObject shop = null;
+        AbstractShop shop = null;
         if(event.getSource().getHolder() instanceof Chest){
             Chest container = (Chest) event.getSource().getHolder();
             shop = plugin.getShopHandler().getShopByChest(container.getBlock());

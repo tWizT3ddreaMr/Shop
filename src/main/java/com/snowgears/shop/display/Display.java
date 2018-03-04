@@ -1,7 +1,7 @@
 package com.snowgears.shop.display;
 
+import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.ShopObject;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.UtilMethods;
@@ -38,7 +38,7 @@ public class Display {
         remove();
         Random random = new Random();
 
-        ShopObject shop = this.getShop();
+        AbstractShop shop = this.getShop();
 
         if (shop.getItemStack() == null)
             return;
@@ -56,11 +56,11 @@ public class Display {
 
         //two display entities on the chest
         if (shop.getType() == ShopType.BARTER) {
-            if (shop.getBarterItemStack() == null)
+            if (shop.getSecondaryItemStack() == null)
                 return;
 
             //define the barter display item
-            ItemStack barterItem = shop.getBarterItemStack().clone();
+            ItemStack barterItem = shop.getSecondaryItemStack().clone();
             barterItem.setAmount(1);
             ItemMeta buyMeta = barterItem.getItemMeta();
             buyMeta.setDisplayName(this.generateDisplayName(random)); // stop item stacking and aid in searching
@@ -167,7 +167,7 @@ public class Display {
         return type;
     }
 
-    public ShopObject getShop(){
+    public AbstractShop getShop(){
         return Shop.getPlugin().getShopHandler().getShop(this.shopSignLocation);
     }
 
@@ -225,7 +225,7 @@ public class Display {
     }
 
     public void remove() {
-        ShopObject shop = this.getShop();
+        AbstractShop shop = this.getShop();
 
         Iterator<Entity> displayIterator = entities.iterator();
         while(displayIterator.hasNext()) {
@@ -236,7 +236,7 @@ public class Display {
 
         for (Entity entity : shop.getChestLocation().getChunk().getEntities()) {
             if(isDisplay(entity)){
-                ShopObject s =  getShop(entity);
+                AbstractShop s =  getShop(entity);
                 //remove any displays that are left over but still belong to the same shop
                 if(s != null && s.getSignLocation().equals(shop.getSignLocation()))
                     entity.remove();
@@ -245,7 +245,7 @@ public class Display {
     }
 
     private Location getItemDropLocation(boolean isBarterItem) {
-        ShopObject shop = this.getShop();
+        AbstractShop shop = this.getShop();
 
         //calculate which x,z to drop items at depending on direction of the shop sign
         double dropY = 1.2;
@@ -288,7 +288,7 @@ public class Display {
     }
 
     private Vector getLargeItemBarterOffset(boolean isBarterItem){
-        ShopObject shop = this.getShop();
+        AbstractShop shop = this.getShop();
 
         Vector offset = new Vector(0,0,0);
         double space = 0.24;
@@ -342,7 +342,7 @@ public class Display {
         return false;
     }
 
-    public static ShopObject getShop(Entity display){
+    public static AbstractShop getShop(Entity display){
         if(display == null)
             return null;
         String name = null;

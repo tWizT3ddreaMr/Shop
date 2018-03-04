@@ -177,14 +177,12 @@ public class UtilMethods {
             return (int) mins + ":" + (int) secs;
     }
 
-    public static int getDurabilityPercent(ItemStack is) {
-        if (is.getType().getMaxDurability() > 0) {
-            double top = is.getType().getMaxDurability() - is.getDurability();
-            double d = top / is.getType().getMaxDurability();
-            d = d * 100;
-            return (int) d;
+    public static int getDurabilityPercent(ItemStack item) {
+        if (item.getType().getMaxDurability() > 0) {
+            double dur = ((double)(item.getType().getMaxDurability() - item.getDurability()) / (double)item.getType().getMaxDurability());
+            return (int)(dur * 100);
         }
-        return 0;
+        return 100;
     }
 
     public static ItemStack getItemStack(String typeIdAndData){
@@ -280,6 +278,8 @@ public class UtilMethods {
             if(Character.isDigit(text.charAt(i)))
                 cleaned += text.charAt(i);
             else if(text.charAt(i) == '.')
+                cleaned += text.charAt(i);
+            else if(text.charAt(i) == ' ')
                 cleaned += text.charAt(i);
         }
         return cleaned;

@@ -1,6 +1,6 @@
 package com.snowgears.shop.event;
 
-import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.ShopType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -11,12 +11,12 @@ public class PlayerExchangeShopEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private Player player;
-    private ShopObject shop;
+    private AbstractShop shop;
     private boolean cancelled;
 
     //TODO add player currency, shop currency, player items, shop items?
 
-    public PlayerExchangeShopEvent(Player p, ShopObject s) {
+    public PlayerExchangeShopEvent(Player p, AbstractShop s) {
         player = p;
         shop = s;
     }
@@ -29,7 +29,7 @@ public class PlayerExchangeShopEvent extends Event implements Cancellable {
         return player;
     }
 
-    public ShopObject getShop() {
+    public AbstractShop getShop() {
         return shop;
     }
 

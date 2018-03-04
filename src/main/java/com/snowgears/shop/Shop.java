@@ -33,7 +33,7 @@ public class Shop extends JavaPlugin {
 
     private ShopListener shopListener;
     private DisplayListener displayListener;
-    private ExchangeListener exchangeListener;
+    private TransactionListener transactionListener;
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
     private ClearLaggListener clearLaggListener;
@@ -115,7 +115,7 @@ public class Shop extends JavaPlugin {
 //        }
 
         shopListener = new ShopListener(this);
-        exchangeListener = new ExchangeListener(this);
+        transactionListener = new TransactionListener(this);
         miscListener = new MiscListener(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
@@ -244,7 +244,7 @@ public class Shop extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(displayListener, this);
         getServer().getPluginManager().registerEvents(shopListener, this);
-        getServer().getPluginManager().registerEvents(exchangeListener, this);
+        getServer().getPluginManager().registerEvents(transactionListener, this);
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
         getServer().getPluginManager().registerEvents(guiListener, this);
@@ -268,7 +268,7 @@ public class Shop extends JavaPlugin {
     public void reload(){
         HandlerList.unregisterAll(displayListener);
         HandlerList.unregisterAll(shopListener);
-        HandlerList.unregisterAll(exchangeListener);
+        HandlerList.unregisterAll(transactionListener);
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
         HandlerList.unregisterAll(guiListener);
@@ -302,8 +302,8 @@ public class Shop extends JavaPlugin {
         return creativeSelectionListener;
     }
 
-    public ExchangeListener getExchangeListener() {
-        return exchangeListener;
+    public TransactionListener getTransactionListener() {
+        return transactionListener;
     }
 
     public ShopHandler getShopHandler() {
@@ -414,21 +414,47 @@ public class Shop extends JavaPlugin {
             return ShopMessage.getFreePriceWord();
         }
 
-        if(currencyFormat.contains("[name]")){
+        String format = currencyFormat;
+
+        if(format.contains("[name]")){
             if(useVault())
-                currencyFormat = currencyFormat.replace("[name]", vaultCurrencySymbol);
+                format = format.replace("[name]", vaultCurrencySymbol);
             else
-                currencyFormat = currencyFormat.replace("[name]", itemCurrencyName);
+                format = format.replace("[name]", itemCurrencyName);
         }
-        if(currencyFormat.contains("[price]")){
+        if(format.contains("[price]")){
             if(useVault())
-                return currencyFormat.replace("[price]", new DecimalFormat("0.00").format(price).toString());
+                return format.replace("[price]", new DecimalFormat("0.00").format(price).toString());
             else if(pricePer)
-                return currencyFormat.replace("[price]", new DecimalFormat("#.##").format(price).toString());
+                return format.replace("[price]", new DecimalFormat("#.##").format(price).toString());
             else
-                return currencyFormat.replace("[price]", ""+(int)price);
+                return format.replace("[price]", ""+(int)price);
         }
-        return currencyFormat;
+        return format;
+    }
+
+    public String getPriceComboString(double price, double priceSell, boolean pricePer){
+        if(price == 0){
+            return ShopMessage.getFreePriceWord();
+        }
+
+        String format = currencyFormat;
+
+        if(format.contains("[name]")){
+            if(useVault())
+                format = format.replace("[name]", vaultCurrencySymbol);
+            else
+                format = format.replace("[name]", itemCurrencyName);
+        }
+        if(format.contains("[price]")){
+            if(useVault())
+                return format.replace("[price]", new DecimalFormat("0.00").format(price).toString()+"/"+new DecimalFormat("0.00").format(priceSell).toString());
+            else if(pricePer)
+                return format.replace("[price]", new DecimalFormat("#.##").format(price).toString()+"/"+new DecimalFormat("0.00").format(priceSell).toString());
+            else
+                return format.replace("[price]", ""+(int)price+"/"+(int)priceSell);
+        }
+        return format;
     }
 
     public double getTaxPercent(){

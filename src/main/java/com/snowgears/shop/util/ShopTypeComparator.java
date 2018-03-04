@@ -1,12 +1,12 @@
 package com.snowgears.shop.util;
 
-import com.snowgears.shop.ShopObject;
+import com.snowgears.shop.AbstractShop;
 
 import java.util.Comparator;
 
-public class ShopTypeComparator implements Comparator<ShopObject>{
+public class ShopTypeComparator implements Comparator<AbstractShop>{
 	@Override
-    public int compare(ShopObject o1, ShopObject o2) {
+    public int compare(AbstractShop o1, AbstractShop o2) {
         return o1.getType().toString().compareTo(o2.getType().toString());
     }
 }
