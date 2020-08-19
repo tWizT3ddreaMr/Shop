@@ -18,15 +18,14 @@ public class ListShopsWindow extends ShopGuiWindow {
     public ListShopsWindow(UUID player, UUID playerToList){
         super(player);
 
-        String name;
         if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList)) {
             ItemStack is = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
-            name = is.getItemMeta().getDisplayName();
+            this.title = is.getItemMeta().getDisplayName();
         }
         else
-            name = Bukkit.getOfflinePlayer(playerToList).getName();
+            this.title = Bukkit.getOfflinePlayer(playerToList).getName();
 
-        this.page = Bukkit.createInventory(null, INV_SIZE, name);
+        this.page = Bukkit.createInventory(null, INV_SIZE, this.title);
         this.playerToList = playerToList;
         initInvContents();
     }

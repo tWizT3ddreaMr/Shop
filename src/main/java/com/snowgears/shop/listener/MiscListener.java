@@ -13,10 +13,10 @@ import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Rotatable;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,7 +30,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.DirectionalContainer;
 
 import java.util.ArrayList;
 
@@ -53,9 +52,8 @@ public class MiscListener implements Listener {
 
         Block b = event.getBlockClicked();
 
-        if (b.getType() == Material.WALL_SIGN) {
-            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) event.getBlockClicked().getState().getData();
-            AbstractShop shop = plugin.getShopHandler().getShopByChest(b.getRelative(sign.getAttachedFace()));
+        if (b.getBlockData() instanceof WallSign) {
+            AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop != null)
                 event.setCancelled(true);
         }
@@ -74,13 +72,24 @@ public class MiscListener implements Listener {
 
         if(!(b.getState() instanceof Sign))
             return;
-        final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData(); //TODO for some reason this has thrown cast errors
 
-        Block chest;
-        if (sign.isWallSign())
-            chest = b.getRelative(sign.getAttachedFace());
+        BlockFace signDirection = null;
+        Block chest = null;
+        if(b.getBlockData() instanceof WallSign) {
+            signDirection = ((WallSign) b.getBlockData()).getFacing();
+            chest = b.getRelative(signDirection.getOppositeFace());
+        }
+        else if(b.getBlockData() instanceof Rotatable){ //regular sign post
+            signDirection = ((Rotatable) b.getBlockData()).getRotation();
+            //adjust the sign direction to cordinal direction if its not already one
+            if( signDirection.toString().indexOf('_') != -1) {
+                String adjustedDirString = signDirection.toString().substring(0, signDirection.toString().indexOf('_'));
+                signDirection = BlockFace.valueOf(adjustedDirString);
+            }
+            chest = b.getRelative(signDirection.getOppositeFace());
+        }
         else
-            chest = b.getRelative(sign.getFacing().getOppositeFace());
+            return;
 
         double price = 0;
         double priceCombo = 0;
@@ -161,11 +170,21 @@ public class MiscListener implements Listener {
 
                         String[] multiplePrices = line3.split(" ");
                         if(multiplePrices.length > 1){
-                            price = Integer.parseInt(multiplePrices[0]);
-                            priceCombo = Integer.parseInt(multiplePrices[1]);
+                            if(multiplePrices[0].contains("."))
+                                price = Double.parseDouble(multiplePrices[0]);
+                            else
+                                price = Integer.parseInt(multiplePrices[0]);
+
+                            if(multiplePrices[1].contains("."))
+                                priceCombo = Double.parseDouble(multiplePrices[1]);
+                            else
+                                priceCombo = Integer.parseInt(multiplePrices[1]);
                         }
                         else{
-                            price = Integer.parseInt(line3);
+                            if(line3.contains("."))
+                                price = Double.parseDouble(line3);
+                            else
+                                price = Integer.parseInt(line3);
                         }
 
                     } catch (NumberFormatException e){
@@ -241,10 +260,10 @@ public class MiscListener implements Listener {
                 }
 
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if(chest.getState().getData() instanceof DirectionalContainer) {
-                    DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
-                    if (container.getFacing() == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
-                        chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
+                if(chest.getState() instanceof Directional && chest.getState() instanceof Container) {
+                    Directional chestDirectional = (Directional) chest.getState();
+                    if (chestDirectional.getFacing() == signDirection && chest.getRelative(signDirection).getLocation().equals(signBlock.getLocation())) {
+                        //chest.getRelative(sign.getFacing()).setType(Material.LEGACY_WALL_SIGN);
                     } else {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
                         return;
@@ -256,18 +275,20 @@ public class MiscListener implements Listener {
                         return;
                     }
                     else{
-                        chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
+                        //chest.getRelative(sign.getFacing()).setType(Material.LEGACY_WALL_SIGN);
                     }
                 }
 
-                if (!sign.isWallSign()) {
-                    final Sign newSign = (Sign) chest.getRelative(sign.getFacing()).getState();
+                if (!(b.getBlockData() instanceof WallSign)) {
+                    if(!b.getType().toString().contains("_SIGN")){
+                        return;
+                    }
+                    String wallSignString = b.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
+                    b.setType(Material.valueOf(wallSignString));
 
-                    org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(Material.WALL_SIGN);
-                    matSign.setFacingDirection(sign.getFacing());
-
-                    newSign.setData(matSign);
-                    newSign.update();
+                    Directional wallSignData = (Directional) b.getBlockData();
+                    wallSignData.setFacing(signDirection);
+                    b.setBlockData(wallSignData);
                 }
                 signBlock.update();
 
@@ -305,7 +326,7 @@ public class MiscListener implements Listener {
                         //the shop has still not been initialized with an item from a player
                         if (!shop.isInitialized()) {
                             plugin.getShopHandler().removeShop(shop);
-                            if (b.getType() == Material.WALL_SIGN) {
+                            if (b.getBlockData() instanceof WallSign) {
                                 Sign sign = (Sign) b.getState();
                                 sign.setLine(0, ChatColor.RED + "SHOP CLOSED");
                                 sign.setLine(1, ChatColor.GRAY + "CREATION TIMEOUT");
@@ -337,7 +358,7 @@ public class MiscListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getType() == Material.WALL_SIGN) {
+            if (clicked.getBlockData() instanceof WallSign) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;
@@ -440,7 +461,7 @@ public class MiscListener implements Listener {
         Block b = event.getBlock();
         Player player = event.getPlayer();
 
-        if (b.getType() == Material.WALL_SIGN) {
+        if (b.getBlockData() instanceof WallSign) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop == null)
                 return;

@@ -1,7 +1,6 @@
 package com.snowgears.shop.listener;
 
 import com.snowgears.shop.AbstractShop;
-import com.snowgears.shop.GambleShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopMessage;
@@ -11,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -26,7 +26,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.HashMap;
@@ -78,7 +77,7 @@ public class ShopListener implements Listener {
         } catch (NoSuchMethodError error) {}
 
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            if(event.getClickedBlock().getType() == Material.WALL_SIGN){
+            if(event.getClickedBlock().getBlockData() instanceof WallSign){
                 AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
@@ -135,7 +134,7 @@ public class ShopListener implements Listener {
                     return;
                 }
 
-                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || shop.getSignLocation().getBlock().getType() != Material.WALL_SIGN){
+                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !(shop.getSignLocation().getBlock().getBlockData() instanceof WallSign)){
                     shop.delete();
                     return;
                 }
@@ -150,7 +149,7 @@ public class ShopListener implements Listener {
 
                 //player is sneaking and clicks a chest of a shop
                 if(player.isSneaking()){
-                    if(player.getItemInHand().getType() != Material.SIGN) {
+                    if(player.getItemInHand().getType().toString().contains("SIGN")) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
                         return;
@@ -180,19 +179,20 @@ public class ShopListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onShopClose(InventoryCloseEvent event) {
-        InventoryHolder holder = event.getInventory().getHolder();
-        if(holder != null && holder instanceof Chest) {
-            Chest chest = (Chest) holder;
-            AbstractShop shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
-            if(shop == null)
-                return;
-            if(shop.getType() == ShopType.GAMBLE){
-                ((GambleShop)shop).shuffleGambleItem();
-            }
-        }
-    }
+    //NOT SURE WHY I WAS REFRESHING GAMBLE ITEM ON CLOSE?
+//    @EventHandler
+//    public void onShopClose(InventoryCloseEvent event) {
+//        InventoryHolder holder = event.getInventory().getHolder();
+//        if(holder != null && holder instanceof Chest) {
+//            Chest chest = (Chest) holder;
+//            AbstractShop shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
+//            if(shop == null)
+//                return;
+//            if(shop.getType() == ShopType.GAMBLE){
+//                ((GambleShop)shop).shuffleGambleItem();
+//            }
+//        }
+//    }
 
     @EventHandler
     public void onExplosion(EntityExplodeEvent event) {
@@ -202,7 +202,7 @@ public class ShopListener implements Listener {
         while (blockIterator.hasNext()) {
 
             Block block = blockIterator.next();
-            if (block.getType() == Material.WALL_SIGN) {
+            if (block.getBlockData() instanceof WallSign) {
                 shop = plugin.getShopHandler().getShop(block.getLocation());
             } else if (plugin.getShopHandler().isChest(block)) {
                 shop = plugin.getShopHandler().getShopByChest(block);
@@ -217,7 +217,7 @@ public class ShopListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void signDetachCheck(BlockPhysicsEvent event) {
         Block b = event.getBlock();
-        if (b.getType() == Material.WALL_SIGN) {
+        if (b.getBlockData() instanceof WallSign) {
             if(plugin.getShopHandler() != null) {
                 AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
                 if (shop != null) {

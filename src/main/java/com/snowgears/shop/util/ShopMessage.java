@@ -5,7 +5,6 @@ import com.snowgears.shop.ComboShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.DisplayType;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -23,6 +22,7 @@ public class ShopMessage {
     private static HashMap<String, String> messageMap = new HashMap<String, String>();
     private static HashMap<String, String[]> shopSignTextMap = new HashMap<String, String[]>();
     private static String freePriceWord;
+    private static String serverDisplayName;
     private static HashMap<String, String> creationWords = new HashMap<String, String>();
     private static YamlConfiguration chatConfig;
     private static YamlConfiguration signConfig;
@@ -39,6 +39,7 @@ public class ShopMessage {
         loadCreationWords();
 
         freePriceWord = signConfig.getString("sign_text.zeroPrice");
+        serverDisplayName = signConfig.getString("sign_text.serverDisplayName");
     }
 
     public static String getCreationWord(String type){
@@ -47,6 +48,10 @@ public class ShopMessage {
 
     public static String getFreePriceWord(){
         return freePriceWord;
+    }
+
+    public static String getServerDisplayName(){
+        return serverDisplayName;
     }
 
     public static String getMessage(String key, String subKey, AbstractShop shop, Player player) {
@@ -96,7 +101,7 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack().getType()));
 
             if(shop.getType() == ShopType.GAMBLE) {
-                unformattedMessage = unformattedMessage.replace("[gamble item amount]", "" + shop.getItemStack().getAmount());
+                unformattedMessage = unformattedMessage.replace("[gamble item amount]", "" + shop.getAmount());
                 unformattedMessage = unformattedMessage.replace("[gamble item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
             }
         }
@@ -112,7 +117,7 @@ public class ShopMessage {
         }
         if(shop != null) {
             if(shop.isAdmin())
-                unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getServer().getServerName());
+                unformattedMessage = unformattedMessage.replace("[owner]", "" + ShopMessage.getServerDisplayName());
             else
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
@@ -136,7 +141,7 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
             unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
         }
-        unformattedMessage = unformattedMessage.replace("[server name]", "" + Bukkit.getServer().getServerName());
+        unformattedMessage = unformattedMessage.replace("[server name]", "" + ShopMessage.getServerDisplayName());
 
         if(forSign){
             if(unformattedMessage.contains("[item]") && shop != null && shop.getItemStack() != null){

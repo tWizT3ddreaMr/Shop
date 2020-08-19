@@ -17,6 +17,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -53,8 +56,8 @@ public abstract class AbstractShop {
         }
 
         if(signLocation != null) {
-            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
-            chestLocation = signLocation.getBlock().getRelative(sign.getAttachedFace()).getLocation();
+            WallSign sign = (WallSign)signLocation.getBlock().getBlockData();
+            chestLocation = signLocation.getBlock().getRelative(sign.getFacing().getOppositeFace()).getLocation();
         }
     }
 
@@ -174,9 +177,10 @@ public abstract class AbstractShop {
     }
 
     public BlockFace getFacing(){
-        if(signLocation.getBlock().getType() == Material.WALL_SIGN) {
-            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
-            return sign.getFacing();
+        if(signLocation.getBlock().getBlockData() instanceof WallSign) {
+            BlockData signData =  signLocation.getBlock().getBlockData();
+            if(signData instanceof Directional)
+                return ((Directional) signData).getFacing();
         }
         return null;
     }
@@ -257,7 +261,7 @@ public abstract class AbstractShop {
         display.remove();
 
         Block b = this.getSignLocation().getBlock();
-        if (b.getType() == Material.WALL_SIGN) {
+        if (b.getBlockData() instanceof WallSign) {
             Sign signBlock = (Sign) b.getState();
             signBlock.setLine(0, "");
             signBlock.setLine(1, "");

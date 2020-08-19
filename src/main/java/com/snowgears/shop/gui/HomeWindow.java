@@ -12,7 +12,7 @@ public class HomeWindow extends ShopGuiWindow {
 
     public HomeWindow(UUID player){
         super(player);
-        String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.HOME);
+        this.title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.HOME);
         this.page = Bukkit.createInventory(null, INV_SIZE, title);
         initInvContents();
     }

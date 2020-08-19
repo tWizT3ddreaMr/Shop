@@ -132,8 +132,6 @@ public class UtilMethods {
 
         Vector cp = direction.crossProduct(look);
 
-        //System.out.println("CROSS: "+cp);
-
         double d = 0;
         switch(s.getAttachedFace()){
             case NORTH:
@@ -185,17 +183,6 @@ public class UtilMethods {
         return 100;
     }
 
-    public static ItemStack getItemStack(String typeIdAndData){
-        int index = typeIdAndData.indexOf(':');
-        if(index == -1){
-            int id = Integer.parseInt(typeIdAndData);
-            return new ItemStack(id);
-        }
-        int id = Integer.parseInt(typeIdAndData.substring(0, index));
-        int data = Integer.parseInt(typeIdAndData.substring(index+1));
-        return new ItemStack(id, 1, (short)data);
-    }
-
     public static String getItemName(ItemStack is){
         ItemMeta itemMeta = is.getItemMeta();
 
@@ -244,15 +231,20 @@ public class UtilMethods {
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
         }
-        nonIntrusiveMaterials.add(Material.WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.WARPED_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.ACACIA_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.BIRCH_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.CRIMSON_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.DARK_OAK_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.JUNGLE_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.OAK_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.SPRUCE_WALL_SIGN);
         nonIntrusiveMaterials.remove(Material.WATER);
-        nonIntrusiveMaterials.remove(Material.STATIONARY_WATER);
         nonIntrusiveMaterials.remove(Material.LAVA);
-        nonIntrusiveMaterials.remove(Material.STATIONARY_LAVA);
         nonIntrusiveMaterials.remove(Material.FIRE);
-        nonIntrusiveMaterials.remove(Material.ENDER_PORTAL);
-        nonIntrusiveMaterials.remove(Material.PORTAL);
-        nonIntrusiveMaterials.remove(Material.SKULL);
+        nonIntrusiveMaterials.remove(Material.END_PORTAL);
+        nonIntrusiveMaterials.remove(Material.NETHER_PORTAL);
+        nonIntrusiveMaterials.remove(Material.LEGACY_SKULL);
     }
 
     public static BlockFace getDirectionOfChest(Block block){

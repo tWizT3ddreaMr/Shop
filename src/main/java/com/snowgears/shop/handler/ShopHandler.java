@@ -9,8 +9,8 @@ import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.*;
 import org.bukkit.block.*;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -18,15 +18,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.material.MaterialData;
-import org.bukkit.material.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.io.File;
-import java.util.*;
 import java.util.Comparator;
+import java.util.*;
 
 
 public class ShopHandler {
@@ -104,8 +101,8 @@ public class ShopHandler {
 
             for (Block chestBlock : chestBlocks) {
                 Block signBlock = chestBlock.getRelative(chestFacing);
-                if (signBlock.getType() == Material.WALL_SIGN) {
-                    Sign sign = (Sign) signBlock.getState().getData();
+                if (signBlock.getBlockData() instanceof WallSign) {
+                    WallSign sign = (WallSign) signBlock.getBlockData();
                     if (chestFacing == sign.getFacing()) {
                         AbstractShop shop = this.getShop(signBlock.getLocation());
                         if (shop != null)
@@ -128,7 +125,7 @@ public class ShopHandler {
             if(this.isChest(block.getRelative(face))){
                 Block shopChest = block.getRelative(face);
                 for(BlockFace newFace : faces){
-                    if(shopChest.getRelative(newFace).getType() == Material.WALL_SIGN){
+                    if(shopChest.getRelative(newFace).getBlockData() instanceof WallSign){
                         AbstractShop shop = getShop(shopChest.getRelative(newFace).getLocation());
                         if(shop != null)
                             return shop;
@@ -266,13 +263,15 @@ public class ShopHandler {
             String owner = null;
             File currentFile = null;
             if(player.equals(adminUUID)) {
+                owner = "admin";
                 currentFile = new File(fileDirectory + "/admin.yml");
             }
             else {
-                owner = Bukkit.getOfflinePlayer(player).getName();
-                currentFile = new File(fileDirectory + "/" + owner + " (" + player.toString() + ").yml");
+                owner = player.toString();
+                //currentFile = new File(fileDirectory + "/" + owner + " (" + player.toString() + ").yml");
+                currentFile = new File(fileDirectory + "/" + player.toString() + ".yml");
             }
-            owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
+            //owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
 
             if (!currentFile.exists()) // file doesn't exist
                 currentFile.createNewFile();
@@ -353,29 +352,76 @@ public class ShopHandler {
         }
     }
 
-    public void loadShops() {
+    public void convertLegacyShopSaves(){
+        //save to new format
+        saveAllShops();
+
         File fileDirectory = new File(plugin.getDataFolder(), "Data");
         if (!fileDirectory.exists())
             return;
-        File shopFile = new File(fileDirectory + "/shops.yml");
-        if (shopFile.exists()){
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(shopFile);
-            backwardsCompatibleLoadShopsFromConfig(config);
+
+        // load all the yml files from the data directory
+        for (File file : fileDirectory.listFiles()) {
+            if (file.isFile()) {
+                if (file.getName().endsWith(".yml")
+                        && !file.getName().contains("enderchests")
+                        && !file.getName().contains("itemCurrency")
+                        && !file.getName().contains("gambleDisplay")) {
+                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                    boolean isLegacyConfig = false;
+                }
+            }
         }
-        else{
-            // load all the yml files from the data directory
-            for (File file : fileDirectory.listFiles()) {
-                if (file.isFile()) {
-                    if(file.getName().endsWith(".yml")
-                            && !file.getName().contains("enderchests")
-                            && !file.getName().contains("itemCurrency")
-                            && !file.getName().contains("gambleDisplay")) {
-                        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                        loadShopsFromConfig(config);
+    }
+
+    public void loadShops() {
+        boolean convertLegacySaves = false;
+        File fileDirectory = new File(plugin.getDataFolder(), "Data");
+        if (!fileDirectory.exists())
+            return;
+
+        // load all the yml files from the data directory
+        for (File file : fileDirectory.listFiles()) {
+            if (file.isFile()) {
+                if (file.getName().endsWith(".yml")
+                        && !file.getName().contains("enderchests")
+                        && !file.getName().contains("itemCurrency")
+                        && !file.getName().contains("gambleDisplay")) {
+                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                    boolean isLegacyConfig = false;
+                    UUID playerUUID = null;
+                    String fileNameNoExt = null;
+                    try {
+                        int dotIndex = file.getName().lastIndexOf('.');
+                        fileNameNoExt = file.getName().substring(0, dotIndex); //remove .yml
+
+                        //all files are saved as UUID.yml except for admin shops which are admin.yml
+                        if (!fileNameNoExt.equals("admin")) {
+                            playerUUID = UUID.fromString(fileNameNoExt);
+                            //file names are in UUID format. Load from new save files -> ownerUUID.yml
+                        }
+                        else{
+                            playerUUID = this.adminUUID;
+                        }
+                    } catch (IllegalArgumentException iae) {
+                        //file names are not in UUID format. Load from legacy save files -> ownerName + " (" + ownerUUID + ").yml
+                        isLegacyConfig = true;
+                        convertLegacySaves = true;
+                        playerUUID = this.uidFromString(fileNameNoExt);
+                    }
+                    loadShopsFromConfig(config, isLegacyConfig);
+                    if(isLegacyConfig){
+                        //save new file
+                        saveShops(playerUUID);
+                        //delete old file
+                        file.delete();
                     }
                 }
             }
         }
+        if(convertLegacySaves)
+            convertLegacyShopSaves();
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -385,7 +431,7 @@ public class ShopHandler {
     }
 
 
-    private void loadShopsFromConfig(YamlConfiguration config) {
+    private void loadShopsFromConfig(YamlConfiguration config, boolean isLegacy) {
         if (config.getConfigurationSection("shops") == null)
             return;
         Set<String> allShopOwners = config.getConfigurationSection("shops").getKeys(false);
@@ -397,15 +443,15 @@ public class ShopHandler {
                 if(signLoc != null) {
                     try {
                         Block b = signLoc.getBlock();
-                        if (b.getType() == Material.WALL_SIGN) {
-                            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                            //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                        if (b.getBlockData() instanceof WallSign) {
 
                             UUID owner;
                             if (shopOwner.equals("admin"))
                                 owner = this.getAdminUUID();
-                            else
+                            else if(isLegacy)
                                 owner = uidFromString(shopOwner);
+                            else
+                                owner = UUID.fromString(shopOwner);
 
                             String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
                             double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
@@ -458,125 +504,10 @@ public class ShopHandler {
         }
     }
 
-    //==============================================================================//
-    //            OLD WAY OF LOADING SHOPS FROM ONE CONFIG FOR TRANSFERRING         //
-    //==============================================================================//
-
-
-    private void backwardsCompatibleLoadShopsFromConfig(YamlConfiguration config){
-        if (config.getConfigurationSection("shops") == null)
-            return;
-        Set<String> allShopOwners = config.getConfigurationSection("shops").getKeys(false);
-
-        boolean loadByLegacyConfig = false;
-        for (String shopOwner : allShopOwners) {
-            Set<String> allShopNumbers = config.getConfigurationSection("shops." + shopOwner).getKeys(false);
-            for (String shopNumber : allShopNumbers) {
-                ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
-                if (itemStack == null)
-                    loadByLegacyConfig = true;
-                break;
-            }
-            break;
-        }
-
-        if(loadByLegacyConfig) {
-            loadShopsFromLegacyConfig(config); //load as old
-            saveAllShops(); //save as new
-        }
-        else {
-            //load old config normally
-            loadShopsFromConfig(config);
-            saveAllShops(); //save as new
-        }
-    }
-
     public UUID getAdminUUID(){
         return adminUUID;
     }
 
-
-    //==============================================================================//
-    //            LEGACY WAY OF LOADING SHOPS FROM CONFIG FOR TRANSFERRING          //
-    //==============================================================================//
-
-    private void loadShopsFromLegacyConfig(YamlConfiguration config) {
-
-        if (config.getConfigurationSection("shops") == null)
-            return;
-        Set<String> allShopOwners = config.getConfigurationSection("shops").getKeys(false);
-
-        for (String shopOwner : allShopOwners) {
-            Set<String> allShopNumbers = config.getConfigurationSection("shops." + shopOwner).getKeys(false);
-            for (String shopNumber : allShopNumbers) {
-                Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
-                Block b = signLoc.getBlock();
-                if (b.getType() == Material.WALL_SIGN) {
-                    org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                    Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
-                    UUID owner = uidFromString(shopOwner);
-                    double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
-                    int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
-                    String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
-                    boolean isAdmin = false;
-                    if (type.contains("admin"))
-                        isAdmin = true;
-                    ShopType shopType = typeFromString(type);
-
-                    MaterialData itemData = dataFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.data"));
-                    ItemStack itemStack = new ItemStack(itemData.getItemType());
-                    itemStack.setData(itemData);
-                    short itemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".item.durability"));
-                    itemStack.setDurability(itemDurability);
-                    ItemMeta itemMeta = itemStack.getItemMeta();
-                    if(itemMeta instanceof LeatherArmorMeta){
-                        if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
-                            ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
-                    }
-                    String itemName = config.getString("shops." + shopOwner + "." + shopNumber + ".item.name");
-                    if (!itemName.isEmpty())
-                        itemMeta.setDisplayName(config.getString("shops." + shopOwner + "." + shopNumber + ".item.name"));
-                    List<String> itemLore = loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.lore"));
-                    if (itemLore.size() > 1)
-                        itemMeta.setLore(loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.lore")));
-                    itemStack.setItemMeta(itemMeta);
-                    itemStack.addUnsafeEnchantments(enchantmentsFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.enchantments")));
-
-                    ItemStack barterItemStack = null;
-                    if (shopType == ShopType.BARTER) {
-                        MaterialData barterItemData = dataFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.data"));
-                        barterItemStack = new ItemStack(barterItemData.getItemType());
-                        barterItemStack.setData(barterItemData);
-                        short barterItemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".itemBarter.durability"));
-                        barterItemStack.setDurability(barterItemDurability);
-                        ItemMeta barterItemMeta = barterItemStack.getItemMeta();
-                        if(itemMeta instanceof LeatherArmorMeta){
-                            if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
-                                ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
-                        }
-                        String barterItemName = config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.name");
-                        if (!barterItemName.isEmpty())
-                            barterItemMeta.setDisplayName(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.name"));
-                        List<String> barterItemLore = loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.lore"));
-                        if (barterItemLore.size() > 1)
-                            barterItemMeta.setLore(loreFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.lore")));
-                        barterItemStack.setItemMeta(barterItemMeta);
-                        barterItemStack.addUnsafeEnchantments(enchantmentsFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.enchantments")));
-                    }
-
-                    AbstractShop shop = AbstractShop.create(signLoc, owner, price, 0, amount, isAdmin, shopType);
-                    shop.setItemStack(itemStack);
-
-                    if(shop.isAdmin()){
-                        shop.setOwner(plugin.getShopHandler().getAdminUUID());
-                    }
-
-                    shop.updateSign();
-                    this.addShop(shop);
-                }
-            }
-        }
-    }
 
     private String locationToString(Location loc) {
         return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
@@ -613,33 +544,5 @@ public class ShopHandler {
             }
         } catch (NoClassDefFoundError e) {}
         return shopMaterials.contains(b.getType());
-    }
-
-    private List<String> loreFromString(String loreString) {
-        loreString = loreString.substring(1, loreString.length() - 1); //get rid of []
-        String[] loreParts = loreString.split(", ");
-        return Arrays.asList(loreParts);
-    }
-
-    private HashMap<Enchantment, Integer> enchantmentsFromString(String enchantments) {
-        HashMap<Enchantment, Integer> enchants = new HashMap<Enchantment, Integer>();
-        enchantments = enchantments.substring(1, enchantments.length() - 1); //get rid of {}
-        if (enchantments.isEmpty())
-            return enchants;
-        String[] enchantParts = enchantments.split(", ");
-        for (String whole : enchantParts) {
-            String[] pair = whole.split("=");
-            enchants.put(Enchantment.getByName(pair[0]), Integer.parseInt(pair[1]));
-        }
-        return enchants;
-    }
-
-    private MaterialData dataFromString(String dataString) {
-        int index = dataString.indexOf("(");
-        String materialString = dataString.substring(0, index);
-        Material m = Material.getMaterial(materialString);
-        int data = Integer.parseInt(dataString.substring(index + 1, dataString.length() - 1));
-
-        return new MaterialData(m, (byte) data);
     }
 }

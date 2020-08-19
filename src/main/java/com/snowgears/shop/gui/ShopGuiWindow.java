@@ -17,6 +17,7 @@ public abstract class ShopGuiWindow {
     }
 
     protected int INV_SIZE = 54;
+    protected String title;
     protected Inventory page;
     protected ShopGuiWindow prevWindow;
     protected UUID player;
@@ -36,7 +37,7 @@ public abstract class ShopGuiWindow {
     public boolean scrollPageNext(){
         ItemStack nextPageIcon = page.getItem(53);
 
-        if(nextPageIcon != null && nextPageIcon.getType() == Material.STAINED_GLASS_PANE){
+        if(nextPageIcon != null && nextPageIcon.getType().toString().contains("STAINED_GLASS_PANE")){
             //set the previous scroll page
             page.setItem(45, this.getPrevPageIcon());
 
@@ -52,7 +53,7 @@ public abstract class ShopGuiWindow {
     public boolean scrollPagePrev(){
         ItemStack nextPageIcon = page.getItem(45);
 
-        if(nextPageIcon != null && nextPageIcon.getType() == Material.STAINED_GLASS_PANE){
+        if(nextPageIcon != null && nextPageIcon.getType().toString().contains("STAINED_GLASS_PANE")){
             //set the next scroll page
             page.setItem(53, this.getNextPageIcon());
 
@@ -149,8 +150,12 @@ public abstract class ShopGuiWindow {
         return this.page;
     }
 
+    public String getTitle(){
+        return this.title;
+    }
+
     protected ItemStack getPrevPageIcon(){
-        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)14); //red pane
+        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
 
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName("Previous Page");
@@ -160,7 +165,7 @@ public abstract class ShopGuiWindow {
     }
 
     protected ItemStack getNextPageIcon(){
-        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)14); //red pane
+        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
 
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName("Next Page");

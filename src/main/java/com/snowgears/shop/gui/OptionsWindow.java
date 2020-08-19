@@ -8,7 +8,8 @@ public class OptionsWindow extends ShopGuiWindow {
 
     public OptionsWindow(UUID player){
         super(player);
-        this.page = Bukkit.createInventory(null, INV_SIZE, "Options");
+        this.title = "Options";
+        this.page = Bukkit.createInventory(null, INV_SIZE, this.title);
         initInvContents();
     }
 

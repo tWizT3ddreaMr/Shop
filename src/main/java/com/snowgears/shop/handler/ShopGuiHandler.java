@@ -125,7 +125,7 @@ public class ShopGuiHandler {
         }
         else if(iconEnum == GuiIcon.LIST_PLAYER){
 
-            icon = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+            icon = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
 
             if(player == null) //TODO this should never be null but for some reason it is
                 return icon;
@@ -208,7 +208,7 @@ public class ShopGuiHandler {
             String childKey = iconString.substring(iconString.indexOf('_')+1);
 
 
-            String idAndData = config.getString("icons."+parentKey+"."+childKey+".type");
+            String type = config.getString("icons."+parentKey+"."+childKey+".type");
             String name = config.getString("icons."+parentKey+"."+childKey+".name");
             if(name != null)
                 name = ChatColor.translateAlternateColorCodes('&', name);
@@ -221,17 +221,16 @@ public class ShopGuiHandler {
                 }
             }
 
-
             ItemStack icon = null;
-            if(idAndData != null) {
-                icon = UtilMethods.getItemStack(idAndData);
+            if(type != null) {
+                icon = new ItemStack(Material.valueOf(type));
             }
             else if(childKey.equals("set_gamble")){
                 icon = plugin.getGambleDisplayItem();
             }
             else if(parentKey.equals("list")){
                 if(childKey.equals("player")) {
-                    icon = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+                    icon = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
                 }
             }
 

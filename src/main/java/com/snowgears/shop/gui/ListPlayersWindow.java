@@ -14,7 +14,7 @@ public class ListPlayersWindow extends ShopGuiWindow {
 
     public ListPlayersWindow(UUID player){
         super(player);
-        String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.LIST_PLAYERS);
+        this.title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.LIST_PLAYERS);
         this.page = Bukkit.createInventory(null, INV_SIZE, title);
         initInvContents();
     }

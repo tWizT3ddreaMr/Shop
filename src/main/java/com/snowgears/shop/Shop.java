@@ -36,7 +36,7 @@ public class Shop extends JavaPlugin {
     private TransactionListener transactionListener;
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
-    private ClearLaggListener clearLaggListener;
+    //private ClearLaggListener clearLaggListener;
     private ArmorStandListener armorStandListener;
     private ShopGUIListener guiListener;
 
@@ -101,11 +101,12 @@ public class Shop extends JavaPlugin {
             UtilMethods.copy(getResource("signConfig.yml"), signConfigFile);
         }
 
-        File itemNameFile = new File(getDataFolder(), "items.tsv");
-        if (!itemNameFile.exists()) {
-            itemNameFile.getParentFile().mkdirs();
-            UtilMethods.copy(getResource("items.tsv"), itemNameFile);
-        }
+        //removed item names file after item ids are no longer used. may revisit later with new materials
+//        File itemNameFile = new File(getDataFolder(), "items.tsv");
+//        if (!itemNameFile.exists()) {
+//            itemNameFile.getParentFile().mkdirs();
+//            UtilMethods.copy(getResource("items.tsv"), itemNameFile);
+//        }
 
         //TODO
 //        File pricesFile = new File(getDataFolder(), "prices.tsv");
@@ -122,10 +123,11 @@ public class Shop extends JavaPlugin {
         armorStandListener = new ArmorStandListener(this);
         guiListener = new ShopGUIListener(this);
 
-        if (getServer().getPluginManager().getPlugin("ClearLag") != null) {
-            clearLaggListener = new ClearLaggListener(this);
-            getServer().getPluginManager().registerEvents(clearLaggListener, this);
-        }
+        //removing clearlag support since API is no longer reachable in previously published repo
+//        if (getServer().getPluginManager().getPlugin("ClearLag") != null) {
+//            clearLaggListener = new ClearLaggListener(this);
+//            getServer().getPluginManager().registerEvents(clearLaggListener, this);
+//        }
 
         try {
             displayType = DisplayType.valueOf(config.getString("displayType"));
@@ -272,8 +274,8 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
         HandlerList.unregisterAll(guiListener);
-        if(clearLaggListener != null)
-            HandlerList.unregisterAll(clearLaggListener);
+        //if(clearLaggListener != null)
+        //    HandlerList.unregisterAll(clearLaggListener);
 
         onEnable();
     }

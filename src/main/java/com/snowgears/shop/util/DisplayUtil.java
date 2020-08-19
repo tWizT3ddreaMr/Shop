@@ -81,7 +81,7 @@ public class DisplayUtil {
         if(isHeldBlock(type)){
             return ItemType.HAND;
         }
-        else if(sType.contains("_HELMET") || type == Material.SKULL_ITEM || type.isBlock()){
+        else if(sType.contains("_HELMET") || type == Material.PLAYER_HEAD || type.isBlock()){
             return ItemType.HEAD;
         }
         else if(sType.contains("_CHESTPLATE")){ //TODO  || type == Material.ELYTRA (when Minecraft lets players put ELYTRA on ArmorStands)
@@ -120,22 +120,22 @@ public class DisplayUtil {
                     switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.7, -1.3, 0.6);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(rodOffset, 0, 0);
                             break;
                         case EAST:
                             standLocation = blockLocation.clone().add(0.425, -1.3, 0.7);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(0, 0, rodOffset);
                             break;
                         case SOUTH:
                             standLocation = blockLocation.clone().add(0.3, -1.3, 0.42);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(-rodOffset, 0, 0);
                             break;
                         case WEST:
                             standLocation = blockLocation.clone().add(0.6, -1.3, 0.3);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(0, 0, -rodOffset);
                             break;
                     }
@@ -156,7 +156,7 @@ public class DisplayUtil {
                             break;
                     }
                 }
-                else if(material == Material.BANNER){
+                else if(material == Material.LEGACY_BANNER){
                     switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.99, -1.4, 0.86);
@@ -223,7 +223,7 @@ public class DisplayUtil {
         //make the stand face the correct direction when it spawns
         standLocation.setYaw(blockfaceToYaw(facing));
         //fences and bows and shields are always 90 degrees off
-        if(isFence(material) || material == Material.BOW || material == Material.BANNER || isShield){
+        if(isFence(material) || material == Material.BOW || material == Material.LEGACY_BANNER || isShield){
             standLocation.setYaw(blockfaceToYaw(nextFace(facing)));
         }
 
@@ -247,13 +247,13 @@ public class DisplayUtil {
                 isShield = true;
         } catch (NoSuchFieldError e) {}
 
-        if(isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_STICK)){
+        if(isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)){
             return toolAngle;
         }
         else if(material == Material.BOW){
             return bowAngle;
         }
-        else if(material == Material.FISHING_ROD || material == Material.CARROT_STICK){
+        else if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK){
             return rodAngle;
         }
         else if(isShield){
@@ -297,7 +297,7 @@ public class DisplayUtil {
 
     public static boolean isHeldNonItem(Material material){
         String sType = material.toString().toUpperCase();
-        if(isTool(material) || sType.contains("SWORD") || material == Material.BOW || material == Material.FISHING_ROD || material == Material.CARROT_STICK)
+        if(isTool(material) || sType.contains("SWORD") || material == Material.BOW || material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
             return true;
         return false;
     }
@@ -307,7 +307,7 @@ public class DisplayUtil {
         return (sMaterial.contains("_AXE") || sMaterial.contains("_HOE") || sMaterial.contains("_PICKAXE")
                 || sMaterial.contains("_SPADE") || sMaterial.contains("_SWORD")
                 || material == Material.BONE || material == Material.STICK  || material == Material.BLAZE_ROD
-                || material == Material.CARROT_STICK || material == Material.FISHING_ROD);
+                || material == Material.CARROT_ON_A_STICK || material == Material.FISHING_ROD);
     }
 
     public static boolean isChest(Material material){
@@ -317,12 +317,12 @@ public class DisplayUtil {
 
     public static boolean isFence(Material material){
         String sMaterial = material.toString().toUpperCase();
-        return (sMaterial.contains("FENCE") && (material != Material.IRON_FENCE) && !sMaterial.contains("GATE"));
+        return (sMaterial.contains("FENCE") && (material != Material.IRON_BARS) && !sMaterial.contains("GATE"));
     }
 
     public static boolean isArmor(Material material){
         String sMaterial = material.toString().toUpperCase();
-        if(material == Material.SKULL || material == Material.SKULL_ITEM){
+        if(material == Material.PLAYER_HEAD){
             return true;
         }
         else if(sMaterial.contains("_BOOTS") || sMaterial.contains("_CHESTPLATE") || sMaterial.contains("_LEGGINGS") || sMaterial.contains("HELMET")){
@@ -336,30 +336,29 @@ public class DisplayUtil {
             switch (material) {
                 case LADDER:
                 case VINE:
-                case THIN_GLASS:
-                case STAINED_GLASS_PANE:
-                case RAILS:
+                case LEGACY_THIN_GLASS:
+                case LEGACY_STAINED_GLASS_PANE:
+                case RAIL:
                 case POWERED_RAIL:
                 case ACTIVATOR_RAIL:
                 case DETECTOR_RAIL:
                 case TRIPWIRE_HOOK:
                 case LEVER:
                 case TORCH:
-                case SAPLING:
-                case WEB:
-                case LONG_GRASS:
+                case LEGACY_SAPLING:
+                case COBWEB:
+                case TALL_GRASS:
                 case DEAD_BUSH:
-                case YELLOW_FLOWER:
-                case RED_ROSE:
+                case DANDELION:
+                case LEGACY_RED_ROSE:
                 case BROWN_MUSHROOM:
                 case RED_MUSHROOM:
-                case REDSTONE_TORCH_OFF:
-                case REDSTONE_TORCH_ON:
-                case IRON_FENCE:
-                case WATER_LILY:
+                case REDSTONE_TORCH:
+                case IRON_BARS:
+                case LILY_PAD:
                 case HOPPER:
                 case BARRIER:
-                case DOUBLE_PLANT:
+                case CHORUS_PLANT:
                 case STRUCTURE_VOID:
                 case END_ROD:
                     return true;

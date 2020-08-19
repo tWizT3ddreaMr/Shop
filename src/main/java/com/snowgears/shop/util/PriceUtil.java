@@ -3,7 +3,6 @@ package com.snowgears.shop.util;
 import com.snowgears.shop.Shop;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,17 +58,17 @@ public class PriceUtil {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    public double getPrice(ItemStack item){
-        if(item == null || priceMode == PriceMode.OFF)
-            return -1;
-
-        String format = ""+item.getTypeId()+":"+item.getData().getData();
-        Double price = prices.get(format);
-        if(price != null)
-            return price;
-        return -1;
-    }
+//    @SuppressWarnings("deprecation")
+//    public double getPrice(ItemStack item){
+//        if(item == null || priceMode == PriceMode.OFF)
+//            return -1;
+//
+//        String format = ""+item.getTypeId()+":"+item.getData().getData();
+//        Double price = prices.get(format);
+//        if(price != null)
+//            return price;
+//        return -1;
+//    }
 
     @SuppressWarnings("deprecation")
     public double getPrice(Material material){

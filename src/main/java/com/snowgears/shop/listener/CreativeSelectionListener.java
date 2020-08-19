@@ -12,6 +12,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -46,7 +47,7 @@ public class CreativeSelectionListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getType() == Material.WALL_SIGN) {
+            if (clicked.getBlockData() instanceof WallSign) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;
