@@ -223,7 +223,7 @@ public class ShopGuiHandler {
 
             ItemStack icon = null;
             if(type != null) {
-                icon = new ItemStack(Material.valueOf(type));
+                icon = new ItemStack(Material.valueOf(type.toUpperCase()));
             }
             else if(childKey.equals("set_gamble")){
                 icon = plugin.getGambleDisplayItem();

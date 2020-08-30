@@ -1,5 +1,6 @@
 package com.snowgears.shop;
 
+import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayListener;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
@@ -13,6 +14,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
@@ -376,6 +378,10 @@ public class Shop extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean entityIsDisplay(Entity e){
+        return Display.isDisplay(e);
     }
 
     public void setGambleDisplayItem(ItemStack is){

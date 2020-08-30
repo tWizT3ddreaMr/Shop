@@ -91,12 +91,15 @@ public class MiscListener implements Listener {
         else
             return;
 
+        System.out.println("Starting chest calculation.");
+
         double price = 0;
         double priceCombo = 0;
         int amount;
         ShopType type;
         boolean isAdmin = false;
         if (plugin.getShopHandler().isChest(chest)) {
+            System.out.println("Chest can be a shop chest.");
             final Sign signBlock = (Sign) b.getState();
             if (event.getLine(0).toLowerCase().contains(ShopMessage.getCreationWord("SHOP").toLowerCase())) {
 
@@ -259,16 +262,18 @@ public class MiscListener implements Listener {
                         isAdmin = true;
                 }
 
+                //removed all the direction checking code. just make sure its a container
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if(chest.getState() instanceof Directional && chest.getState() instanceof Container) {
-                    Directional chestDirectional = (Directional) chest.getState();
-                    if (chestDirectional.getFacing() == signDirection && chest.getRelative(signDirection).getLocation().equals(signBlock.getLocation())) {
-                        //chest.getRelative(sign.getFacing()).setType(Material.LEGACY_WALL_SIGN);
-                    } else {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
-                        return;
-                    }
-                } else {
+                if(chest.getState() instanceof Container) {
+                    System.out.println("Chest is a container.");
+//                    Directional chestDirectional = (Directional) chest.getState();
+//                    if (chestDirectional.getFacing() == signDirection && chest.getRelative(signDirection).getLocation().equals(signBlock.getLocation())) {
+//                        //chest.getRelative(sign.getFacing()).setType(Material.LEGACY_WALL_SIGN);
+//                    } else {
+//                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
+//                        return;
+//                    }
+//                } else {
                     existingShop = plugin.getShopHandler().getShopByChest(chest);
                     if(existingShop != null){
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));

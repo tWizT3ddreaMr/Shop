@@ -62,7 +62,7 @@ public class ShopHandler {
     public AbstractShop getShopByChest(Block shopChest) {
 
         try {
-            if(shopChest.getState() instanceof ShulkerBox){
+            if(shopChest.getState() instanceof ShulkerBox || shopChest.getState() instanceof Barrel){
                 BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
                 AbstractShop shop = null;
                 for(BlockFace direction : directions){
@@ -540,6 +540,9 @@ public class ShopHandler {
     public boolean isChest(Block b){
         try{
             if(b.getState() instanceof ShulkerBox){
+                return true;
+            }
+            if(b.getState() instanceof Barrel){
                 return true;
             }
         } catch (NoClassDefFoundError e) {}
