@@ -4,10 +4,10 @@ package com.snowgears.shop.util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Sign;
 import org.bukkit.util.Vector;
 
 import java.io.File;
@@ -123,8 +123,11 @@ public class UtilMethods {
     // -1 - RIGHT SIDE
     // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock){
-        Sign s = (Sign)signBlock.getState().getData();
-        Location chest = signBlock.getRelative(s.getAttachedFace()).getLocation().add(0.5,0.5,0.5);
+        if(!(signBlock.getBlockData() instanceof WallSign))
+            return 0;
+        WallSign s = (WallSign)signBlock.getBlockData();
+        BlockFace attachedFace = s.getFacing().getOppositeFace();
+        Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
         Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
 
         Vector direction = head.subtract(chest).toVector().normalize();
@@ -133,7 +136,7 @@ public class UtilMethods {
         Vector cp = direction.crossProduct(look);
 
         double d = 0;
-        switch(s.getAttachedFace()){
+        switch(attachedFace){
             case NORTH:
                 d = cp.getZ();
                 break;
