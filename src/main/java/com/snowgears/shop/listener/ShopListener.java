@@ -149,7 +149,7 @@ public class ShopListener implements Listener {
 
                 //player is sneaking and clicks a chest of a shop
                 if(player.isSneaking()){
-                    if(player.getItemInHand().getType().toString().contains("SIGN")) {
+                    if(player.getInventory().getItemInMainHand().getType().toString().contains("SIGN")) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
                         return;

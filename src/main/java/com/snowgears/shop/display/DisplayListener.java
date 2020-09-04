@@ -15,11 +15,11 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -131,7 +131,7 @@ public class DisplayListener implements Listener {
 
     //prevent picking up display items
     @EventHandler (priority = EventPriority.HIGHEST)
-    public void onPickup(PlayerPickupItemEvent event) {
+    public void onPickup(EntityPickupItemEvent event) {
         if(event.isCancelled())
             return;
 

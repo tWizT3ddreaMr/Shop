@@ -7,6 +7,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -128,13 +130,22 @@ public class InventoryUtils {
         if(i1.getType() != i2.getType())
             return false;
 
+        ItemMeta i1Meta = i1.getItemMeta();
+        ItemMeta i2Meta = i2.getItemMeta();
         //only have the option to ignore durability if the item can be damaged
-        if(i1.getType().getMaxDurability() != 0) {
-            if (!Shop.getPlugin().checkItemDurability() && i1.getDurability() != i2.getDurability()) {
+        if(i1 instanceof Damageable) {
+            Damageable i1Damagable = (Damageable)i1Meta;
+            Damageable i2Damagable = (Damageable)i2Meta;
+
+            if (!Shop.getPlugin().checkItemDurability() && i1Damagable.getDamage() != i2Damagable.getDamage()) {
                 ItemStack itemStack1 = i1.clone();
                 ItemStack itemStack2 = i2.clone();
 
-                itemStack1.setDurability(i2.getDurability());
+                ItemMeta is1 = itemStack1.getItemMeta();
+                Damageable is1Damagable = (Damageable)is1;
+                is1Damagable.setDamage(i2Damagable.getDamage());
+                itemStack1.setItemMeta(is1);
+
                 return itemStack1.isSimilar(itemStack2);
             }
         }

@@ -9,7 +9,10 @@ import com.snowgears.shop.handler.EnderChestHandler;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.handler.ShopHandler;
 import com.snowgears.shop.listener.*;
-import com.snowgears.shop.util.*;
+import com.snowgears.shop.util.ItemNameUtil;
+import com.snowgears.shop.util.PriceUtil;
+import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.UtilMethods;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -22,7 +25,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +53,7 @@ public class Shop extends JavaPlugin {
     private PriceUtil priceUtil;
 
     private boolean usePerms;
-    private boolean enableMetrics;
+    //private boolean enableMetrics;
     private boolean enableGUI;
     private boolean useVault;
     private boolean hookWorldGuard;
@@ -80,7 +82,7 @@ public class Shop extends JavaPlugin {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    //@SuppressWarnings("deprecation")
     public void onEnable() {
         plugin = this;
 
@@ -149,7 +151,7 @@ public class Shop extends JavaPlugin {
         }
 
         usePerms = config.getBoolean("usePermissions");
-        enableMetrics = config.getBoolean("enableMetrics");
+        //enableMetrics = config.getBoolean("enableMetrics");
         enableGUI = config.getBoolean("enableGUI");
         hookWorldGuard = config.getBoolean("hookWorldGuard");
         commandAlias = config.getString("commandAlias");
@@ -174,14 +176,15 @@ public class Shop extends JavaPlugin {
 //        itemCurrency = new ItemStack(itemCurrencyId);
 //        itemCurrency.setData(new MaterialData(itemCurrencyId, (byte) itemCurrencyData));
 
-        if(enableMetrics) {
-            try {
-                Metrics metrics = new Metrics(this);
-                metrics.start();
-            } catch (IOException e) {
-                // Failed to submit the stats
-            }
-        }
+        //TODO may put this back at some point in the future via shaded pom.xml mcstat metrics but as of now i dont particularly care
+//        if(enableMetrics) {
+//            try {
+//                Metrics metrics = new Metrics(this);
+//                metrics.start();
+//            } catch (IOException e) {
+//                // Failed to submit the stats
+//            }
+//        }
 
         //Loading the itemCurrency from a file makes it easier to allow servers to use detailed itemstacks as the server's economy item
         File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");

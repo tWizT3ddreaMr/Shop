@@ -4,10 +4,12 @@ package com.snowgears.shop.util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 import java.io.File;
@@ -116,6 +118,10 @@ public class UtilMethods {
         } catch (Exception e){
             return null;
         }
+    }
+
+    public static String getEulerAngleString(EulerAngle angle){
+        return "EulerAngle("+angle.getX() + ", " + angle.getY() + ", " + angle.getZ() + ")";
     }
 
     // Returns whether or not a player clicked the left or right side of a wall sign
@@ -247,24 +253,17 @@ public class UtilMethods {
         nonIntrusiveMaterials.remove(Material.FIRE);
         nonIntrusiveMaterials.remove(Material.END_PORTAL);
         nonIntrusiveMaterials.remove(Material.NETHER_PORTAL);
-        nonIntrusiveMaterials.remove(Material.LEGACY_SKULL);
+        nonIntrusiveMaterials.remove(Material.SKELETON_SKULL);
+        nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL);
+        nonIntrusiveMaterials.remove(Material.PLAYER_HEAD);
+        nonIntrusiveMaterials.remove(Material.CREEPER_HEAD);
     }
 
     public static BlockFace getDirectionOfChest(Block block){
-        byte rawDirectionData = block.getState().getData().getData();
-
-        switch (rawDirectionData){
-            case 2:
-                return BlockFace.NORTH;
-            case 5:
-                return BlockFace.EAST;
-            case 3:
-                return BlockFace.SOUTH;
-            case 4:
-                return BlockFace.WEST;
-            default:
-                return BlockFace.NORTH;
+        if(block.getBlockData() instanceof Directional){
+            return ((Directional)block.getBlockData()).getFacing();
         }
+        return null;
     }
 
     public static String cleanNumberText(String text){

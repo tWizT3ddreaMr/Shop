@@ -28,12 +28,9 @@ destructionCost: 0
 # If you want to use permissions with Shop, you must set this to true #
 usePermissions: false
 
-# If you do not basic anonymous server information to be logged, set this to false #
-enableMetrics: true
-
 # THE CURRENT GUI IS EXPERIMENTAL. IF ENOUGH PEOPLE LIKE IT, I WILL EXPAND THE FEATURES #
 # This enables a graphical user interface to use all shop features without typing commands #
-enableGUI: true
+enableGUI: false
 
 # Setting this to true will force all Shops to be created in WorldGuard regions with a shop flag #
 # WorldGuard plugin must be installed for this feature to work #

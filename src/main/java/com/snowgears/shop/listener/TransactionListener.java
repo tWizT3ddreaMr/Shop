@@ -196,12 +196,12 @@ public class TransactionListener implements Listener {
                         } catch (NoSuchFieldError e) {}
                     }
                     if (plugin.playEffects())
-                        player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK.getId());
+                        player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK);
                 } else {
                     if (plugin.playSounds())
                         player.playSound(shop.getSignLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0F, 1.0F);
                     if (plugin.playEffects())
-                        player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK.getId());
+                        player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
                 }
             }
         } catch (Error e){

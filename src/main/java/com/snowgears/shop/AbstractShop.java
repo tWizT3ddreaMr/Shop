@@ -24,6 +24,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.UUID;
 
@@ -190,8 +192,12 @@ public abstract class AbstractShop {
     public void setItemStack(ItemStack is) {
         this.item = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
-            if (item.getType().getMaxDurability() > 0)
-                item.setDurability((short) 0); //set item to full durability
+            ItemMeta itemMeta = item.getItemMeta();
+            if(itemMeta instanceof Damageable){
+                Damageable damageableItem = (Damageable)itemMeta;
+                damageableItem.setDamage(0); //set item to full durability
+                item.setItemMeta(itemMeta);
+            }
         }
         //this.display.spawn();
     }
@@ -199,8 +205,12 @@ public abstract class AbstractShop {
     public void setSecondaryItemStack(ItemStack is) {
         this.secondaryItem = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
-            if (secondaryItem.getType().getMaxDurability() > 0)
-                secondaryItem.setDurability((short) 0); //set item to full durability
+            ItemMeta itemMeta = secondaryItem.getItemMeta();
+            if(itemMeta instanceof Damageable){
+                Damageable damageableItem = (Damageable)itemMeta;
+                damageableItem.setDamage(0); //set secondary item to full durability
+                secondaryItem.setItemMeta(itemMeta);
+            }
         }
         //this.display.spawn();
     }

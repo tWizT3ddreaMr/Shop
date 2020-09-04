@@ -42,6 +42,14 @@ public class CommandHandler extends BukkitCommand {
                 }
                 else {
 
+                    //used for getting some large item eulerstand angles when new items are added in
+                    //for(Entity e : player.getNearbyEntities(1,1,1)){
+                    //    if(e instanceof ArmorStand){
+                    //        System.out.println(UtilMethods.getEulerAngleString(((ArmorStand)e).getRightArmPose()));
+                    //        System.out.println(UtilMethods.getEulerAngleString(((ArmorStand)e).getBodyPose()));
+                    //    }
+                    //}
+
                     //these are commands all players have access to
                     player.sendMessage(ChatColor.AQUA + "/" + this.getName() + " list" + ChatColor.GRAY + " - list your shops on the server");
                     player.sendMessage(ChatColor.AQUA + "/" + this.getName() + " currency" + ChatColor.GRAY + " - info about the currency shops use");
@@ -123,7 +131,7 @@ public class CommandHandler extends BukkitCommand {
                             return true;
                         }
                         else{
-                            ItemStack handItem = player.getItemInHand();
+                            ItemStack handItem = player.getInventory().getItemInMainHand();
                             if(handItem == null || handItem.getType() == Material.AIR){
                                 player.sendMessage(ChatColor.RED + "You must be holding a valid item to set the shop currency.");
                                 return true;
@@ -145,8 +153,8 @@ public class CommandHandler extends BukkitCommand {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }
-                    if(player.getItemInHand() != null && player.getItemInHand().getType() != Material.AIR)
-                        plugin.setGambleDisplayItem(player.getItemInHand());
+                    if(player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType() != Material.AIR)
+                        plugin.setGambleDisplayItem(player.getInventory().getItemInMainHand());
                     else {
                         player.sendMessage(ChatColor.RED + "You must have an item in your hand to use that command.");
                         return true;

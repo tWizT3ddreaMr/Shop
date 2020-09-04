@@ -91,7 +91,7 @@ public class MiscListener implements Listener {
         else
             return;
 
-        System.out.println("Starting chest calculation.");
+        //System.out.println("Starting chest calculation.");
 
         double price = 0;
         double priceCombo = 0;
@@ -99,7 +99,7 @@ public class MiscListener implements Listener {
         ShopType type;
         boolean isAdmin = false;
         if (plugin.getShopHandler().isChest(chest)) {
-            System.out.println("Chest can be a shop chest.");
+            //System.out.println("Chest can be a shop chest.");
             final Sign signBlock = (Sign) b.getState();
             if (event.getLine(0).toLowerCase().contains(ShopMessage.getCreationWord("SHOP").toLowerCase())) {
 
@@ -265,7 +265,7 @@ public class MiscListener implements Listener {
                 //removed all the direction checking code. just make sure its a container
                 //make sure that the sign is in front of the chest, unless it is a shulker box
                 if(chest.getState() instanceof Container) {
-                    System.out.println("Chest is a container.");
+                    //System.out.println("Chest is a container.");
 //                    Directional chestDirectional = (Directional) chest.getState();
 //                    if (chestDirectional.getFacing() == signDirection && chest.getRelative(signDirection).getLocation().equals(signBlock.getLocation())) {
 //                        //chest.getRelative(sign.getFacing()).setType(Material.LEGACY_WALL_SIGN);
@@ -380,7 +380,7 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if (player.getItemInHand().getType() == Material.AIR) {
+                if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
                     return;
                 }
 
@@ -407,7 +407,7 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                ItemStack shopItem = player.getItemInHand();
+                ItemStack shopItem = player.getInventory().getItemInMainHand();
                 if (shop.getItemStack() == null) {
 
                     PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
