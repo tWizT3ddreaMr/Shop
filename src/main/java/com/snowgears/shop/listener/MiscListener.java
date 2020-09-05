@@ -498,6 +498,17 @@ public class MiscListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
+                else{
+                    if((!shop.isAdmin()) && plugin.returnCreationCost()) {
+                        if (plugin.useVault()) {
+                            EconomyUtils.addFunds(shop.getOwner(),player.getInventory(), plugin.getCreationCost());
+                        } else {
+                            ItemStack currencyDrop = plugin.getItemCurrency().clone();
+                            currencyDrop.setAmount((int) plugin.getCreationCost());
+                            shop.getChestLocation().getWorld().dropItemNaturally(shop.getChestLocation(), currencyDrop);
+                        }
+                    }
+                }
 
                 player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "destroy", shop, player));
                 shop.delete();

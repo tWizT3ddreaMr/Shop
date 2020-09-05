@@ -72,6 +72,7 @@ public class Shop extends JavaPlugin {
     private boolean useEnderchests;
     private double creationCost;
     private double destructionCost;
+    private boolean returnCreationCost;
     private double taxPercent;
     private ArrayList<String> worldBlackList;
 
@@ -221,6 +222,7 @@ public class Shop extends JavaPlugin {
 
         creationCost = config.getDouble("creationCost");
         destructionCost = config.getDouble("destructionCost");
+        returnCreationCost = config.getBoolean("returnCreationCost");
 
         worldBlackList = new ArrayList<String>();
         for(String world : config.getConfigurationSection("worldBlacklist").getKeys(true)){
@@ -486,6 +488,10 @@ public class Shop extends JavaPlugin {
 
     public double getDestructionCost(){
         return destructionCost;
+    }
+
+    public boolean returnCreationCost(){
+        return returnCreationCost;
     }
 
     public ItemNameUtil getItemNameUtil(){

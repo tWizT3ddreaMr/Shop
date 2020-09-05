@@ -20,6 +20,10 @@ currencyFormat: "[price] [name]"
 creationCost: 0
 destructionCost: 0
 
+# This returns the creation cost to the shop creator when the shop is destroyed.#
+# Adds virtual funds if using vault currency and drops the item on the chest location if using physical currency #
+returnCreationCost: false
+
 
 # =================================================================== #
 #                         GENERAL SETTINGS                            #
