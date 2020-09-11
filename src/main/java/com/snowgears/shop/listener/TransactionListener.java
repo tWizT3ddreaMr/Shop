@@ -149,6 +149,9 @@ public class TransactionListener implements Listener {
         //the transaction has finished and the exchange event has not been cancelled
         sendExchangeMessages(shop, player, actionType);
         sendEffects(true, player, shop);
+        //make sure to update the shop sign, but only if the sign lines use a variable that requires a refresh (like stock that is dynamically updated)
+        if(shop.getSignLinesRequireRefresh())
+            shop.updateSign();
     }
 
     private void sendExchangeMessages(AbstractShop shop, Player player, ShopType shopType) {

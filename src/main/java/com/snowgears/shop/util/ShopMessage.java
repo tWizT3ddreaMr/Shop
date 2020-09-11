@@ -105,6 +105,7 @@ public class ShopMessage {
                 unformattedMessage = unformattedMessage.replace("[gamble item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
             }
         }
+
         if(shop != null && shop.getSecondaryItemStack() != null) {
             if(shop.getType() == ShopType.BARTER) {
                 unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getSecondaryItemStack().getAmount());
@@ -120,7 +121,9 @@ public class ShopMessage {
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + ShopMessage.getServerDisplayName());
             else
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
-            unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
+
+            unformattedMessage = unformattedMessage.replace("[amount]", "" + shop.getAmount());
+
             if(shop.getType() == ShopType.COMBO) {
                 unformattedMessage = unformattedMessage.replace("[priceSell]", "" + ((ComboShop)shop).getPriceSellString());
                 unformattedMessage = unformattedMessage.replace("[price sell per item]", "" + ((ComboShop)shop).getPriceSellPerItemString());
@@ -130,12 +133,18 @@ public class ShopMessage {
                 String amountPerString = new DecimalFormat("#.##").format(shop.getPrice() / shop.getAmount()).toString();
                 amountPerString = amountPerString + " " + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack());
                 unformattedMessage = unformattedMessage.replace("[price per item]", "" + amountPerString);
+                unformattedMessage = unformattedMessage.replace("[price]", "" + (int) shop.getPrice());
             }
-            else
+            else {
                 unformattedMessage = unformattedMessage.replace("[price per item]", "" + shop.getPricePerItemString());
+                unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
+            }
             unformattedMessage = unformattedMessage.replace("[shop type]", "" + ShopMessage.getCreationWord(shop.getType().toString().toUpperCase())); //sub in user's word for SELL,BUY,BARTER
-            if(unformattedMessage.contains("[stock]"))
+            if(unformattedMessage.contains("[stock]")) {
                 unformattedMessage = unformattedMessage.replace("[stock]", "" + shop.getStock());
+                //if shop is displaying stock on sign, it will require a sign refresh on transactions
+                shop.setSignLinesRequireRefresh(true);
+            }
         }
         if(player != null) {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
@@ -200,14 +209,7 @@ public class ShopMessage {
         String[] lines = getUnformattedShopSignLines(shopType, shopFormat);
 
         for(int i=0; i<lines.length; i++) {
-            lines[i] = lines[i].replace("[amount]", "" + shop.getAmount());
-            if (shop.getType() == ShopType.BARTER)
-                lines[i] = lines[i].replace("[price]", "" + (int) shop.getPrice());
-            else
-                lines[i] = lines[i].replace("[price]", shop.getPriceString());
-            lines[i] = lines[i].replace("[owner]", "" + shop.getOwnerName());
             lines[i] = formatMessage(lines[i], shop, null, true);
-
             lines[i] = ChatColor.translateAlternateColorCodes('&', lines[i]);
 
             //TODO have smart way of cutting lines if too long so at least some of word can go on

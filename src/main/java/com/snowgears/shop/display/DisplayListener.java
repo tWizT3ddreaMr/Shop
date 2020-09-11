@@ -6,6 +6,7 @@ import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Container;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -109,22 +110,32 @@ public class DisplayListener implements Listener {
             event.setCancelled(true);
     }
 
-    //refresh display when a shulker box is closed
     @EventHandler (priority = EventPriority.HIGHEST)
-    public void onShulkerBoxClose(InventoryCloseEvent event) {
+    public void onShopInventoryClose(InventoryCloseEvent event) {
         try {
-            if (event.getInventory().getHolder() instanceof ShulkerBox) {
-                ShulkerBox box = ((ShulkerBox)event.getInventory().getHolder());
-                final AbstractShop shop = plugin.getShopHandler().getShopByChest(box.getBlock());
-                if(shop != null){
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            if(shop != null)
-                                shop.getDisplay().spawn();
-                        }
-                    }.runTaskLater(this.plugin, 10);
+            if(event.getInventory().getHolder() instanceof Container){
+                Container container = ((Container)event.getInventory().getHolder());
+                AbstractShop shop = plugin.getShopHandler().getShopByChest(container.getBlock());
+
+                if(shop == null)
+                    return;
+
+                //refresh display if it's a shulker box (this elevates armor stands)
+                if (event.getInventory().getHolder() instanceof ShulkerBox) {
+                    if(shop != null){
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if(shop != null)
+                                    shop.getDisplay().spawn();
+                            }
+                        }.runTaskLater(this.plugin, 10);
+                    }
                 }
+
+                //if the sign lines use a variable that requires a refresh (like stock that is dynamically updated), then refresh sign
+                if(shop.getSignLinesRequireRefresh())
+                    shop.updateSign();
             }
         } catch (NoClassDefFoundError e) {}
     }

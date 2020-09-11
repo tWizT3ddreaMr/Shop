@@ -42,6 +42,7 @@ public abstract class AbstractShop {
     protected boolean isAdmin;
     protected ShopType type;
     protected String[] signLines;
+    protected boolean signLinesRequireRefresh;
 
     public AbstractShop(Location signLoc, UUID player, double pri, int amt, Boolean admin) {
         signLocation = signLoc;
@@ -85,6 +86,8 @@ public abstract class AbstractShop {
     public abstract TransactionError executeTransaction(int orders, Player player, boolean isCheck, ShopType transactionType);
 
     public int getStock() {
+        if(this.getInventory() == null || this.getItemStack() == null)
+            return 0;
         return InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / this.getAmount();
     }
 
@@ -103,6 +106,8 @@ public abstract class AbstractShop {
     }
 
     public Inventory getInventory() {
+        if(chestLocation == null || signLocation == null)
+            return null;
         Block chestBlock = chestLocation.getBlock();
         if(chestBlock.getType() == Material.ENDER_CHEST) {
             OfflinePlayer ownerPlayer = this.getOwner();
@@ -235,6 +240,14 @@ public abstract class AbstractShop {
     public int getSecondaryItemDurabilityPercent(){
         ItemStack item = this.getSecondaryItemStack().clone();
         return UtilMethods.getDurabilityPercent(item);
+    }
+
+    public void setSignLinesRequireRefresh(boolean signLinesRequireRefresh){
+        this.signLinesRequireRefresh = signLinesRequireRefresh;
+    }
+
+    public boolean getSignLinesRequireRefresh(){
+        return this.signLinesRequireRefresh;
     }
 
     //common base methods to all shops
