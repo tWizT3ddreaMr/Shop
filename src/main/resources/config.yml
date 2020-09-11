@@ -53,6 +53,10 @@ checkItemDurability: true
 # This will allow players to use the limited creative selection tool to choose shop items #
 allowCreativeSelection: true
 
+# This will force shop display to be set to NONE if the display has no room
+# If this is false, the shop will simply say it cannot be created because the display is blocked
+forceDisplayToNoneIfBlocked: true
+
 # These will play sounds and particle effects when creating and using shops #
 # These will need to be set to false if your server is running anything less than Minecraft 1.9 #
 playSounds: true

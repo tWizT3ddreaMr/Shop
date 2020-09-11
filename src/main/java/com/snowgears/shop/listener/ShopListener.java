@@ -6,6 +6,7 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
@@ -149,7 +150,8 @@ public class ShopListener implements Listener {
 
                 //player is sneaking and clicks a chest of a shop
                 if(player.isSneaking()){
-                    if(player.getInventory().getItemInMainHand().getType().toString().contains("SIGN")) {
+                    //don't print sales info and cancel event if player is holding a sign (may be trying to place directly onto chest)
+                    if(!Tag.SIGNS.isTagged(player.getInventory().getItemInMainHand().getType())) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
                         return;

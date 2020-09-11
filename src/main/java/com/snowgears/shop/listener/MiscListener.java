@@ -91,12 +91,10 @@ public class MiscListener implements Listener {
         else
             return;
 
-        //System.out.println("Starting chest calculation.");
-
         double price = 0;
         double priceCombo = 0;
-        int amount;
-        ShopType type;
+        int amount = 0 ;
+        ShopType type = null;
         boolean isAdmin = false;
         if (plugin.getShopHandler().isChest(chest)) {
             //System.out.println("Chest can be a shop chest.");
@@ -115,7 +113,7 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if(plugin.getWorldBlacklist().contains(b.getLocation().getWorld().getName())){
+                if (plugin.getWorldBlacklist().contains(b.getLocation().getWorld().getName())) {
                     if (!(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "worldBlacklist", null, player));
                         event.setCancelled(true);
@@ -126,9 +124,10 @@ public class MiscListener implements Listener {
                 boolean canCreateShopInRegion = true;
                 try {
                     canCreateShopInRegion = WorldGuardHook.canCreateShop(player, b.getLocation());
-                } catch(NoClassDefFoundError e) {}
+                } catch (NoClassDefFoundError e) {
+                }
 
-                if(!canCreateShopInRegion){
+                if (!canCreateShopInRegion) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
                     event.setCancelled(true);
                     return;
@@ -148,10 +147,10 @@ public class MiscListener implements Listener {
 
                 //change default shop type based on permissions
                 type = ShopType.SELL;
-                if(plugin.usePerms()){
-                    if(!player.hasPermission("shop.create.sell")) {
+                if (plugin.usePerms()) {
+                    if (!player.hasPermission("shop.create.sell")) {
                         type = ShopType.BUY;
-                        if(!player.hasPermission("shop.create.buy"))
+                        if (!player.hasPermission("shop.create.buy"))
                             type = ShopType.BARTER;
                     }
                 }
@@ -167,47 +166,44 @@ public class MiscListener implements Listener {
                 else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("COMBO")))
                     type = ShopType.COMBO;
 
-                if(plugin.useVault()){
+                if (plugin.useVault()) {
                     try {
                         String line3 = UtilMethods.cleanNumberText(event.getLine(2));
 
                         String[] multiplePrices = line3.split(" ");
-                        if(multiplePrices.length > 1){
-                            if(multiplePrices[0].contains("."))
+                        if (multiplePrices.length > 1) {
+                            if (multiplePrices[0].contains("."))
                                 price = Double.parseDouble(multiplePrices[0]);
                             else
                                 price = Integer.parseInt(multiplePrices[0]);
 
-                            if(multiplePrices[1].contains("."))
+                            if (multiplePrices[1].contains("."))
                                 priceCombo = Double.parseDouble(multiplePrices[1]);
                             else
                                 priceCombo = Integer.parseInt(multiplePrices[1]);
-                        }
-                        else{
-                            if(line3.contains("."))
+                        } else {
+                            if (line3.contains("."))
                                 price = Double.parseDouble(line3);
                             else
                                 price = Integer.parseInt(line3);
                         }
 
-                    } catch (NumberFormatException e){
+                    } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                         return;
                     }
-                }
-                else{
+                } else {
                     try {
                         String line3 = UtilMethods.cleanNumberText(event.getLine(2));
 
                         String[] multiplePrices = line3.split(" ");
-                        if(multiplePrices.length > 1){
+                        if (multiplePrices.length > 1) {
                             price = Integer.parseInt(multiplePrices[0]);
                             priceCombo = Integer.parseInt(multiplePrices[1]);
-                        }
-                        else{
+                        } else {
                             price = Integer.parseInt(line3);
                         }
-                    } catch (NumberFormatException e){
+                    } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                         return;
                     }
@@ -223,7 +219,7 @@ public class MiscListener implements Listener {
                 AbstractShop tempShop = new SellShop(null, player.getUniqueId(), 0, 0, false);
 
                 if (plugin.usePerms()) {
-                    if (!(player.hasPermission("shop.create."+type.toString().toLowerCase()) || player.hasPermission("shop.create")))
+                    if (!(player.hasPermission("shop.create." + type.toString().toLowerCase()) || player.hasPermission("shop.create")))
                         playerMessage = ShopMessage.getMessage("permission", "create", tempShop, player);
                 }
 
@@ -233,8 +229,8 @@ public class MiscListener implements Listener {
 
                 //if players must pay to create shops, check that they have enough money first
                 double cost = plugin.getCreationCost();
-                if(cost > 0){
-                    if(!EconomyUtils.hasSufficientFunds(player, player.getInventory(), cost)){
+                if (cost > 0) {
+                    if (!EconomyUtils.hasSufficientFunds(player, player.getInventory(), cost)) {
                         playerMessage = ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", tempShop, player);
                     }
                 }
@@ -245,8 +241,8 @@ public class MiscListener implements Listener {
 
                 //prevent players (even if they are OP) from creating a shop on a double chest with another player
                 AbstractShop existingShop = plugin.getShopHandler().getShopByChest(chest);
-                if(existingShop != null && !existingShop.isAdmin()){
-                    if(!existingShop.getOwnerUUID().equals(player.getUniqueId())){
+                if (existingShop != null && !existingShop.isAdmin()) {
+                    if (!existingShop.getOwnerUUID().equals(player.getUniqueId())) {
                         playerMessage = ShopMessage.getMessage("interactionIssue", "createOtherPlayer", null, player);
                     }
                 }
@@ -264,85 +260,77 @@ public class MiscListener implements Listener {
 
                 //removed all the direction checking code. just make sure its a container
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if(chest.getState() instanceof Container) {
-                    //System.out.println("Chest is a container.");
-//                    Directional chestDirectional = (Directional) chest.getState();
-//                    if (chestDirectional.getFacing() == signDirection && chest.getRelative(signDirection).getLocation().equals(signBlock.getLocation())) {
-//                        //chest.getRelative(sign.getFacing()).setType(Material.LEGACY_WALL_SIGN);
-//                    } else {
-//                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
-//                        return;
-//                    }
-//                } else {
+                if (chest.getState() instanceof Container) {
                     existingShop = plugin.getShopHandler().getShopByChest(chest);
-                    if(existingShop != null){
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
-                        return;
-                    }
-                    else{
-                        //chest.getRelative(sign.getFacing()).setType(Material.LEGACY_WALL_SIGN);
-                    }
-                }
-
-                if (!(b.getBlockData() instanceof WallSign)) {
-                    if(!b.getType().toString().contains("_SIGN")){
-                        return;
-                    }
-                    String wallSignString = b.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
-                    b.setType(Material.valueOf(wallSignString));
-
-                    Directional wallSignData = (Directional) b.getBlockData();
-                    wallSignData.setFacing(signDirection);
-                    b.setBlockData(wallSignData);
-                }
-                signBlock.update();
-
-                final AbstractShop shop = AbstractShop.create(signBlock.getLocation(), player.getUniqueId(), price, priceCombo, amount, isAdmin, type);
-
-                PlayerCreateShopEvent e = new PlayerCreateShopEvent(player, shop);
-                plugin.getServer().getPluginManager().callEvent(e);
-
-                if(e.isCancelled())
-                    return;
-
-                if(type == ShopType.GAMBLE){
-                    shop.setItemStack(plugin.getGambleDisplayItem());
-                    shop.setAmount(1);
-                    plugin.getShopHandler().addShop(shop);
-                    shop.getDisplay().setType(DisplayType.LARGE_ITEM);
-
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
-                    plugin.getTransactionListener().sendEffects(true, player, shop);
-                    plugin.getShopHandler().saveShops(shop.getOwnerUUID());
-                    return;
-                }
-
-                plugin.getShopHandler().addShop(shop);
-                shop.updateSign();
-
-                player.sendMessage(ShopMessage.getMessage(type.toString(), "initialize", shop, player));
-                if (type == ShopType.BUY && plugin.allowCreativeSelection()){
-                    player.sendMessage(ShopMessage.getMessage(type.toString(), "initializeAlt", shop, player));
-                }
-
-                //give player a limited amount of time to finish creating the shop until it is deleted
-                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                    public void run() {
-                        //the shop has still not been initialized with an item from a player
-                        if (!shop.isInitialized()) {
-                            plugin.getShopHandler().removeShop(shop);
-                            if (b.getBlockData() instanceof WallSign) {
-                                Sign sign = (Sign) b.getState();
-                                sign.setLine(0, ChatColor.RED + "SHOP CLOSED");
-                                sign.setLine(1, ChatColor.GRAY + "CREATION TIMEOUT");
-                                sign.setLine(2, "");
-                                sign.setLine(3, "");
-                                sign.update(true);
-                                plugin.getCreativeSelectionListener().removePlayerData(player);
-                            }
+                    if (existingShop != null) {
+                        //if the block they are adding a sign to is already a shop, do not let them
+                        if (existingShop.getChestLocation().equals(chest.getLocation())) {
+                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "createOtherPlayer", null, player));
+                            return;
                         }
                     }
-                }, 1200L); //1 minute
+
+
+                    if (!(b.getBlockData() instanceof WallSign)) {
+                        if (!b.getType().toString().contains("_SIGN")) {
+                            return;
+                        }
+                        String wallSignString = b.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
+                        b.setType(Material.valueOf(wallSignString));
+
+                        Directional wallSignData = (Directional) b.getBlockData();
+                        wallSignData.setFacing(signDirection);
+                        b.setBlockData(wallSignData);
+                    }
+                    signBlock.update();
+
+                    final AbstractShop shop = AbstractShop.create(signBlock.getLocation(), player.getUniqueId(), price, priceCombo, amount, isAdmin, type);
+
+                    PlayerCreateShopEvent e = new PlayerCreateShopEvent(player, shop);
+                    plugin.getServer().getPluginManager().callEvent(e);
+
+                    if (e.isCancelled())
+                        return;
+
+                    if (type == ShopType.GAMBLE) {
+                        shop.setItemStack(plugin.getGambleDisplayItem());
+                        shop.setAmount(1);
+                        plugin.getShopHandler().addShop(shop);
+                        shop.getDisplay().setType(DisplayType.LARGE_ITEM);
+
+                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        plugin.getTransactionListener().sendEffects(true, player, shop);
+                        plugin.getShopHandler().saveShops(shop.getOwnerUUID());
+                        return;
+                    }
+
+                    plugin.getShopHandler().addShop(shop);
+                    shop.updateSign();
+
+                    player.sendMessage(ShopMessage.getMessage(type.toString(), "initialize", shop, player));
+                    if (type == ShopType.BUY && plugin.allowCreativeSelection()) {
+                        player.sendMessage(ShopMessage.getMessage(type.toString(), "initializeAlt", shop, player));
+                    }
+
+                    //give player a limited amount of time to finish creating the shop until it is deleted
+                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                        public void run() {
+                            //the shop has still not been initialized with an item from a player
+                            if (!shop.isInitialized()) {
+                                plugin.getShopHandler().removeShop(shop);
+                                if (b.getBlockData() instanceof WallSign) {
+                                    Sign sign = (Sign) b.getState();
+                                    sign.setLine(0, ChatColor.RED + "SHOP CLOSED");
+                                    sign.setLine(1, ChatColor.GRAY + "CREATION TIMEOUT");
+                                    sign.setLine(2, "");
+                                    sign.setLine(3, "");
+                                    sign.update(true);
+                                    plugin.getCreativeSelectionListener().removePlayerData(player);
+                                }
+                            }
+                        }
+                    }, 1200L); //1 minute
+                }
             }
         }
     }
@@ -388,10 +376,15 @@ public class MiscListener implements Listener {
                     //make sure there is room above the shop for the display
                     Block aboveShop = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
                     if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "displayRoom", null, player));
-                        plugin.getTransactionListener().sendEffects(false, player, shop);
-                        event.setCancelled(true);
-                        return;
+                        if(plugin.forceDisplayToNoneIfBlocked()){
+                            shop.getDisplay().setType(DisplayType.NONE);
+                        }
+                        else {
+                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "displayRoom", null, player));
+                            plugin.getTransactionListener().sendEffects(false, player, shop);
+                            event.setCancelled(true);
+                            return;
+                        }
                     }
                 }
 
@@ -499,7 +492,7 @@ public class MiscListener implements Listener {
                     return;
                 }
                 else{
-                    if((!shop.isAdmin()) && plugin.returnCreationCost()) {
+                    if((!shop.isAdmin()) && plugin.returnCreationCost() && plugin.getCreationCost() > 0) {
                         if (plugin.useVault()) {
                             EconomyUtils.addFunds(shop.getOwner(),player.getInventory(), plugin.getCreationCost());
                         } else {

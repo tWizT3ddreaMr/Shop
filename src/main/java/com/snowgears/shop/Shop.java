@@ -61,6 +61,7 @@ public class Shop extends JavaPlugin {
     private DisplayType displayType;
     private boolean checkItemDurability;
     private boolean allowCreativeSelection;
+    private boolean forceDisplayToNoneIfBlocked;
     private boolean playSounds;
     private boolean playEffects;
     private ItemStack gambleDisplayItem;
@@ -134,6 +135,9 @@ public class Shop extends JavaPlugin {
 //            getServer().getPluginManager().registerEvents(clearLaggListener, this);
 //        }
 
+        //TODO set all config defaults here
+        //config.setDefaults();
+
         try {
             displayType = DisplayType.valueOf(config.getString("displayType"));
         } catch (Exception e){ displayType = DisplayType.ITEM; }
@@ -158,6 +162,7 @@ public class Shop extends JavaPlugin {
         commandAlias = config.getString("commandAlias");
         checkItemDurability = config.getBoolean("checkItemDurability");
         allowCreativeSelection = config.getBoolean("allowCreativeSelection");
+        forceDisplayToNoneIfBlocked = config.getBoolean("forceDisplayToNoneIfBlocked");
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
@@ -349,6 +354,10 @@ public class Shop extends JavaPlugin {
 
     public boolean allowCreativeSelection(){
         return allowCreativeSelection;
+    }
+
+    public boolean forceDisplayToNoneIfBlocked() {
+        return forceDisplayToNoneIfBlocked;
     }
 
     public boolean playSounds(){

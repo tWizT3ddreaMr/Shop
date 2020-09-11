@@ -101,6 +101,14 @@ public abstract class AbstractShop {
         return signLocation;
     }
 
+    public WallSign getSign(){
+        BlockData signBlockData = this.getSignLocation().getBlock().getBlockData();
+        if(signBlockData instanceof WallSign){
+            return (WallSign)signBlockData;
+        }
+        return null;
+    }
+
     public Location getChestLocation() {
         return chestLocation;
     }
