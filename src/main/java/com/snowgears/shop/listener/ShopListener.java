@@ -6,6 +6,7 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -270,6 +271,19 @@ public class ShopListener implements Listener {
 
     @EventHandler
     public void onLogin(PlayerLoginEvent event){
+        //delete all shops from players that have not played in X amount of hours (if configured)
+        if(plugin.getHoursOfflineToRemoveShops() != 0){
+            for(OfflinePlayer offlinePlayer : plugin.getShopHandler().getShopOwners()){
+                long msSinceLastPlayed = System.currentTimeMillis() - offlinePlayer.getLastPlayed();
+                int hoursSinceLastPlayed   = (int) ((msSinceLastPlayed / (1000*60*60)) % 24);
+                if(hoursSinceLastPlayed >= plugin.getHoursOfflineToRemoveShops()){
+                    for(AbstractShop shop : plugin.getShopHandler().getShops(offlinePlayer.getUniqueId())){
+                        shop.delete();
+                    }
+                    plugin.getShopHandler().saveShops(offlinePlayer.getUniqueId());
+                }
+            }
+        }
         if(!plugin.useEnderChests())
             return;
 

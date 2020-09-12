@@ -53,9 +53,13 @@ checkItemDurability: true
 # This will allow players to use the limited creative selection tool to choose shop items #
 allowCreativeSelection: true
 
-# This will force shop display to be set to NONE if the display has no room
-# If this is false, the shop will simply say it cannot be created because the display is blocked
+# This will force shop display to be set to NONE if the display has no room #
+# If this is false, the shop will simply say it cannot be created because the display is blocked #
 forceDisplayToNoneIfBlocked: true
+
+# This will permanently delete a player's shops if they have not logged onto the server after X hours #
+# Set this to 0 to never auto-delete a player's shops #
+deletePlayerShopsAfterXHoursOffline: 0
 
 # These will play sounds and particle effects when creating and using shops #
 # These will need to be set to false if your server is running anything less than Minecraft 1.9 #

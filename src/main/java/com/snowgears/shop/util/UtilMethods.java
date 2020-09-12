@@ -16,12 +16,53 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.UUID;
+import java.text.DecimalFormat;
+import java.util.*;
 
 public class UtilMethods {
 
     private static ArrayList<Material> nonIntrusiveMaterials = new ArrayList<Material>();
+
+    //this is used for formatting numbers like 5000 to 5k
+    private static final NavigableMap<Double, String> suffixes = new TreeMap<>();
+    static {
+        suffixes.put(1_000D, "k");
+        suffixes.put(1_000_000D, "M");
+        suffixes.put(1_000_000_000D, "G");
+        suffixes.put(1_000_000_000_000D, "T");
+        suffixes.put(1_000_000_000_000_000D, "P");
+        suffixes.put(1_000_000_000_000_000_000D, "E");
+    }
+
+    //this is used for formatting numbers like 5000 to 5k
+    public static String formatLongToKString(double value, boolean formatZeros) {
+        //Long.MIN_VALUE == -Long.MIN_VALUE so we need an adjustment here
+        if (value == Double.MIN_VALUE) return formatLongToKString(Double.MIN_VALUE + 1, formatZeros);
+        if (value < 0) return "-" + formatLongToKString(-value, formatZeros);
+        if (value < 1000) return Double.toString(value); //deal with easy case
+
+        Map.Entry<Double, String> e = suffixes.floorEntry(value);
+        Double divideBy = e.getKey();
+        String suffix = e.getValue();
+
+        double truncated = value / (divideBy / 10); //the number part of the output times 10
+        boolean hasDecimal = truncated < 100 && (truncated / 10d) != (truncated / 10);
+
+        String builtString = "";
+        double fPrice;
+        if(hasDecimal){
+            fPrice = (truncated / 10d);
+        }
+        else{
+            fPrice = (truncated / 10);
+        }
+
+        if(formatZeros)
+            builtString = new DecimalFormat("0.00").format(fPrice);
+        else
+            builtString = new DecimalFormat("#.##").format(fPrice);
+        return builtString += suffix;
+    }
 
     public static boolean isNumber(String s) {
         try {
@@ -264,6 +305,41 @@ public class UtilMethods {
             return ((Directional)block.getBlockData()).getFacing();
         }
         return null;
+    }
+
+    //this takes a dirty (pre-cleaned) string and finds how much to multiply the final by
+    //this utility allows the input of numbers like 1.2k (1200)
+    public static int getMultiplyValue(String text){
+        int multiplyBy = 1;
+        for(int i=0; i<text.length(); i++) {
+            switch (text.charAt(i)) {
+                case 'k':
+                case 'K':
+                    multiplyBy *= 1000D;
+                    break;
+                case 'm':
+                case 'M':
+                    multiplyBy *= 1000000D;
+                    break;
+                case 'g':
+                case 'G':
+                    multiplyBy *= 1000000000D;
+                    break;
+                case 't':
+                case 'T':
+                    multiplyBy *= 1000000000000D;
+                    break;
+                case 'p':
+                case 'P':
+                    multiplyBy *= 1000000000000000D;
+                    break;
+                case 'e':
+                case 'E':
+                    multiplyBy *= 1000000000000000000D;
+                    break;
+            }
+        }
+        return multiplyBy;
     }
 
     public static String cleanNumberText(String text){

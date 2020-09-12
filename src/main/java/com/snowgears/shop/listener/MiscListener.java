@@ -168,6 +168,7 @@ public class MiscListener implements Listener {
 
                 if (plugin.useVault()) {
                     try {
+                        int multiplyValue = UtilMethods.getMultiplyValue(event.getLine(2));
                         String line3 = UtilMethods.cleanNumberText(event.getLine(2));
 
                         String[] multiplePrices = line3.split(" ");
@@ -187,6 +188,9 @@ public class MiscListener implements Listener {
                             else
                                 price = Integer.parseInt(line3);
                         }
+
+                        price *= multiplyValue;
+                        priceCombo *= priceCombo;
 
                     } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));

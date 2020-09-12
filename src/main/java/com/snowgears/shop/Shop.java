@@ -25,7 +25,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -40,7 +39,6 @@ public class Shop extends JavaPlugin {
     private TransactionListener transactionListener;
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
-    //private ClearLaggListener clearLaggListener;
     private ArmorStandListener armorStandListener;
     private ShopGUIListener guiListener;
 
@@ -62,6 +60,7 @@ public class Shop extends JavaPlugin {
     private boolean checkItemDurability;
     private boolean allowCreativeSelection;
     private boolean forceDisplayToNoneIfBlocked;
+    private int hoursOfflineToRemoveShops;
     private boolean playSounds;
     private boolean playEffects;
     private ItemStack gambleDisplayItem;
@@ -163,6 +162,7 @@ public class Shop extends JavaPlugin {
         checkItemDurability = config.getBoolean("checkItemDurability");
         allowCreativeSelection = config.getBoolean("allowCreativeSelection");
         forceDisplayToNoneIfBlocked = config.getBoolean("forceDisplayToNoneIfBlocked");
+        hoursOfflineToRemoveShops = config.getInt("deletePlayerShopsAfterXHoursOffline");
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
@@ -360,6 +360,10 @@ public class Shop extends JavaPlugin {
         return forceDisplayToNoneIfBlocked;
     }
 
+    public int getHoursOfflineToRemoveShops(){
+        return hoursOfflineToRemoveShops;
+    }
+
     public boolean playSounds(){
         return playSounds;
     }
@@ -445,10 +449,14 @@ public class Shop extends JavaPlugin {
                 format = format.replace("[name]", itemCurrencyName);
         }
         if(format.contains("[price]")){
-            if(useVault())
-                return format.replace("[price]", new DecimalFormat("0.00").format(price).toString());
-            else if(pricePer)
-                return format.replace("[price]", new DecimalFormat("#.##").format(price).toString());
+            if(useVault()) {
+                return format.replace("[price]", UtilMethods.formatLongToKString(price, true));
+                //return format.replace("[price]", new DecimalFormat("0.00").format(price).toString());
+            }
+            else if(pricePer) {
+                return format.replace("[price]", UtilMethods.formatLongToKString(price, false));
+                //return format.replace("[price]", new DecimalFormat("#.##").format(price).toString());
+            }
             else
                 return format.replace("[price]", ""+(int)price);
         }
@@ -470,9 +478,11 @@ public class Shop extends JavaPlugin {
         }
         if(format.contains("[price]")){
             if(useVault())
-                return format.replace("[price]", new DecimalFormat("0.00").format(price).toString()+"/"+new DecimalFormat("0.00").format(priceSell).toString());
+                //return format.replace("[price]", new DecimalFormat("0.00").format(price)+"/"+new DecimalFormat("0.00").format(priceSell).toString());
+            return format.replace("[price]", UtilMethods.formatLongToKString(price, true)+"/"+UtilMethods.formatLongToKString(priceSell, true));
             else if(pricePer)
-                return format.replace("[price]", new DecimalFormat("#.##").format(price).toString()+"/"+new DecimalFormat("0.00").format(priceSell).toString());
+                //return format.replace("[price]", new DecimalFormat("#.##").format(price).toString()+"/"+new DecimalFormat("0.00").format(priceSell).toString());
+                return format.replace("[price]", UtilMethods.formatLongToKString(price, false)+"/"+UtilMethods.formatLongToKString(priceSell, true));
             else
                 return format.replace("[price]", ""+(int)price+"/"+(int)priceSell);
         }
