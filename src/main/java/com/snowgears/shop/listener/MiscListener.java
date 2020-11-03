@@ -190,7 +190,7 @@ public class MiscListener implements Listener {
                         }
 
                         price *= multiplyValue;
-                        priceCombo *= priceCombo;
+                        priceCombo *= multiplyValue;
 
                     } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));

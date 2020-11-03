@@ -10,10 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.WallSign;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
@@ -27,7 +24,7 @@ public class Display {
     private Location shopSignLocation;
     private DisplayType type;
     private ArrayList<Entity> entities;
-    private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
+    private DisplayType[] cycle = Shop.getPlugin().getDisplayCycle();
 
     public Display(Location shopSignLocation) {
         this.shopSignLocation = shopSignLocation;
@@ -158,6 +155,18 @@ public class Display {
                     caseDisplayItem.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(caseDisplayItem);
                     break;
+                case ITEM_FRAME:
+                    ItemFrame frame = (ItemFrame) shop.getChestLocation().getWorld().spawn(shop.getChestLocation().getBlock().getLocation().clone().add(0, 1, 0),
+                                ItemFrame.class,
+                                entity -> {
+                                    ItemFrame itemFrame = (ItemFrame) entity;
+                                    itemFrame.setFacingDirection(shop.getFacing(), true);
+                                    itemFrame.setFixed(true);
+                                    itemFrame.setCustomName(this.generateDisplayName(random));
+                                    itemFrame.setItem(shop.getItemStack());
+                                });
+                    entities.add(frame);
+                    break;
             }
         }
         shop.updateSign();
@@ -218,6 +227,16 @@ public class Display {
         }
         if(index >= cycle.length)
             index = 0;
+
+        //don't allow barter shops to have ITEM_FRAME display types (for NOW) //TODO come back and implement offset itemframes
+        if(cycle[index] == DisplayType.ITEM_FRAME && getShop().getType() == ShopType.BARTER){
+            for(int i=0; i<cycle.length; i++){
+                if(cycle[i] == displayType)
+                    index = i + 1;
+            }
+            if(index >= cycle.length)
+                index = 0;
+        }
 
         this.setType(cycle[index]);
 
@@ -331,7 +350,7 @@ public class Display {
                 if (itemMeta != null && UtilMethods.containsLocation(itemMeta.getDisplayName())) {
                     return true;
                 }
-            } else if (entity.getType() == EntityType.ARMOR_STAND) {
+            } else if (entity.getType() == EntityType.ARMOR_STAND || entity.getType() == EntityType.ITEM_FRAME) {
                 if (UtilMethods.containsLocation(entity.getCustomName())) {
                     return true;
                 }
@@ -351,7 +370,7 @@ public class Display {
             name = itemMeta.getDisplayName();
         }
         try {
-            if (display.getType() == EntityType.ARMOR_STAND) {
+            if (display.getType() == EntityType.ARMOR_STAND || display.getType() == EntityType.ITEM_FRAME) {
                 name = display.getCustomName();
             }
         } catch (NoSuchFieldError error){

@@ -27,6 +27,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Shop extends JavaPlugin {
@@ -57,6 +58,7 @@ public class Shop extends JavaPlugin {
     private boolean hookWorldGuard;
     private String commandAlias;
     private DisplayType displayType;
+    private DisplayType[] displayCycle;
     private boolean checkItemDurability;
     private boolean allowCreativeSelection;
     private boolean forceDisplayToNoneIfBlocked;
@@ -140,6 +142,20 @@ public class Shop extends JavaPlugin {
         try {
             displayType = DisplayType.valueOf(config.getString("displayType"));
         } catch (Exception e){ displayType = DisplayType.ITEM; }
+
+        try {
+            List<String> cycle = config.getStringList("displayCycle");
+            if(cycle.isEmpty()){
+                for(DisplayType dt : DisplayType.values()){
+                    cycle.add(dt.name());
+                }
+            }
+
+            displayCycle = new DisplayType[cycle.size()];
+            for(int i=0; i < cycle.size(); i++){
+                displayCycle[i] = DisplayType.valueOf(cycle.get(i));
+            }
+        } catch (Exception e){ e.printStackTrace(); }
 
         shopMessage = new ShopMessage(this);
         itemNameUtil = new ItemNameUtil();
@@ -286,6 +302,7 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
         HandlerList.unregisterAll(guiListener);
+        HandlerList.unregisterAll(armorStandListener);
         //if(clearLaggListener != null)
         //    HandlerList.unregisterAll(clearLaggListener);
 
@@ -346,6 +363,10 @@ public class Shop extends JavaPlugin {
 
     public DisplayType getDisplayType(){
         return displayType;
+    }
+
+    public DisplayType[] getDisplayCycle(){
+        return displayCycle;
     }
 
     public boolean checkItemDurability(){

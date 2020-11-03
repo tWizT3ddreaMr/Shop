@@ -141,6 +141,10 @@ public class InventoryUtils {
                 ItemStack itemStack1 = i1.clone();
                 ItemStack itemStack2 = i2.clone();
 
+                System.out.println(itemStack1.serialize().toString());
+                System.out.println();
+                System.out.println(itemStack2.serialize().toString());
+
                 ItemMeta is1 = itemStack1.getItemMeta();
                 Damageable is1Damagable = (Damageable)is1;
                 is1Damagable.setDamage(i2Damagable.getDamage());
@@ -149,6 +153,10 @@ public class InventoryUtils {
                 return itemStack1.isSimilar(itemStack2);
             }
         }
+
+        System.out.println(i1.serialize().toString());
+        System.out.println();
+        System.out.println(i2.serialize().toString());
 
         return i1.isSimilar(i2);
     }
