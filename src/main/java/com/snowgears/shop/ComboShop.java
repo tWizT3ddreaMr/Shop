@@ -218,10 +218,12 @@ public class ComboShop extends AbstractShop {
 
         if(priceBuy != 0) {
             message = ShopMessage.getMessage(ShopType.BUY.toString(), "descriptionPrice", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
 
             message = ShopMessage.getMessage(ShopType.BUY.toString(), "descriptionPricePerItem", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
             player.sendMessage("");
         }
 
@@ -233,22 +235,26 @@ public class ComboShop extends AbstractShop {
             message = ShopMessage.getUnformattedMessage(ShopType.SELL.toString(), "descriptionPrice");
             message = message.replaceAll("price]", "priceSell]");
             message = ShopMessage.formatMessage(message, this, player, false);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
 
 
             message = ShopMessage.getUnformattedMessage(ShopType.SELL.toString(), "descriptionPricePerItem");
             message = message.replaceAll("price per item]", "price sell per item]");
             message = ShopMessage.formatMessage(message, this, player, false);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
         }
 
         if(this.isAdmin()){
             message = ShopMessage.getMessage("description", "stockAdmin", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
         }
         else {
             message = ShopMessage.getMessage("description", "stock", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
         }
 
         return;

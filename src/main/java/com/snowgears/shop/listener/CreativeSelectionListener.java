@@ -56,23 +56,30 @@ public class CreativeSelectionListener implements Listener {
                 } else if (shop.isInitialized()) {
                     return;
                 }
+                String message = null;
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
                     if((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", shop, player));
+                        message = ShopMessage.getMessage("interactionIssue", "initialize", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
                         return;
                     }
                 }
                 if (shop.getType() == ShopType.BARTER && shop.getItemStack() == null) {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "noItem", shop, player));
+                    message = ShopMessage.getMessage("interactionIssue", "noItem", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     event.setCancelled(true);
                     return;
                 }
 
                 if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
                     if (shop.getType() == ShopType.SELL) {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "noItem", shop, player));
+                        message = ShopMessage.getMessage("interactionIssue", "noItem", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                     } else {
                         if ((shop.getType() == ShopType.BARTER && shop.getItemStack() != null && shop.getSecondaryItemStack() == null)
                                 || shop.getType() == ShopType.BUY) {
@@ -95,7 +102,8 @@ public class CreativeSelectionListener implements Listener {
                     || event.getFrom().getBlockY() != event.getTo().getBlockY()) {
                 player.teleport(event.getFrom());
                 for(String message : ShopMessage.getCreativeSelectionLines(true)){
-                    player.sendMessage(message);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                 }
             }
         }
@@ -108,7 +116,8 @@ public class CreativeSelectionListener implements Listener {
             if (event.getFrom().distanceSquared(event.getTo()) > 4) {
                 event.setCancelled(true);
                 for(String message : ShopMessage.getCreativeSelectionLines(true)){
-                    player.sendMessage(message);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                 }
             }
         }
@@ -160,7 +169,9 @@ public class CreativeSelectionListener implements Listener {
 
                         shop.setItemStack(event.getCursor());
                         shop.getDisplay().spawn();
-                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
 
@@ -174,7 +185,9 @@ public class CreativeSelectionListener implements Listener {
 
                         shop.setSecondaryItemStack(event.getCursor());
                         shop.getDisplay().spawn();
-                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                     }
@@ -195,7 +208,8 @@ public class CreativeSelectionListener implements Listener {
         playerDataMap.put(player.getUniqueId(), data);
 
         for(String message : ShopMessage.getCreativeSelectionLines(false)){
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
         }
         player.setGameMode(GameMode.CREATIVE);
     }
