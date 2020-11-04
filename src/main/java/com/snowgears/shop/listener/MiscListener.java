@@ -251,6 +251,8 @@ public class MiscListener implements Listener {
                     }
                 }
 
+                System.out.println("Got to the 1 print.");
+
                 if (playerMessage != null) {
                     if(!playerMessage.isEmpty())
                         player.sendMessage(playerMessage);
@@ -265,7 +267,8 @@ public class MiscListener implements Listener {
 
                 //removed all the direction checking code. just make sure its a container
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if (chest.getState() instanceof Container) {
+                if (chest.getState() instanceof Container || (plugin.useEnderChests() && chest.getType() == Material.ENDER_CHEST)) {
+                    System.out.println("Chest of shop was a container.");
                     existingShop = plugin.getShopHandler().getShopByChest(chest);
                     if (existingShop != null) {
                         //if the block they are adding a sign to is already a shop, do not let them
@@ -295,6 +298,8 @@ public class MiscListener implements Listener {
 
                     PlayerCreateShopEvent e = new PlayerCreateShopEvent(player, shop);
                     plugin.getServer().getPluginManager().callEvent(e);
+
+                    System.out.println("Got to the 2 print.");
 
                     if (e.isCancelled())
                         return;
