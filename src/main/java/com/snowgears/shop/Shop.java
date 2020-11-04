@@ -1,7 +1,6 @@
 package com.snowgears.shop;
 
 import com.snowgears.shop.display.Display;
-import com.snowgears.shop.display.DisplayListener;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
 import com.snowgears.shop.handler.CommandHandler;
@@ -19,7 +18,6 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -40,7 +38,6 @@ public class Shop extends JavaPlugin {
     private TransactionListener transactionListener;
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
-    private ArmorStandListener armorStandListener;
     private ShopGUIListener guiListener;
 
     private ShopHandler shopHandler;
@@ -58,6 +55,7 @@ public class Shop extends JavaPlugin {
     private boolean hookWorldGuard;
     private String commandAlias;
     private DisplayType displayType;
+    private boolean displayNameTags;
     private DisplayType[] displayCycle;
     private boolean checkItemDurability;
     private boolean allowCreativeSelection;
@@ -127,7 +125,6 @@ public class Shop extends JavaPlugin {
         miscListener = new MiscListener(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
-        armorStandListener = new ArmorStandListener(this);
         guiListener = new ShopGUIListener(this);
 
         //removing clearlag support since API is no longer reachable in previously published repo
@@ -142,6 +139,8 @@ public class Shop extends JavaPlugin {
         try {
             displayType = DisplayType.valueOf(config.getString("displayType"));
         } catch (Exception e){ displayType = DisplayType.ITEM; }
+
+        displayNameTags = config.getBoolean("displayNameTags");
 
         try {
             List<String> cycle = config.getStringList("displayCycle");
@@ -278,14 +277,6 @@ public class Shop extends JavaPlugin {
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
         getServer().getPluginManager().registerEvents(guiListener, this);
-
-        try {
-            if(PlayerInteractAtEntityEvent.class != null){} //throw error on MC 1.7 or below (when ArmorStands weren't in game yet)
-                getServer().getPluginManager().registerEvents(armorStandListener, this);
-        } catch (NoClassDefFoundError e){
-            //do not register armor stand listener in MC 1.7 or below
-            gambleDisplayItem = new ItemStack(Material.GOLD_BLOCK);
-        }
     }
 
     @Override
@@ -302,7 +293,6 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
         HandlerList.unregisterAll(guiListener);
-        HandlerList.unregisterAll(armorStandListener);
         //if(clearLaggListener != null)
         //    HandlerList.unregisterAll(clearLaggListener);
 
@@ -363,6 +353,10 @@ public class Shop extends JavaPlugin {
 
     public DisplayType getDisplayType(){
         return displayType;
+    }
+
+    public boolean showDisplayNameTags(){
+        return displayNameTags;
     }
 
     public DisplayType[] getDisplayCycle(){

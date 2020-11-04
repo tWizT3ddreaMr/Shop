@@ -16,12 +16,11 @@ import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
-import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -128,7 +127,9 @@ public class CreativeSelectionListener implements Listener {
         if (!(event.getPlayer() instanceof Player))
             return;
         Player player = (Player) event.getPlayer();
-        removePlayerData(player);
+        boolean removed = removePlayerData(player);
+        if(removed)
+            player.updateInventory();
     }
 
     @EventHandler
@@ -136,7 +137,7 @@ public class CreativeSelectionListener implements Listener {
         removePlayerData(event.getPlayer());
     }
 
-    @EventHandler
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void onCreativeClick(InventoryCreativeEvent event) {
         if (!(event.getWhoClicked() instanceof Player))
             return;
@@ -180,8 +181,8 @@ public class CreativeSelectionListener implements Listener {
                     removePlayerData(player);
                 }
             }
-            event.setCancelled(true);
             event.setResult(Event.Result.DENY);
+            event.setCancelled(true);
         }
     }
 
@@ -199,12 +200,14 @@ public class CreativeSelectionListener implements Listener {
         player.setGameMode(GameMode.CREATIVE);
     }
 
-    public void removePlayerData(Player player){
+    public boolean removePlayerData(Player player){
         PlayerData data = playerDataMap.get(player.getUniqueId());
         if(data != null) {
             playerDataMap.remove(player.getUniqueId());
             data.apply();
+            return true;
         }
+        return false;
     }
 
     //make sure that if player somehow quit without getting their old data back, return it to them when they login next

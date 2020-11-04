@@ -47,6 +47,9 @@ commandAlias: shop
 # The options are: NONE, ITEM, GLASS_CASE, LARGE_ITEM #
 displayType: ITEM
 
+# This will show the name tags above the display items #
+displayNameTags: false
+
 # This will change the order that display types are cycled in #
 # To remove a display type as a cycle option, remove it from this list #
 displayCycle:
