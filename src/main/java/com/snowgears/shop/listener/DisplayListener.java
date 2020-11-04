@@ -155,7 +155,7 @@ public class DisplayListener implements Listener {
                                 if(shop != null)
                                     shop.getDisplay().spawn();
                             }
-                        }.runTaskLater(this.plugin, 10);
+                        }.runTaskLater(this.plugin, 15);
                     }
                 }
 
