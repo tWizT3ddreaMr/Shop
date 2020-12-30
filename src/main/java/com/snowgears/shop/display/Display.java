@@ -209,6 +209,7 @@ public class Display {
     private void tagEntityAsDisplay(Entity entity){
         PersistentDataContainer persistentData = entity.getPersistentDataContainer();
         persistentData.set(new NamespacedKey(Shop.getPlugin(), "display"), PersistentDataType.INTEGER, 1);
+        persistentData.set(new NamespacedKey(Shop.getPlugin(), "signlocation"), PersistentDataType.STRING, UtilMethods.getCleanLocation(this.shopSignLocation, false));
         entities.add(entity);
     }
 
@@ -418,6 +419,21 @@ public class Display {
     }
 
     public static AbstractShop getShop(Entity display){
+        //use persistent api
+        PersistentDataContainer persistentData = display.getPersistentDataContainer();
+        if(persistentData != null) {
+            try {
+                String dataDisplay = persistentData.get(new NamespacedKey(Shop.getPlugin(), "signlocation"), PersistentDataType.STRING);
+                if(dataDisplay != null){
+                    Location signLocation = UtilMethods.getLocation(dataDisplay);
+                    if(signLocation != null)
+                        return Shop.getPlugin().getShopHandler().getShop(signLocation);
+                }
+
+            } catch (NullPointerException e){ }
+        }
+        
+        //otherwise, use legacy display string (1.8.2.3 and lower)
         if(display == null)
             return null;
         String name = null;
