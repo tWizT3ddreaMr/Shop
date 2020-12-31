@@ -395,8 +395,12 @@ public class ShopHandler {
                             && !file.getName().contains("enderchests")
                             && !file.getName().contains("itemCurrency")
                             && !file.getName().contains("gambleDisplay")) {
-                        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                        loadShopsFromConfig(config);
+                        try {
+                            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                            loadShopsFromConfig(config);
+                        } catch (Exception e){
+                            System.out.println("[Shop] DEBUG - "+file.getName());
+                        }
                     }
                 }
             }
