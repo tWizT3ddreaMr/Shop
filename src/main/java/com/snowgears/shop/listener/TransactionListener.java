@@ -90,10 +90,16 @@ public class TransactionListener implements Listener {
                     if(shop.getType() == ShopType.COMBO){
                         int clickedSide = UtilMethods.calculateSideFromClickedSign(player, event.getClickedBlock());
                         if(clickedSide >= 0){
-                            executeTransaction(player, shop, ShopType.BUY);
+                            if(plugin.inverseComboShops())
+                                executeTransaction(player, shop, ShopType.SELL);
+                            else
+                                executeTransaction(player, shop, ShopType.BUY);
                         }
                         else{
-                            executeTransaction(player, shop, ShopType.SELL);
+                            if(plugin.inverseComboShops())
+                                executeTransaction(player, shop, ShopType.BUY);
+                            else
+                                executeTransaction(player, shop, ShopType.SELL);
                         }
                     }
                     else {

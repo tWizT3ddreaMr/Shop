@@ -72,6 +72,7 @@ public class Shop extends JavaPlugin {
     private String currencyFormat = "";
     private Economy econ = null;
     private boolean useEnderchests;
+    private boolean inverseComboShops;
     private double creationCost;
     private double destructionCost;
     private boolean returnCreationCost;
@@ -253,6 +254,8 @@ public class Shop extends JavaPlugin {
         currencyFormat = config.getString("currencyFormat");
 
         useEnderchests = config.getBoolean("enableEnderChests");
+
+        inverseComboShops = config.getBoolean("inverseComboShops");
 
         creationCost = config.getDouble("creationCost");
         destructionCost = config.getDouble("destructionCost");
@@ -534,6 +537,10 @@ public class Shop extends JavaPlugin {
 
     public boolean useEnderChests(){
         return useEnderchests;
+    }
+
+    public boolean inverseComboShops(){
+        return inverseComboShops;
     }
 
     public double getCreationCost(){

@@ -150,6 +150,14 @@ public class ShopMessage {
                 //if shop is displaying stock on sign, it will require a sign refresh on transactions
                 shop.setSignLinesRequireRefresh(true);
             }
+            if(unformattedMessage.contains("[stock color]")) {
+                if(shop.getStock() > 0)
+                    unformattedMessage = unformattedMessage.replace("[stock color]", "" + ChatColor.GREEN);
+                else
+                    unformattedMessage = unformattedMessage.replace("[stock color]", "" + ChatColor.DARK_RED);
+                //if shop is displaying stock on sign, it will require a sign refresh on transactions
+                shop.setSignLinesRequireRefresh(true);
+            }
         }
         if(player != null) {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());

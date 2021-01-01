@@ -89,6 +89,10 @@ playEffects: true
 # This controls whether or not ender chests are able to be used as shops on the server #
 enableEnderChests: false
 
+# If this is set to true, LEFT side of combo shop signs will BUY items and RIGHT side will SELL items #
+# If this is set to false, LEFT side of combo shop signs will SELL items and RIGHT side will BUY items #
+inverseComboShops: false
+
 # Add the names of worlds that you do not want shops to be able to be created in here #
 worldBlacklist:
    example_world: true

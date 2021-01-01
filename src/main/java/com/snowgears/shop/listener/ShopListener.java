@@ -9,10 +9,7 @@ import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Tag;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.*;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,6 +17,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -241,28 +239,45 @@ public class ShopListener implements Listener {
         }
     }
 
-    //prevent hoppers from stealing inventory from shops
-    @EventHandler (priority = EventPriority.HIGHEST)
-    public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-        AbstractShop shop = null;
-        if(event.getSource().getHolder() instanceof Chest){
-            Chest container = (Chest) event.getSource().getHolder();
-            shop = plugin.getShopHandler().getShopByChest(container.getBlock());
-        }
-        else if(event.getSource().getHolder() instanceof DoubleChest){
-            DoubleChest container = (DoubleChest) event.getSource().getHolder();
-            shop = plugin.getShopHandler().getShopByChest(container.getLocation().getBlock());
-        }
-        else if(event.getSource().getHolder() instanceof ShulkerBox){
-            ShulkerBox container = (ShulkerBox) event.getSource().getHolder();
-            shop = plugin.getShopHandler().getShopByChest(container.getBlock());
-        }
+    @EventHandler
+    public void onShopExpansion(BlockPlaceEvent event) {
+        Block b = event.getBlockPlaced();
+        Player player = event.getPlayer();
 
-        if(shop != null){
-            if(event.getDestination().getType() != InventoryType.PLAYER)
-                event.setCancelled(true);
+        if(b.getType() == Material.HOPPER){
+            AbstractShop shop = plugin.getShopHandler().getShopByChest(b.getRelative(BlockFace.UP));
+            if(shop != null){
+                if(!player.isOp() && !shop.getOwnerUUID().equals(player.getUniqueId())){
+                    event.setCancelled(true);
+                }
+            }
         }
     }
+
+        //REMOVING AND REPLACING WITH CHECK FOR PLACING HOPPERS (was slowing down servers with many hoppers)
+    //prevent hoppers from stealing inventory from shops
+//    @EventHandler (priority = EventPriority.HIGHEST)
+//    public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+//        AbstractShop shop = null;
+//        if(event.getSource().getHolder() instanceof Chest){
+//            Chest container = (Chest) event.getSource().getHolder();
+//            shop = plugin.getShopHandler().getShopByChest(container.getBlock());
+//        }
+//        else if(event.getSource().getHolder() instanceof DoubleChest){
+//            DoubleChest container = (DoubleChest) event.getSource().getHolder();
+//            shop = plugin.getShopHandler().getShopByChest(container.getLocation().getBlock());
+//        }
+//        else if(event.getSource().getHolder() instanceof ShulkerBox){
+//            ShulkerBox container = (ShulkerBox) event.getSource().getHolder();
+//            shop = plugin.getShopHandler().getShopByChest(container.getBlock());
+//        }
+//
+//        if(shop != null){
+//            if(event.getDestination().getType() != InventoryType.PLAYER)
+//                event.setCancelled(true);
+//        }
+//    }
+
 
     //===================================================================================//
     //              ENDER CHEST HANDLING EVENTS

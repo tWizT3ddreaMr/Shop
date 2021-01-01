@@ -31,7 +31,8 @@
 # [barter item type] : The material type of the barter item in the transaction #
 # [price] : The price of the items (adjusted to match virtual or physical currency) #
 # [price per item] : The price of 1 individual item (calculated from total price and adjusted to match virtual or physical currency) #
-# [stock] : The number of stacks of items that a shop/shop owner is able to provide to other players (calculated)#
+# [stock] : The number of stacks of items that a shop/shop owner is able to provide to other players (calculated) #
+# [stock color] : Changes text to GREEN if shop has stock and DARK_RED when out of stock #
 # [user] : The name of the player who used the shop #
 # [owner] : The name of the shop owner #
 # [server name] : The name of the server #
