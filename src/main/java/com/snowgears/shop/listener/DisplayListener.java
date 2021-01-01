@@ -3,13 +3,17 @@ package com.snowgears.shop.listener;
 import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.display.Display;
+import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.InventoryUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Container;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.data.type.WallSign;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -36,6 +40,23 @@ public class DisplayListener implements Listener {
 
     public Shop plugin = Shop.getPlugin();
     private ArrayList<ItemStack> allServerRecipeResults = new ArrayList<>();
+
+    public void startRepeatingDisplayViewTask(){
+        if(plugin.displayNameTags() == DisplayTagOption.VIEW_SIGN){
+            //run task every 15 ticks
+            Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+                for(Player player : plugin.getServer().getOnlinePlayers()){
+                    Block block = player.getTargetBlock(null, 8);
+                    if(block.getBlockData() instanceof WallSign){
+                        AbstractShop shopObj = plugin.getShopHandler().getShop(block.getLocation());
+                        if(shopObj != null){
+                            shopObj.getDisplay().showNameTags();
+                        }
+                    }
+                }
+            }, 0, 15);
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onArmorStandInteract(PlayerInteractAtEntityEvent event) {

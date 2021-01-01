@@ -3,6 +3,7 @@ package com.snowgears.shop.listener;
 import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
+import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
@@ -157,6 +158,9 @@ public class ShopListener implements Listener {
                     if(!Tag.SIGNS.isTagged(player.getInventory().getItemInMainHand().getType())) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
+                        if(plugin.displayNameTags() == DisplayTagOption.RIGHT_CLICK_CHEST){
+                            shop.getDisplay().showNameTags();
+                        }
                         return;
                     }
                 }
@@ -179,6 +183,9 @@ public class ShopListener implements Listener {
                     } else {
                         event.setCancelled(true);
                         shop.printSalesInfo(player);
+                        if(plugin.displayNameTags() == DisplayTagOption.RIGHT_CLICK_CHEST){
+                            shop.getDisplay().showNameTags();
+                        }
                         //player.sendMessage(ChatColor.RED + "You do not have access to open this shop.");
                     }
                 }

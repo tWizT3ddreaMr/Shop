@@ -1,6 +1,7 @@
 package com.snowgears.shop;
 
 import com.snowgears.shop.display.Display;
+import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
 import com.snowgears.shop.handler.CommandHandler;
@@ -55,7 +56,8 @@ public class Shop extends JavaPlugin {
     private boolean hookWorldGuard;
     private String commandAlias;
     private DisplayType displayType;
-    private boolean displayNameTags;
+    private DisplayTagOption displayNameTags;
+    private int displayNameTagsLifespan;
     private DisplayType[] displayCycle;
     private boolean checkItemDurability;
     private boolean allowCreativeSelection;
@@ -106,6 +108,12 @@ public class Shop extends JavaPlugin {
             UtilMethods.copy(getResource("signConfig.yml"), signConfigFile);
         }
 
+        File displayConfigFile = new File(getDataFolder(), "displayConfig.yml");
+        if (!displayConfigFile.exists()) {
+            displayConfigFile.getParentFile().mkdirs();
+            UtilMethods.copy(getResource("displayConfig.yml"), displayConfigFile);
+        }
+
         //removed item names file after item ids are no longer used. may revisit later with new materials
 //        File itemNameFile = new File(getDataFolder(), "items.tsv");
 //        if (!itemNameFile.exists()) {
@@ -140,7 +148,13 @@ public class Shop extends JavaPlugin {
             displayType = DisplayType.valueOf(config.getString("displayType"));
         } catch (Exception e){ displayType = DisplayType.ITEM; }
 
-        displayNameTags = config.getBoolean("displayNameTags");
+        try {
+            displayNameTags = DisplayTagOption.valueOf(config.getString("displayNameTags"));
+        } catch (Exception e){ displayNameTags = DisplayTagOption.VIEW_SIGN; }
+
+        try {
+            displayNameTagsLifespan = config.getInt("displayNameTagsLifespan");
+        } catch (Exception e){ displayNameTagsLifespan = 10; }
 
         try {
             List<String> cycle = config.getStringList("displayCycle");
@@ -277,6 +291,8 @@ public class Shop extends JavaPlugin {
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
         getServer().getPluginManager().registerEvents(guiListener, this);
+
+        displayListener.startRepeatingDisplayViewTask();
     }
 
     @Override
@@ -355,8 +371,12 @@ public class Shop extends JavaPlugin {
         return displayType;
     }
 
-    public boolean showDisplayNameTags(){
+    public DisplayTagOption displayNameTags(){
         return displayNameTags;
+    }
+
+    public int getDisplayTagLifespan(){
+        return displayNameTagsLifespan;
     }
 
     public DisplayType[] getDisplayCycle(){

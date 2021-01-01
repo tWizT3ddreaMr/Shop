@@ -21,11 +21,13 @@ public class ShopMessage {
 
     private static HashMap<String, String> messageMap = new HashMap<String, String>();
     private static HashMap<String, String[]> shopSignTextMap = new HashMap<String, String[]>();
+    private static HashMap<String, List<String>> displayTextMap = new HashMap<String, List<String>>();
     private static String freePriceWord;
     private static String serverDisplayName;
     private static HashMap<String, String> creationWords = new HashMap<String, String>();
     private static YamlConfiguration chatConfig;
     private static YamlConfiguration signConfig;
+    private static YamlConfiguration displayConfig;
 
     public ShopMessage(Shop plugin) {
 
@@ -33,9 +35,12 @@ public class ShopMessage {
         chatConfig = YamlConfiguration.loadConfiguration(chatConfigFile);
         File signConfigFile = new File(plugin.getDataFolder(), "signConfig.yml");
         signConfig = YamlConfiguration.loadConfiguration(signConfigFile);
+        File displayConfigFile = new File(plugin.getDataFolder(), "displayConfig.yml");
+        displayConfig = YamlConfiguration.loadConfiguration(displayConfigFile);
 
         loadMessagesFromConfig();
         loadSignTextFromConfig();
+        loadDisplayTextFromConfig();
         loadCreationWords();
 
         freePriceWord = signConfig.getString("sign_text.zeroPrice");
@@ -219,6 +224,33 @@ public class ShopMessage {
         return lines;
     }
 
+    public static ArrayList<String> getDisplayTags(AbstractShop shop, ShopType shopType){
+
+        //in future may need to add more options here like "admin" or "no stock" or "no display" other than normal
+
+//        String shopFormat;
+//        if(shop.isAdmin())
+//            shopFormat = "admin";
+//        else
+            String shopFormat = "normal";
+
+//        if(displayType == DisplayType.NONE){
+//            shopFormat += "_no_display";
+//        }
+
+        ArrayList<String> formattedLines = new ArrayList<>();
+        List<String> lines = displayTextMap.get(shopType.toString().toUpperCase()+"_"+shopFormat);
+
+        String formattedLine;
+        for(String line : lines) {
+            formattedLine = formatMessage(line, shop, null, false);
+            formattedLine = ChatColor.translateAlternateColorCodes('&', formattedLine);
+
+            formattedLines.add(formattedLine);
+        }
+        return formattedLines;
+    }
+
     public static List<String> getCreativeSelectionLines(boolean prompt){
         List<String> messages = new ArrayList<>();
 
@@ -383,6 +415,24 @@ public class ShopMessage {
                     }
 
                     this.shopSignTextMap.put(type.toString() + "_admin_no_display", adminNoDisplayLines);
+                } catch (NullPointerException e) {}
+            }
+        }
+    }
+
+    private void loadDisplayTextFromConfig() {
+        displayTextMap = new HashMap<>();
+        Set<String> allTypes = displayConfig.getConfigurationSection("display_tag_text").getKeys(false);
+        for (String typeString : allTypes) {
+
+            ShopType type = null;
+            try { type = ShopType.valueOf(typeString);}
+            catch (IllegalArgumentException e){}
+
+            if (type != null) {
+                try {
+                    List<String> normalLines = displayConfig.getStringList("display_tag_text." + typeString.toUpperCase() + ".normal");
+                    this.displayTextMap.put(type.toString().toUpperCase() + "_normal", normalLines);
                 } catch (NullPointerException e) {}
             }
         }

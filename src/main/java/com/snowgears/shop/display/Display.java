@@ -1,10 +1,10 @@
 package com.snowgears.shop.display;
 
 import com.snowgears.shop.AbstractShop;
-import com.snowgears.shop.GambleShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.DisplayUtil;
+import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class Display {
     private DisplayType type;
     private ArrayList<Entity> entities;
     private DisplayType[] cycle = Shop.getPlugin().getDisplayCycle();
+    private boolean nameTagsVisible;
 
     public Display(Location shopSignLocation) {
         this.shopSignLocation = shopSignLocation;
@@ -70,14 +72,14 @@ public class Display {
                     Item i1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     i1.setVelocity(new Vector(0, 0.1, 0));
                     i1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-                    tagDisplayWithName(i1, item);
+                    //tagDisplayWithName(i1, item);
                     tagEntityAsDisplay(i1);
 
                     //Drop the barter display item
                     Item i2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
                     i2.setVelocity(new Vector(0, 0.1, 0));
                     i2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-                    tagDisplayWithName(i2, barterItem);
+                    //tagDisplayWithName(i2, barterItem);
                     tagEntityAsDisplay(i2);
                     break;
                 case LARGE_ITEM:
@@ -85,14 +87,14 @@ public class Display {
                     Location leftLoc = shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
                     leftLoc.add(getLargeItemBarterOffset(false));
                     ArmorStand stand = DisplayUtil.createDisplay(item, leftLoc, shop.getFacing());
-                    tagDisplayWithName(stand, item);
+                    //tagDisplayWithName(stand, item);
                     tagEntityAsDisplay(stand);
 
                     //put second large display down
                     Location rightLoc = shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
                     rightLoc.add(getLargeItemBarterOffset(true));
                     ArmorStand stand2 = DisplayUtil.createDisplay(barterItem, rightLoc, shop.getFacing());
-                    tagDisplayWithName(stand2, barterItem);
+                    //tagDisplayWithName(stand2, barterItem);
                     tagEntityAsDisplay(stand2);
                     break;
                 case GLASS_CASE:
@@ -107,14 +109,14 @@ public class Display {
                     Item item1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     item1.setVelocity(new Vector(0, 0.1, 0));
                     item1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-                    tagDisplayWithName(item1, item);
+                    //tagDisplayWithName(item1, item);
                     tagEntityAsDisplay(item1);
 
                     //Drop the barter display item
                     Item item2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
                     item2.setVelocity(new Vector(0, 0.1, 0));
                     item2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-                    tagDisplayWithName(item2, barterItem);
+                    //tagDisplayWithName(item2, barterItem);
                     tagEntityAsDisplay(item2);
                     break;
                     //this code stacks item frames on top of each other for barter type. i dont like it and will be disabling item_frame display type for barter shops for the moment
@@ -152,12 +154,12 @@ public class Display {
                     Item i = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     i.setVelocity(new Vector(0, 0.1, 0));
                     i.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-                    tagDisplayWithName(i, item);
+                    //tagDisplayWithName(i, item);
                     tagEntityAsDisplay(i);
                     break;
                 case LARGE_ITEM:
                     ArmorStand stand = DisplayUtil.createDisplay(item, shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation(), shop.getFacing());
-                    tagDisplayWithName(stand, item);
+                    //tagDisplayWithName(stand, item);
                     tagEntityAsDisplay(stand);
                     break;
                 case GLASS_CASE:
@@ -172,7 +174,7 @@ public class Display {
                     Item caseDisplayItem = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     caseDisplayItem.setVelocity(new Vector(0, 0.1, 0));
                     caseDisplayItem.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
-                    tagDisplayWithName(caseDisplayItem, item);
+                    //tagDisplayWithName(caseDisplayItem, item);
                     tagEntityAsDisplay(caseDisplayItem);
                     break;
                 case ITEM_FRAME:
@@ -185,7 +187,7 @@ public class Display {
                                     itemFrame.setItem(shop.getItemStack());
                                 });
                     //todo might only want to do this if the item is not already custom named in frame?
-                    tagDisplayWithName(frame, item);
+                    //tagDisplayWithName(frame, item);
                     tagEntityAsDisplay(frame);
                     break;
             }
@@ -193,17 +195,95 @@ public class Display {
         shop.updateSign();
     }
 
-    private void tagDisplayWithName(Entity entity, ItemStack item){
-        if(Shop.getPlugin().showDisplayNameTags()){
-            if(this.getShop().getType() == ShopType.GAMBLE) {
-                ItemStack gambleItem = ((GambleShop)this.getShop()).getGambleItem();
-                entity.setCustomName(Shop.getPlugin().getItemNameUtil().getName(gambleItem));
-                return;
+//    private void tagDisplayWithName(Entity entity, ItemStack item){
+//        if(Shop.getPlugin().showDisplayNameTags()){
+//            if(this.getShop().getType() == ShopType.GAMBLE) {
+//                ItemStack gambleItem = ((GambleShop)this.getShop()).getGambleItem();
+//                entity.setCustomName(Shop.getPlugin().getItemNameUtil().getName(gambleItem));
+//                return;
+//            }
+//
+//            entity.setCustomName(Shop.getPlugin().getItemNameUtil().getName(item));
+//            entity.setCustomNameVisible(true);
+//        }
+//    }
+
+    public void showNameTags(){
+        if(nameTagsVisible) {
+            return;
+        }
+
+        nameTagsVisible = true;
+
+        try {
+            ArrayList<String> displayTags = ShopMessage.getDisplayTags(getShop(), getShop().getType());
+
+            Location lowerTagLocation = getShop().getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
+            lowerTagLocation = lowerTagLocation.add(0.5, -.7, 0.5);
+
+            double verticalAddition = 0;
+            //iterate through list backwards to build from bottom -> up
+            for (int i = displayTags.size() - 1; i >= 0; i--) {
+                Location asTagLocation = lowerTagLocation.clone();
+
+                String tagLine = displayTags.get(i);
+                if (tagLine.contains("[lshift]")) {
+                    asTagLocation = asTagLocation.add(getLargeItemBarterOffset(false));
+                    tagLine = tagLine.replace("[lshift]", "");
+                }
+                if (tagLine.contains("[rshift]")) {
+                    asTagLocation = asTagLocation.add(getLargeItemBarterOffset(true));
+                    tagLine = tagLine.replace("[rshift]", "");
+                }
+
+                asTagLocation = asTagLocation.add(0, verticalAddition, 0);
+                createTagEntity(tagLine, asTagLocation);
+                verticalAddition += 0.25; //TODO need to play around with this value a bit
             }
 
-            entity.setCustomName(Shop.getPlugin().getItemNameUtil().getName(item));
-            entity.setCustomNameVisible(true);
+            //remove all armor stand name tag entities after x seconds (10 default)
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Iterator<Entity> entityIterator = entities.iterator();
+                    while (entityIterator.hasNext()) {
+                        Entity entity = entityIterator.next();
+                        if (entity != null && entity.getType() == EntityType.ARMOR_STAND) {
+                            PersistentDataContainer persistentData = entity.getPersistentDataContainer();
+                            if (persistentData != null) {
+                                try {
+                                    int dataDisplay = persistentData.get(new NamespacedKey(Shop.getPlugin(), "display_nametag"), PersistentDataType.INTEGER);
+                                    if (dataDisplay == 1) {
+                                        entityIterator.remove();
+                                        entity.remove();
+                                    }
+                                } catch (NullPointerException e) {
+                                }
+                            }
+                        }
+                    }
+                    nameTagsVisible = false;
+                }
+            }.runTaskLater(Shop.getPlugin(), (Shop.getPlugin().getDisplayTagLifespan() * 20));
+        } catch (NullPointerException e){
+            e.printStackTrace();
         }
+    }
+
+    private void createTagEntity(String text, Location location){
+        ArmorStand as = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND); //Spawn the ArmorStand
+
+        as.setGravity(false);
+        as.setCanPickupItems(false);
+        as.setCustomName(text);
+        as.setCustomNameVisible(true);
+        as.setVisible(false);
+        as.setInvulnerable(true);
+        as.setSmall(true);
+        tagEntityAsDisplay(as);
+
+        PersistentDataContainer persistentData = as.getPersistentDataContainer();
+        persistentData.set(new NamespacedKey(Shop.getPlugin(), "display_nametag"), PersistentDataType.INTEGER, 1);
     }
 
     private void tagEntityAsDisplay(Entity entity){
