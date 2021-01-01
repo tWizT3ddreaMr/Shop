@@ -229,9 +229,11 @@ public class Display {
                 String tagLine = displayTags.get(i);
                 if (tagLine.contains("[lshift]")) {
                     asTagLocation = asTagLocation.add(getLargeItemBarterOffset(false));
+                    asTagLocation = asTagLocation.add(getLargeItemBarterOffset(false));
                     tagLine = tagLine.replace("[lshift]", "");
                 }
                 if (tagLine.contains("[rshift]")) {
+                    asTagLocation = asTagLocation.add(getLargeItemBarterOffset(true));
                     asTagLocation = asTagLocation.add(getLargeItemBarterOffset(true));
                     tagLine = tagLine.replace("[rshift]", "");
                 }
