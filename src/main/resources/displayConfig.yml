@@ -30,7 +30,10 @@
 # [barter item amount] : The amount of the barter item #
 # [barter item type] : The material type of the barter item in the transaction #
 # [price] : The price of the items (adjusted to match virtual or physical currency) #
+# [price sell] : The sell price of combo shops (adjusted to match virtual or physical currency) #
+# [price combo] : The full combo price string (adjusted to match virtual or physical currency) #
 # [price per item] : The price of 1 individual item (calculated from total price and adjusted to match virtual or physical currency) #
+# [price sell per item] : The price of selling 1 individual item (combo shops) (calculated from total price and adjusted to match virtual or physical currency) #
 # [stock] : The number of stacks of items that a shop/shop owner is able to provide to other players (calculated) #
 # [stock color] : Changes text to GREEN if shop has stock and DARK_RED when out of stock #
 # [user] : The name of the player who used the shop #
@@ -44,17 +47,27 @@
 display_tag_text:
    SELL:
       normal:
-         - "[item]"
+         - "[item]&7(x[item amount])"
+         - "&7<right click sign to have shop sell the item to you>"
    BUY:
       normal:
-         - "[item]"
+         - "[item]&7(x[item amount])"
+         - "&7<right click sign to have shop buy the item from you>"
    BARTER:
       normal:
-         - "[lshift][item]"
-         - "[rshift][barter item]"
+         - "[lshift]&aYou get:"
+         - "[lshift][item]&7(x[item amount])"
+         - "[rshift]&6You trade:"
+         - "[rshift][barter item]&7(x[barter item amount])"
+         - "&7<right click sign to barter items with shop>"
    GAMBLE:
       normal:
          - "[item]"
+         - "&7<right click sign to gamble for a random item>"
    COMBO:
       normal:
-         - "[item]"
+         - "[item]&7(x[item amount])"
+         - "&7<click &aLEFT &7side of sign for shop to &aBUY &7item from you>"
+         - "[item]&7(x[item amount]) for &a[price]"
+         - "&7<click &6RIGHT &7side of sign for shop to &6SELL &7item to you>"
+         - "[item]&7(x[item amount]) for &6[price sell]"

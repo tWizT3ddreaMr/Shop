@@ -130,9 +130,9 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[amount]", "" + shop.getAmount());
 
             if(shop.getType() == ShopType.COMBO) {
-                unformattedMessage = unformattedMessage.replace("[priceSell]", "" + ((ComboShop)shop).getPriceSellString());
+                unformattedMessage = unformattedMessage.replace("[price sell]", "" + ((ComboShop)shop).getPriceSellString());
                 unformattedMessage = unformattedMessage.replace("[price sell per item]", "" + ((ComboShop)shop).getPriceSellPerItemString());
-                unformattedMessage = unformattedMessage.replace("[priceCombo]", "" + ((ComboShop)shop).getPriceComboString());
+                unformattedMessage = unformattedMessage.replace("[price combo]", "" + ((ComboShop)shop).getPriceComboString());
             }
             if(shop.getType() == ShopType.BARTER) {
                 String amountPerString = new DecimalFormat("#.##").format(shop.getPrice() / shop.getAmount()).toString();

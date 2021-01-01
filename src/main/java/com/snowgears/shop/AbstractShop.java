@@ -319,7 +319,7 @@ public abstract class AbstractShop {
 
     //TODO you may have to override this in other shop types like COMBO or GAMBLE
     public void printSalesInfo(Player player) {
-        player.sendMessage("");
+        //player.sendMessage("");
 
         String message = ShopMessage.getUnformattedMessage(this.getType().toString(), "descriptionItem");
         if(message != null && !message.isEmpty())
@@ -330,7 +330,7 @@ public abstract class AbstractShop {
             if(message != null && !message.isEmpty())
                 formatAndSendFancyMessage(message, player);
         }
-        player.sendMessage("");
+        //player.sendMessage("");
 
 
         if(price != 0) {
@@ -341,7 +341,7 @@ public abstract class AbstractShop {
             message = ShopMessage.getMessage(this.getType().toString(), "descriptionPricePerItem", this, player);
             if(message != null && !message.isEmpty())
                 player.sendMessage(message);
-            player.sendMessage("");
+            //player.sendMessage("");
         }
 
         if(this.isAdmin()){

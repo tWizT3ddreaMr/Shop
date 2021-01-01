@@ -233,7 +233,7 @@ public class ComboShop extends AbstractShop {
             player.sendMessage("");
 
             message = ShopMessage.getUnformattedMessage(ShopType.SELL.toString(), "descriptionPrice");
-            message = message.replaceAll("price]", "priceSell]");
+            message = message.replaceAll("price]", "price sell]");
             message = ShopMessage.formatMessage(message, this, player, false);
             if(message != null && !message.isEmpty())
                 player.sendMessage(message);

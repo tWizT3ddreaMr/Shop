@@ -89,12 +89,14 @@ public class TransactionListener implements Listener {
                     //for COMBO shops, shops can execute either a BUY or a SELL depending on the side of sign that was clicked
                     if(shop.getType() == ShopType.COMBO){
                         int clickedSide = UtilMethods.calculateSideFromClickedSign(player, event.getClickedBlock());
+                        //clicked left side of sign
                         if(clickedSide >= 0){
                             if(plugin.inverseComboShops())
                                 executeTransaction(player, shop, ShopType.SELL);
                             else
                                 executeTransaction(player, shop, ShopType.BUY);
                         }
+                        //clicked right side of sign
                         else{
                             if(plugin.inverseComboShops())
                                 executeTransaction(player, shop, ShopType.BUY);
@@ -185,7 +187,7 @@ public class TransactionListener implements Listener {
         String message;
         if(shop.getType() == ShopType.COMBO && shopType == ShopType.SELL){
             message = ShopMessage.getUnformattedMessage(shopType.toString(), "user");
-            message = message.replaceAll("price]", "priceSell]");
+            message = message.replaceAll("price]", "price sell]");
             message = ShopMessage.formatMessage(message, shop, player, false);
         }
         else{
@@ -202,7 +204,7 @@ public class TransactionListener implements Listener {
 
             if(shop.getType() == ShopType.COMBO && shopType == ShopType.SELL){
                 message = ShopMessage.getUnformattedMessage(shopType.toString(), "owner");
-                message = message.replaceAll("price]", "priceSell]");
+                message = message.replaceAll("price]", "price sell]");
                 message = ShopMessage.formatMessage(message, shop, player, false);
             }
             else {

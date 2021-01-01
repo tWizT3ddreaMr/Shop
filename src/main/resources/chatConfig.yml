@@ -30,8 +30,11 @@
 # [barter item amount] : The amount of the barter item #
 # [barter item type] : The material type of the barter item in the transaction #
 # [price] : The price of the items (adjusted to match virtual or physical currency) #
+# [price sell] : The sell price of combo shops (adjusted to match virtual or physical currency) #
+# [price combo] : The full combo price string (adjusted to match virtual or physical currency) #
 # [price per item] : The price of 1 individual item (calculated from total price and adjusted to match virtual or physical currency) #
-# [stock] : The number of stacks of items that a shop/shop owner is able to provide to other players (calculated)#
+# [price sell per item] : The price of selling 1 individual item (combo shops) (calculated from total price and adjusted to match virtual or physical currency) #
+# [stock] : The number of stacks of items that a shop/shop owner is able to provide to other players (calculated) #
 # [stock color] : Changes text to GREEN if shop has stock and DARK_RED when out of stock #
 # [user] : The name of the player who used the shop #
 # [owner] : The name of the shop owner #
@@ -130,17 +133,17 @@ interaction_issue:
 description:
    SELL:
       item: "&7Item(s) this shop sells to you: &b[[item]] &7([item durability]% durability)"
-      price: "&aYou can buy &f[item amount] [item](s) &afrom this shop for &f[price]."
-      pricePerItem: "&7That is [price per item] per [item]."
+      price: "&aYou can buy &f[item amount] [[item]](s) &afrom this shop for &f[price]."
+      pricePerItem: "&7That is [price per item] per [[item]]."
    BUY:
       item: "&7Item(s) this shop buys from you: &b[[item]] &7([item durability]% durability)"
-      price: "&aYou can sell &f[item amount] [item](s) &ato this shop for &f[price]."
-      pricePerItem: "&7That is [price per item] per [item]."
+      price: "&aYou can sell &f[item amount] [[item]](s) &ato this shop for &f[price]."
+      pricePerItem: "&7That is [price per item] per [[item]]."
    BARTER:
       item: "&7Item(s) this shop trades to you: &b[[item]] &7([item durability]% durability)"
       barterItem: "&7Item(s) you trade to the shop: &b[[barter item]] &7([barter item durability]% durability)"
-      price: "&aYou can barter &f[barter item amount] &aof your &f[barter item](s) &ato this shop for &f[item amount] [item](s)&f."
-      pricePerItem: "&7That is [price per item](s) per [item]."
+      price: "&aYou can barter &f[barter item amount] &aof your &f[[barter item]](s) &ato this shop for &f[item amount] [[item]](s)&f."
+      pricePerItem: "&7That is [price per item](s) per [[item]]."
    GAMBLE:
       item: "&7This shop sells random items."
       price: "&aYou can gamble with this shop for &f[price]."

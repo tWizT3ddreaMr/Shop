@@ -209,7 +209,7 @@ public class Display {
 //    }
 
     public void showNameTags(){
-        if(nameTagsVisible) {
+        if(nameTagsVisible || !getShop().isInitialized()) {
             return;
         }
 
@@ -240,7 +240,7 @@ public class Display {
 
                 asTagLocation = asTagLocation.add(0, verticalAddition, 0);
                 createTagEntity(tagLine, asTagLocation);
-                verticalAddition += 0.25; //TODO need to play around with this value a bit
+                verticalAddition += 0.3; //TODO need to play around with this value a bit
             }
 
             //remove all armor stand name tag entities after x seconds (10 default)
