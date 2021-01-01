@@ -2,6 +2,7 @@ package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.gui.ShopGuiWindow;
+import com.snowgears.shop.util.PlayerSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -176,8 +177,46 @@ public class CommandHandler extends BukkitCommand {
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }
             }
+            else if (args[0].equalsIgnoreCase("notify")) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if(args[1].equalsIgnoreCase("user")) {
+                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS);
+                    }
+                    else if(args[1].equalsIgnoreCase("owner")) {
+                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS);
+                    }
+                    else if(args[1].equalsIgnoreCase("stock")) {
+                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.STOCK_NOTIFICATIONS);
+                    }
+                } else {
+                    sender.sendMessage("[Shop] This command can only be run as a player.");
+                }
+            }
         }
         return true;
+    }
+
+    private void toggleOptionAndNotifyPlayer(Player player, PlayerSettings.Option option) {
+        Shop.getPlugin().getGuiHandler().toggleSettingsOption(player, option);
+        String text;
+        boolean active = Shop.getPlugin().getGuiHandler().getSettingsOption(player, option);
+        if(active)
+            text = ChatColor.GREEN + "ON";
+        else
+            text = ChatColor.RED + "OFF";
+
+        switch (option) {
+            case SALE_USER_NOTIFICATIONS:
+                player.sendMessage(ChatColor.GRAY+"[Shop] Your notifications for your own transactions with shops are now "+text);
+                break;
+            case SALE_OWNER_NOTIFICATIONS:
+                player.sendMessage(ChatColor.GRAY+"[Shop] Your notifications for players transacting with your shops are now "+text);
+                break;
+            case STOCK_NOTIFICATIONS:
+                player.sendMessage(ChatColor.GRAY+"[Shop] Your notifications for your shops running out of stock are now "+text);
+                break;
+        }
     }
 
     private void register()
