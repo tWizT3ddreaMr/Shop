@@ -26,16 +26,18 @@ import org.bukkit.scheduler.BukkitScheduler;
 import java.io.File;
 import java.util.*;
 import java.util.Comparator;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ShopHandler {
 
     public Shop plugin = Shop.getPlugin();
 
-    private HashMap<UUID, List<Location>> playerShops = new HashMap<>();
-    private HashMap<Location, ShopObject> allShops = new HashMap<Location, ShopObject>();
+    private ConcurrentHashMap<UUID, List<Location>> playerShops = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Location, ShopObject> allShops = new ConcurrentHashMap<Location, ShopObject>();
     private ArrayList<Material> shopMaterials = new ArrayList<Material>();
     private UUID adminUUID;
+    private double totalLoadTime;
 
     private ArrayList<UUID> playersSavingShops = new ArrayList<>();
 
@@ -388,22 +390,59 @@ public class ShopHandler {
             backwardsCompatibleLoadShopsFromConfig(config);
         }
         else{
+            File[] allFiles = fileDirectory.listFiles();
             // load all the yml files from the data directory
-            for (File file : fileDirectory.listFiles()) {
-                if (file.isFile()) {
-                    if(file.getName().endsWith(".yml")
-                            && !file.getName().contains("enderchests")
-                            && !file.getName().contains("itemCurrency")
-                            && !file.getName().contains("gambleDisplay")) {
-                        try {
-                            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                            loadShopsFromConfig(config);
-                        } catch (Exception e){
-                            System.out.println("[Shop] DEBUG - "+file.getName());
+            int filesPerThread = 35;
+            for(int i=0;i<allFiles.length;i+=filesPerThread){
+                File[] filesChunk = Arrays.copyOfRange(allFiles, i, Math.min(allFiles.length,i+filesPerThread));
+                final int finalI = i;
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        long startTime = System.currentTimeMillis();
+                        for (File file : filesChunk) {
+                            if (file.isFile()) {
+                                if(file.getName().endsWith(".yml")
+                                        && !file.getName().contains("enderchests")
+                                        && !file.getName().contains("itemCurrency")
+                                        && !file.getName().contains("gambleDisplay")) {
+
+                                    try {
+                                        //System.out.println("[Shop] ABOUT TO LOAD FROM FILE - "+file.getName());
+                                        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                                        loadShopsFromConfig(config);
+                                    } catch (Exception e){
+                                        //System.out.println("[Shop] DEBUG: ERROR LOADING FILE - "+file.getName());
+                                    }
+                                }
+                            }
                         }
+                        long endTime = System.currentTimeMillis();
+                        double elapsedSeconds = (endTime - startTime) / 1000;
+                        totalLoadTime += elapsedSeconds;
+                        System.out.println("[Shop] DEBUG: FINISHED LOADING SHOPS FROM RANGE ("+finalI+" - "+(finalI+filesChunk.length)+")");
+                        System.out.println("[Shop] DEBUG: TOTAL LOAD TIME - "+totalLoadTime);
                     }
-                }
+                });
             }
+//            for (File file : fileDirectory.listFiles()) {
+//                if (file.isFile()) {
+//                    if(file.getName().endsWith(".yml")
+//                            && !file.getName().contains("enderchests")
+//                            && !file.getName().contains("itemCurrency")
+//                            && !file.getName().contains("gambleDisplay")) {
+//
+//                        try {
+//                            System.out.println("[Shop] ABOUT TO LOAD FROM FILE - "+file.getName());
+//                            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+//                            loadShopsFromConfig(config);
+//                        } catch (Exception e){
+//                            System.out.println("[Shop] DEBUG: ERROR LOADING FILE - "+file.getName());
+//                        }
+//                        filesPerThread --;
+//                    }
+//                }
+//            }
         }
         new BukkitRunnable() {
             @Override
@@ -425,53 +464,61 @@ public class ShopHandler {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
                 if(signLoc != null) {
                     try {
-                        Block b = signLoc.getBlock();
-                        if (b.getType() == Material.WALL_SIGN) {
-                            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                            //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
-                            UUID owner;
-                            if (shopOwner.equals("admin"))
-                                owner = this.getAdminUUID();
-                            else
-                                owner = uidFromString(shopOwner);
-                            String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
-                            double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
-                            int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
+                    //Block b = signLoc.getBlock();
+                    //if (b.getType() == Material.WALL_SIGN) {
+                        //org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
+                        //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                        UUID owner;
+                        if (shopOwner.equals("admin"))
+                            owner = getAdminUUID();
+                        else
+                            owner = uidFromString(shopOwner);
+                        String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
+                        double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
+                        int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
 
-                            boolean isAdmin = false;
-                            if (type.contains("admin"))
-                                isAdmin = true;
-                            ShopType shopType = typeFromString(type);
+                        boolean isAdmin1 = false;
+                        if (type.contains("admin"))
+                            isAdmin1 = true;
+                        ShopType shopType = typeFromString(type);
+                        final boolean isAdmin = isAdmin1;
 
-                            ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
-                            if (shopType == ShopType.GAMBLE) {
-                                itemStack = plugin.getGambleDisplayItem();
-                            }
+                        //run this synchronously since it uses Bukkit methods like getBlock()
+                        Bukkit.getScheduler().runTask(plugin, new Runnable() {
+                            @Override
+                            public void run() {
 
-                            final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
-
-                            if (this.isChest(shop.getChestLocation().getBlock())) {
-
-                                shop.setItemStack(itemStack);
-                                if (shop.getType() == ShopType.BARTER) {
-                                    ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
-                                    shop.setBarterItemStack(barterItemStack);
-                                }
-
-                                this.addShop(shop);
-
-                                final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
-                                new BukkitRunnable() {
-                                    @Override
-                                    public void run() {
-
-                                        if (shop != null && displayType != null) {
-                                            shop.getDisplay().setType(DisplayType.valueOf(displayType));
-                                        }
+                                    ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
+                                    if (shopType == ShopType.GAMBLE) {
+                                        itemStack = plugin.getGambleDisplayItem();
                                     }
-                                }.runTaskLater(this.plugin, 2);
+
+                                    final ShopObject shop = new ShopObject(signLoc, owner, price, amount, isAdmin, shopType);
+
+                                    //if (isChest(shop.getChestLocation().getBlock())) {
+
+                                        shop.setItemStack(itemStack);
+                                        if (shop.getType() == ShopType.BARTER) {
+                                            ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
+                                            shop.setBarterItemStack(barterItemStack);
+                                        }
+
+                                        addShop(shop);
+
+                                        final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
+                                        new BukkitRunnable() {
+                                            @Override
+                                            public void run() {
+
+                                                if (shop != null && displayType != null) {
+                                                    shop.getDisplay().setType(DisplayType.valueOf(displayType));
+                                                }
+                                            }
+                                        }.runTaskLater(plugin, 2);
+                                    //}
+                                //}
                             }
-                        }
+                        });
                     } catch (NullPointerException e) {}
                 }
             }
