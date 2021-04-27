@@ -126,6 +126,13 @@ public class MiscListener implements Listener {
                     canCreateShopInRegion = WorldGuardHook.canCreateShop(player, b.getLocation());
                 } catch (NoClassDefFoundError e) {
                 }
+                if(Shop.getPlugin().towny()) {
+                	if(!com.palmergames.bukkit.towny.utils.ShopPlotUtil.doesPlayerHaveAbilityToEditShopPlot(player, b.getLocation())) { 
+                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
+                    event.setCancelled(true);
+                    return;
+                	}
+                }
 
                 if (!canCreateShopInRegion) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
